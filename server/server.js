@@ -4,6 +4,12 @@ import cors from "cors";
 import { connectDB } from "./src/config/db.js";
 import authRouter from "./src/routes/authRoutes.js";
 dotenv.config({ path: "./.env" });
+
+if (!process.env.JWT_SECRET) {
+    console.error("Missing JWT_SECRET in server/.env — add it and restart the server.");
+    process.exit(1);
+}
+
 const app = express();
 
 
