@@ -25,7 +25,21 @@ const userSchema = new mongoose.Schema(
         },
         profilePic: {
             type: String,
+            default: "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y",
+        },
+        bio: {
+            type: String,
             default: "",
+        },
+        collegeName: {
+            type: String,
+            default: "",
+        },
+        startYear: {
+            type: Number,
+        },
+        endYear: {
+            type: Number,
         },
         // Future: college verification via student ID upload
         isCollegeVerified: {

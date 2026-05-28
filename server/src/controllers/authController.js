@@ -27,7 +27,7 @@ export const registerUser = async (req, res) => {
             username,
             email,
             password,
-            profilePic: profilePic || "",
+            profilePic: profilePic || undefined,
         });
 
         res.status(201).json({
