@@ -27,6 +27,11 @@ const userSchema = new mongoose.Schema(
             type: String,
             default: "",
         },
+        // Future: college verification via student ID upload
+        isCollegeVerified: {
+            type: Boolean,
+            default: false,
+        },
     },
     {
         timestamps: true

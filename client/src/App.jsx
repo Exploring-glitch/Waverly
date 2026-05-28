@@ -1,20 +1,31 @@
-import React from 'react'
-import { Routes, Route, Navigate, Outlet } from "react-router-dom";
-import Home_Page from './pages/Home.jsx';
-import Login_Page from './pages/Login.jsx';
-import Register_Page from './pages/Register.jsx';
-
-
-
+import { Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import Navbar from "./components/Navbar";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Home_Page from "./pages/Home.jsx";
+import Login_Page from "./pages/Login.jsx";
+import Register_Page from "./pages/Register.jsx";
+import Dashboard_Page from "./pages/Dashboard.jsx";
 
 const App = () => {
-  return (
-    <Routes>
-      <Route path='/' element={<Home_Page />} />
-      <Route path='/login' element={<Login_Page />} />
-      <Route path='/register' element={<Register_Page />} />
-    </Routes>
-  )
-}
+    return (
+        <AuthProvider>
+            <Navbar />
+            <Routes>
+                <Route path="/" element={<Home_Page />} />
+                <Route path="/login" element={<Login_Page />} />
+                <Route path="/register" element={<Register_Page />} />
+                <Route
+                    path="/dashboard"
+                    element={
+                        <ProtectedRoute>
+                            <Dashboard_Page />
+                        </ProtectedRoute>
+                    }
+                />
+            </Routes>
+        </AuthProvider>
+    );
+};
 
-export default App
+export default App;
