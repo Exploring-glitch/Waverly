@@ -182,3 +182,99 @@ a:hover {
   overflow: auto;
   font-size: 0.8rem;
 }
+
+/* Profile Page Styles */
+.profile-container {
+  background: #16181c;
+  border: 1px solid #2f3336;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-top: 1.5rem;
+}
+
+.profile-banner {
+  height: 120px;
+  background: linear-gradient(135deg, #1d9bf0 0%, #005a9e 100%);
+}
+
+.profile-info-section {
+  padding: 1.5rem;
+  position: relative;
+}
+
+.profile-avatar-wrapper {
+  margin-top: -60px;
+  margin-bottom: 1rem;
+}
+
+.profile-avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  border: 4px solid #16181c;
+  background: #16181c;
+  object-fit: cover;
+}
+
+.profile-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.profile-names h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.profile-names .profile-handle {
+  color: #71767b;
+  margin: 0.1rem 0 0;
+  font-size: 0.95rem;
+}
+
+.profile-bio {
+  margin: 1rem 0;
+  font-size: 1rem;
+  line-height: 1.4;
+  color: #e7e9ea;
+}
+
+/* Profile Metadata Row */
+.profile-metadata {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid #2f3336;
+}
+
+.metadata-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #71767b;
+  font-size: 0.9rem;
+}
+
+.metadata-item svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
+.metadata-item span {
+  color: #e7e9ea;
+}
+
+.metadata-item .label {
+  color: #71767b;
+  margin-right: 0.2rem;
+}
+
+
+.profile-detail-item strong {
+  color: #e7e9ea;
+}

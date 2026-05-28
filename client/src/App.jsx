@@ -6,6 +6,7 @@ import Home_Page from "./pages/Home.jsx";
 import Login_Page from "./pages/Login.jsx";
 import Register_Page from "./pages/Register.jsx";
 import Dashboard_Page from "./pages/Dashboard.jsx";
+import Profile_Page from "./pages/Profile.jsx";
 
 const App = () => {
     return (
@@ -20,6 +21,14 @@ const App = () => {
                     element={
                         <ProtectedRoute>
                             <Dashboard_Page />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/profile"
+                    element={
+                        <ProtectedRoute>
+                            <Profile_Page />
                         </ProtectedRoute>
                     }
                 />

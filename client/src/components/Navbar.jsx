@@ -14,7 +14,7 @@ const Navbar = () => {
                 {user ? (
                     <>
                         <Link to="/dashboard">Dashboard</Link>
-                        <span className="navbar-user">Hi, {user.name}</span>
+                        <Link to="/profile" className="navbar-user">Hi, {user.name}</Link>
                         <Button variant="secondary" onClick={logout}>
                             Logout
                         </Button>
