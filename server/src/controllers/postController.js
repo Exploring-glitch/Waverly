@@ -26,3 +26,17 @@ export const createPost = async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 };
+
+
+export const getAllPosts = async (req, res) => {
+    try {
+        const posts = await Post.find()
+            .sort({ createdAt: -1 })
+            .populate("author", "name username profilePic additionalName");
+
+        res.status(200).json(posts);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
