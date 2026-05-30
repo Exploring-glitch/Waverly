@@ -61,7 +61,8 @@ const CreatePost = ({ autoFocus, onClose }) => {
 
             setTimeout(() => {
                 setSuccess("");
-            }, 3000);
+                if (onClose) onClose();
+            }, 1500);
         }
         catch (err) {
             setIsPosting(false);

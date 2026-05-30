@@ -30,7 +30,10 @@ export const createPost = async (req, res) => {
 
 export const getAllPosts = async (req, res) => {
     try {
-        const posts = await Post.find()
+        const { authorId } = req.query;
+        const query = authorId ? { author: authorId } : {};
+
+        const posts = await Post.find(query)
             .sort({ createdAt: -1 })
             .populate("author", "name username profilePic additionalName");
 
