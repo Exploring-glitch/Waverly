@@ -37,3 +37,8 @@ export const userApi = {
     updateProfile: (body) =>
         request("/api/users/profile", { method: "PUT", body: JSON.stringify(body) }),
 };
+
+export const searchApi = {
+    search: ({ q, type = "all", limit = 10 }) =>
+        request(`/api/search?q=${encodeURIComponent(q)}&type=${type}&limit=${limit}`),
+};
