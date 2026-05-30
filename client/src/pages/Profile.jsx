@@ -6,7 +6,7 @@ const Profile_Page = () => {
     const { user } = useAuth();
 
     if (!user) {
-        return <div className="page-center">Loading profile...</div>;
+        return <div className="page-center"><div className="spinner" /></div>;
     }
 
     return (

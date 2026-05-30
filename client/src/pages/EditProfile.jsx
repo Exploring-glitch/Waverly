@@ -37,7 +37,7 @@ const Edit_Profile_Page = () => {
     }, [user]);
 
     if (!user) {
-        return <div className="page-center">Loading user details...</div>;
+        return <div className="page-center"><div className="spinner" /></div>;
     }
 
     const handleSubmit = async (e) => {

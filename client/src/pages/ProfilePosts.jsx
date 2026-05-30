@@ -26,7 +26,7 @@ const ProfilePosts_Page = () => {
     }, [user]);
 
     if (!user || isLoading) {
-        return <div className="page-center">Loading posts...</div>;
+        return <div className="page-center"><div className="spinner" /></div>;
     }
 
     return (
