@@ -10,6 +10,9 @@ import Profile_Page from "./pages/Profile.jsx";
 import Edit_Profile_Page from "./pages/EditProfile.jsx";
 import Feed_Page from "./pages/Feed.jsx";
 import ProfilePosts_Page from "./pages/ProfilePosts.jsx";
+import Search_Page from "./pages/Search.jsx";
+import UserProfile_Page from "./pages/UserProfile.jsx";
+import OrganizationMembers_Page from "./pages/OrganizationMembers.jsx";
 
 const App = () => {
     return (
@@ -56,6 +59,38 @@ const App = () => {
                     element={
                         <ProtectedRoute>
                             <Edit_Profile_Page />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/search"
+                    element={
+                        <ProtectedRoute>
+                            <Search_Page />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/users/:username"
+                    element={
+                        <ProtectedRoute>
+                            <UserProfile_Page />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/college/:name"
+                    element={
+                        <ProtectedRoute>
+                            <OrganizationMembers_Page type="college" />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/company/:name"
+                    element={
+                        <ProtectedRoute>
+                            <OrganizationMembers_Page type="company" />
                         </ProtectedRoute>
                     }
                 />

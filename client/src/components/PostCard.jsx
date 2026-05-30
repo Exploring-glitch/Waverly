@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { postApi } from "../services/api";
 
@@ -76,7 +77,13 @@ const PostCard = ({ post, onDelete }) => {
                         <div className="post-header" style={{ flexDirection: 'column', flexGrow: 1 }}>
                         {/* Name and additional name */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                            <span className="post-author-name">{author.name}</span>
+                            {author.username ? (
+                                <Link to={`/users/${author.username}`} className="post-author-link">
+                                    <span className="post-author-name">{author.name}</span>
+                                </Link>
+                            ) : (
+                                <span className="post-author-name">{author.name}</span>
+                            )}
                             {author.additionalName && (
                                 <span className="post-additional-name-badge">({author.additionalName})</span>
                             )}
@@ -84,7 +91,13 @@ const PostCard = ({ post, onDelete }) => {
                         
                         {/* Username */}
                         <div style={{ color: '#71767b', fontSize: '0.85rem', fontWeight: '500', marginTop: '0.1rem' }}>
-                            @{author.username}
+                            {author.username ? (
+                                <Link to={`/users/${author.username}`} className="post-author-link">
+                                    @{author.username}
+                                </Link>
+                            ) : (
+                                `@${author.username}`
+                            )}
                         </div>
                         
                         {/* Created Date */}

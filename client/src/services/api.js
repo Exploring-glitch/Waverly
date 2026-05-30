@@ -36,6 +36,21 @@ export const authApi = {
 export const userApi = {
     updateProfile: (body) =>
         request("/api/users/profile", { method: "PUT", body: JSON.stringify(body) }),
+
+    getByUsername: (username) => request(`/api/users/${encodeURIComponent(username)}`),
+
+    getCollegeMembers: (name) =>
+        request(`/api/users/college/${encodeURIComponent(name)}/members`),
+
+    getCompanyMembers: (name) =>
+        request(`/api/users/company/${encodeURIComponent(name)}/members`),
+};
+
+export const searchApi = {
+    search: (q, type = "all", limit = 10) => {
+        const params = new URLSearchParams({ q, type, limit: String(limit) });
+        return request(`/api/search?${params.toString()}`);
+    },
 };
 
 export const postApi = {
@@ -43,5 +58,7 @@ export const postApi = {
         request("/api/posts", { method: "POST", body: JSON.stringify(body) }),
     getPosts: () => request("/api/posts"),
     getMyPosts: () => request("/api/posts/me"),
+    getPostsByUsername: (username) =>
+        request(`/api/posts/user/${encodeURIComponent(username)}`),
     deletePost: (id) => request(`/api/posts/${id}`, { method: "DELETE" }),
 };
