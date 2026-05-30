@@ -38,7 +38,16 @@ export const userApi = {
         request("/api/users/profile", { method: "PUT", body: JSON.stringify(body) }),
 };
 
+export const searchApi = {
+    search: ({ q, type = "all", limit = 10 }) =>
+        request(`/api/search?q=${encodeURIComponent(q)}&type=${type}&limit=${limit}`),
+};
+
 export const postApi = {
     createPost: (body) =>
         request("/api/posts", { method: "POST", body: JSON.stringify(body) }),
+
+    getAllPosts: () => request("/api/posts"),
+
+    deletePost: (id) => request(`/api/posts/${id}`, { method: "DELETE" }),
 };

@@ -39,6 +39,14 @@ const userSchema = new mongoose.Schema(
             type: String,
             default: "",
         },
+        university: {
+            type: String,
+            default: "",
+        },
+        company: {
+            type: String,
+            default: "",
+        },
         startYear: {
             type: Number,
             default: 0

@@ -12,6 +12,8 @@ const Edit_Profile_Page = () => {
     const [bio, setBio] = useState("");
     const [profilePic, setProfilePic] = useState("");
     const [collegeName, setCollegeName] = useState("");
+    const [university, setUniversity] = useState("");
+    const [company, setCompany] = useState("");
     const [startYear, setStartYear] = useState("");
     const [endYear, setEndYear] = useState("");
 
@@ -28,6 +30,8 @@ const Edit_Profile_Page = () => {
             setBio(user.bio || "");
             setProfilePic(user.profilePic || "");
             setCollegeName(user.collegeName || "");
+            setUniversity(user.university || "");
+            setCompany(user.company || "");
             // If year is 0 or empty, prefill empty string for nicer UX
             setStartYear(user.startYear ? String(user.startYear) : "");
             setEndYear(user.endYear ? String(user.endYear) : "");
@@ -56,6 +60,8 @@ const Edit_Profile_Page = () => {
                 additionalName,
                 bio,
                 collegeName,
+                university,
+                company,
                 startYear: startYear.trim() === "" ? "" : Number(startYear),
                 endYear: endYear.trim() === "" ? "" : Number(endYear),
                 profilePic,
@@ -202,6 +208,35 @@ const Edit_Profile_Page = () => {
                                     max="2100"
                                     value={endYear}
                                     onChange={(e) => setEndYear(e.target.value)}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* SECTION 3: WORK & UNIVERSITY */}
+                    <div className="edit-profile-section">
+                        <h3 className="edit-section-title">Work & University</h3>
+
+                        <div className="form-grid form-grid-2">
+                            <div className="form-group">
+                                <label htmlFor="company">Company</label>
+                                <input
+                                    id="company"
+                                    type="text"
+                                    placeholder="e.g. Google"
+                                    value={company}
+                                    onChange={(e) => setCompany(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="university">University</label>
+                                <input
+                                    id="university"
+                                    type="text"
+                                    placeholder="e.g. MIT"
+                                    value={university}
+                                    onChange={(e) => setUniversity(e.target.value)}
                                 />
                             </div>
                         </div>
