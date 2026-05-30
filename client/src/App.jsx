@@ -27,6 +27,14 @@ const App = () => {
                     }
                 />
                 <Route
+                    path="/feed"
+                    element={
+                        <ProtectedRoute>
+                            <Feed_Page />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
                     path="/profile"
                     element={
                         <ProtectedRoute>
