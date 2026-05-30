@@ -39,6 +39,10 @@ const userSchema = new mongoose.Schema(
             type: String,
             default: "",
         },
+        companyName: {
+            type: String,
+            default: "",
+        },
         startYear: {
             type: Number,
             default: 0

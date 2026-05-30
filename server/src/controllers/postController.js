@@ -1,4 +1,5 @@
 import Post from "../models/Post.js";
+import User from "../models/User.js";
 
 export const createPost = async (req, res) => {
     try {
@@ -51,6 +52,25 @@ export const getMyPosts = async (req, res) => {
         res.status(200).json(posts);
     }
     catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+export const getPostsByUsername = async (req, res) => {
+    try {
+        const user = await User.findOne({ username: req.params.username });
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const posts = await Post.find({ author: user._id })
+            .sort({ createdAt: -1 })
+            .populate("author", "name username profilePic additionalName");
+
+        res.status(200).json(posts);
+    } catch (err) {
         console.error(err);
         res.status(500).json({ message: "Internal server error" });
     }

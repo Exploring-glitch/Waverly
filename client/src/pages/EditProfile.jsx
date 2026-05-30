@@ -12,6 +12,7 @@ const Edit_Profile_Page = () => {
     const [bio, setBio] = useState("");
     const [profilePic, setProfilePic] = useState("");
     const [collegeName, setCollegeName] = useState("");
+    const [companyName, setCompanyName] = useState("");
     const [startYear, setStartYear] = useState("");
     const [endYear, setEndYear] = useState("");
 
@@ -28,6 +29,7 @@ const Edit_Profile_Page = () => {
             setBio(user.bio || "");
             setProfilePic(user.profilePic || "");
             setCollegeName(user.collegeName || "");
+            setCompanyName(user.companyName || "");
             // If year is 0 or empty, prefill empty string for nicer UX
             setStartYear(user.startYear ? String(user.startYear) : "");
             setEndYear(user.endYear ? String(user.endYear) : "");
@@ -56,6 +58,7 @@ const Edit_Profile_Page = () => {
                 additionalName,
                 bio,
                 collegeName,
+                companyName,
                 startYear: startYear.trim() === "" ? "" : Number(startYear),
                 endYear: endYear.trim() === "" ? "" : Number(endYear),
                 profilePic,
@@ -204,6 +207,22 @@ const Edit_Profile_Page = () => {
                                     onChange={(e) => setEndYear(e.target.value)}
                                 />
                             </div>
+                        </div>
+                    </div>
+
+                    {/* SECTION 3: COMPANY DETAILS */}
+                    <div className="edit-profile-section">
+                        <h3 className="edit-section-title">Company Details</h3>
+
+                        <div className="form-group">
+                            <label htmlFor="companyName">Company Name</label>
+                            <input
+                                id="companyName"
+                                type="text"
+                                placeholder="e.g. Google"
+                                value={companyName}
+                                onChange={(e) => setCompanyName(e.target.value)}
+                            />
                         </div>
                     </div>
 
