@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import CreatePost from "./CreatePost";
 import PostCard from "./PostCard";
 import { postApi } from "../services/api";
@@ -9,6 +10,7 @@ const ProfileActivity = () => {
     const [showCreatePost, setShowCreatePost] = useState(false);
     const [posts, setPosts] = useState([]);
     const createPostRef = useRef(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchPosts = async () => {
@@ -53,7 +55,11 @@ const ProfileActivity = () => {
                 )}
 
                 <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', borderTop: '1px solid #2f3336', paddingTop: '1rem' }}>
-                    <button className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', fontSize: '0.9rem' }}>
+                    <button 
+                        className="btn btn-secondary show-all-btn" 
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', fontSize: '0.9rem' }}
+                        onClick={() => navigate('/profile/posts')}
+                    >
                         Show all posts
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M5 12h14M12 5l7 7-7 7" />

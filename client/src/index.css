@@ -151,7 +151,7 @@ a:hover {
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #1a8cd8;
+  background: #0f75bc; /* Noticeably darker blue */
 }
 
 .btn-secondary {
@@ -748,4 +748,20 @@ a:hover {
   height: 48px;
   fill: #71767b;
   margin-bottom: 1rem;
+}
+
+/* Micro-animations */
+.show-all-btn {
+  transition: all 0.2s ease;
+}
+.show-all-btn svg {
+  transition: transform 0.2s ease;
+}
+.show-all-btn:hover {
+  background-color: #2f3336 !important;
+  border-color: #71767b !important;
+  color: #fff !important;
+}
+.show-all-btn:hover svg {
+  transform: translateX(4px);
 }

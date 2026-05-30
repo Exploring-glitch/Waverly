@@ -9,6 +9,7 @@ import Dashboard_Page from "./pages/Dashboard.jsx";
 import Profile_Page from "./pages/Profile.jsx";
 import Edit_Profile_Page from "./pages/EditProfile.jsx";
 import Feed_Page from "./pages/Feed.jsx";
+import ProfilePosts_Page from "./pages/ProfilePosts.jsx";
 
 const App = () => {
     return (
@@ -39,6 +40,14 @@ const App = () => {
                     element={
                         <ProtectedRoute>
                             <Profile_Page />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/profile/posts"
+                    element={
+                        <ProtectedRoute>
+                            <ProfilePosts_Page />
                         </ProtectedRoute>
                     }
                 />
