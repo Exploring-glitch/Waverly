@@ -88,6 +88,11 @@ a:hover {
 }
 
 .page-center {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 65px);
   padding: 3rem;
   text-align: center;
   color: #71767b;
@@ -184,7 +189,8 @@ a:hover {
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #0f75bc; /* Noticeably darker blue */
+  background: #0f75bc;
+  /* Noticeably darker blue */
 }
 
 .btn-secondary {
@@ -509,6 +515,7 @@ a:hover {
     transform: translate(-50%, -20px) scale(0.9);
     opacity: 0;
   }
+
   to {
     transform: translate(-50%, 0) scale(1);
     opacity: 1;
@@ -802,14 +809,17 @@ a:hover {
 .show-all-btn {
   transition: all 0.2s ease;
 }
+
 .show-all-btn svg {
   transition: transform 0.2s ease;
 }
+
 .show-all-btn:hover {
   background-color: #2f3336 !important;
   border-color: #71767b !important;
   color: #fff !important;
 }
+
 .show-all-btn:hover svg {
   transform: translateX(4px);
 }
