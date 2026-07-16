@@ -2,7 +2,7 @@ import User from "../models/User.js";
 
 export const updateUserProfile = async (req, res) => {
     try {
-        const { name, additionalName, bio, collegeName, companyName, startYear, endYear, profilePic } = req.body;
+        const { name, additionalName, bio, about, collegeName, companyName, startYear, endYear, profilePic } = req.body;
 
         if (name !== undefined && !name.trim()) {
             return res.status(400).json({ message: "Name cannot be empty" })
@@ -23,6 +23,7 @@ export const updateUserProfile = async (req, res) => {
         if (name !== undefined) user.name = name;
         if (additionalName !== undefined) user.additionalName = additionalName;
         if (bio !== undefined) user.bio = bio;
+        if (about !== undefined) user.about = about;
         if (collegeName !== undefined) user.collegeName = collegeName;
         if (companyName !== undefined) user.companyName = companyName;
 

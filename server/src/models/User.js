@@ -35,6 +35,10 @@ const userSchema = new mongoose.Schema(
             type: String,
             default: "",
         },
+        about: {
+            type: String,
+            default: "",
+        },
         collegeName: {
             type: String,
             default: "",

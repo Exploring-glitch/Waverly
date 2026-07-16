@@ -1,5 +1,6 @@
 import { useAuth } from "../context/AuthContext";
 import ProfileHeader from "../components/ProfileHeader";
+import ProfileAbout from "../components/ProfileAbout";
 import ProfileActivity from "../components/ProfileActivity";
 
 const Profile_Page = () => {
@@ -12,6 +13,7 @@ const Profile_Page = () => {
     return (
         <div className="page">
             <ProfileHeader user={user} />
+            <ProfileAbout user={user} isOwnProfile={true} />
             <ProfileActivity />
         </div>
     );

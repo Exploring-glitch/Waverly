@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { userApi, postApi } from "../services/api";
 import ProfileInfo from "../components/ProfileInfo";
+import ProfileAbout from "../components/ProfileAbout";
 import PostCard from "../components/PostCard";
 
 const UserProfile_Page = () => {
@@ -84,6 +85,8 @@ const UserProfile_Page = () => {
                     <ProfileInfo user={user} showEmail={isOwnProfile} />
                 </div>
             </div>
+
+            <ProfileAbout user={user} isOwnProfile={isOwnProfile} />
 
             <div className="activity-container search-profile-activity">
                 <h3>Posts</h3>
