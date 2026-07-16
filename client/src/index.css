@@ -28,6 +28,12 @@ a:hover {
   gap: 1rem;
   padding: 1rem 1.5rem;
   border-bottom: 1px solid #2f3336;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background-color: rgba(15, 20, 25, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .navbar-search {
