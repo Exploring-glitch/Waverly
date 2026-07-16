@@ -1214,3 +1214,24 @@ a:hover {
   from { transform: translateY(20px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
+
+/* Skill Badges styling */
+.skill-badge {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background: #1e2022;
+  border: 1px solid #2f3336;
+  color: #e7e9ea;
+  border-radius: 9999px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+}
+
+.skill-badge:hover {
+  background: rgba(29, 155, 240, 0.1);
+  border-color: #1d9bf0;
+  color: #1d9bf0;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(29, 155, 240, 0.15);
+}

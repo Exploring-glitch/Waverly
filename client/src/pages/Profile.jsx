@@ -1,6 +1,7 @@
 import { useAuth } from "../context/AuthContext";
 import ProfileHeader from "../components/ProfileHeader";
 import ProfileAbout from "../components/ProfileAbout";
+import ProfileSkills from "../components/ProfileSkills";
 import ProfileActivity from "../components/ProfileActivity";
 
 const Profile_Page = () => {
@@ -14,6 +15,7 @@ const Profile_Page = () => {
         <div className="page">
             <ProfileHeader user={user} />
             <ProfileAbout user={user} isOwnProfile={true} />
+            <ProfileSkills user={user} isOwnProfile={true} />
             <ProfileActivity />
         </div>
     );

@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { userApi, postApi } from "../services/api";
 import ProfileInfo from "../components/ProfileInfo";
 import ProfileAbout from "../components/ProfileAbout";
+import ProfileSkills from "../components/ProfileSkills";
 import PostCard from "../components/PostCard";
 
 const UserProfile_Page = () => {
@@ -87,6 +88,7 @@ const UserProfile_Page = () => {
             </div>
 
             <ProfileAbout user={user} isOwnProfile={isOwnProfile} />
+            <ProfileSkills user={user} isOwnProfile={isOwnProfile} />
 
             <div className="activity-container search-profile-activity">
                 <h3>Posts</h3>
