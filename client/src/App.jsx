@@ -13,6 +13,7 @@ import ProfilePosts_Page from "./pages/ProfilePosts.jsx";
 import Search_Page from "./pages/Search.jsx";
 import UserProfile_Page from "./pages/UserProfile.jsx";
 import OrganizationMembers_Page from "./pages/OrganizationMembers.jsx";
+import SavedPosts_Page from "./pages/SavedPosts.jsx";
 
 const App = () => {
     return (
@@ -35,6 +36,14 @@ const App = () => {
                     element={
                         <ProtectedRoute>
                             <Feed_Page />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/saved"
+                    element={
+                        <ProtectedRoute>
+                            <SavedPosts_Page />
                         </ProtectedRoute>
                     }
                 />

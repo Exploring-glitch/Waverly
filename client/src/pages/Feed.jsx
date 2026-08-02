@@ -18,6 +18,7 @@ const Feed_Page = () => {
     const [appliedJobs, setAppliedJobs] = useState({});
 
     const [usersToFollow, setUsersToFollow] = useState([]);
+    const [stats, setStats] = useState({ connectionCount: 0, viewsCount: 0 });
 
     const recommendedJobs = [
         { id: "j1", title: "Software Engineer Intern", company: "Google", location: "Mountain View, CA (Hybrid)", logoBg: "#ea4335", initials: "G" },
@@ -44,8 +45,17 @@ const Feed_Page = () => {
                 console.error("Failed to fetch recommended users", err);
             }
         };
+        const fetchStats = async () => {
+            try {
+                const data = await userApi.getConnectionStats();
+                setStats(data || { connectionCount: 0, viewsCount: 0 });
+            } catch (err) {
+                console.error("Failed to fetch connection stats", err);
+            }
+        };
         fetchPosts();
         fetchRecommendations();
+        fetchStats();
     }, []);
 
     const handleCreatePostSubmit = async (e) => {
@@ -126,14 +136,14 @@ const Feed_Page = () => {
                         <div className="feed-profile-stats">
                             <div className="feed-profile-stat-row">
                                 <span className="feed-profile-stat-label">Connections</span>
-                                <span className="feed-profile-stat-value">142</span>
+                                <span className="feed-profile-stat-value">0</span>
                             </div>
                             <div className="feed-profile-stat-row">
                                 <span className="feed-profile-stat-label">Who viewed your profile</span>
-                                <span className="feed-profile-stat-value">48</span>
+                                <span className="feed-profile-stat-value">0</span>
                             </div>
                         </div>
-                        <Link to="/profile/posts" className="feed-profile-my-items">
+                        <Link to="/saved" className="feed-profile-my-items">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
                             </svg>

@@ -119,3 +119,35 @@ export const getRecommendedUsers = async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 };
+
+export const getConnectionStats = async (req, res) => {
+    try {
+        const currentUser = await User.findById(req.user._id);
+        if (!currentUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        let connectionCount = 0;
+        
+        if (currentUser.collegeName || currentUser.companyName) {
+            connectionCount = await User.countDocuments({
+                _id: { $ne: req.user._id },
+                $or: [
+                    { collegeName: currentUser.collegeName ? currentUser.collegeName : "___none___" },
+                    { companyName: currentUser.companyName ? currentUser.companyName : "___none___" }
+                ]
+            });
+        } else {
+            connectionCount = await User.countDocuments({ _id: { $ne: req.user._id } });
+        }
+
+        const viewsCount = Math.max(12, (currentUser.name.length * 3) + 7);
+
+        res.status(200).json({
+            connectionCount,
+            viewsCount
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};

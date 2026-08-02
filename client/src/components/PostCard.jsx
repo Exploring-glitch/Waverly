@@ -472,7 +472,7 @@ const CommentItem = ({ comment, postId, currentUserId, currentUserProfilePic, on
     );
 };
 
-const PostCard = ({ post, onDelete }) => {
+const PostCard = ({ post, onDelete, onSaveToggle }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const { user } = useAuth();
@@ -580,6 +580,7 @@ const PostCard = ({ post, onDelete }) => {
                 setIsSaved(false);
             }
             localStorage.setItem("savedPosts", JSON.stringify(parsed));
+            if (onSaveToggle) onSaveToggle(post._id, index === -1);
         } catch (e) {
             console.error(e);
         }
