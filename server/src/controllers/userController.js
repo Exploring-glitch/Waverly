@@ -107,3 +107,15 @@ export const getUsersByCompany = async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 };
+
+export const getRecommendedUsers = async (req, res) => {
+    try {
+        const users = await User.find({ _id: { $ne: req.user._id } })
+            .select("name username profilePic bio collegeName companyName additionalName")
+            .limit(5);
+        res.status(200).json(users);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};

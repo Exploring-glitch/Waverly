@@ -44,6 +44,8 @@ export const userApi = {
 
     getCompanyMembers: (name) =>
         request(`/api/users/company/${encodeURIComponent(name)}/members`),
+
+    getRecommendedUsers: () => request("/api/users/recommend"),
 };
 
 export const searchApi = {

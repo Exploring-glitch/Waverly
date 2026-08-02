@@ -6,6 +6,7 @@ import {
     getUserByUsername,
     getUsersByCollege,
     getUsersByCompany,
+    getRecommendedUsers,
 } from "../controllers/userController.js";
 const userRouter = express.Router();
 
@@ -14,6 +15,7 @@ userRouter.get("/profile", protect, getMe)
 userRouter.put("/profile", protect, updateUserProfile)
 userRouter.get("/college/:name/members", protect, getUsersByCollege)
 userRouter.get("/company/:name/members", protect, getUsersByCompany)
+userRouter.get("/recommend", protect, getRecommendedUsers)
 userRouter.get("/:username", protect, getUserByUsername)
 
 
