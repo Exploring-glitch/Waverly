@@ -61,4 +61,10 @@ export const postApi = {
     getPostsByUsername: (username) =>
         request(`/api/posts/user/${encodeURIComponent(username)}`),
     deletePost: (id) => request(`/api/posts/${id}`, { method: "DELETE" }),
+    likePost: (id) => request(`/api/posts/${id}/like`, { method: "POST" }),
+    commentPost: (id, content) =>
+        request(`/api/posts/${id}/comment`, {
+            method: "POST",
+            body: JSON.stringify({ content }),
+        }),
 };

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { postApi } from "../services/api";
@@ -26,6 +26,32 @@ const PostCard = ({ post, onDelete }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const { user } = useAuth();
+
+    const [likes, setLikes] = useState(post.likes || []);
+    const [comments, setComments] = useState(post.comments || []);
+    const [showComments, setShowComments] = useState(false);
+    const [newCommentText, setNewCommentText] = useState("");
+    const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+    const [copied, setCopied] = useState(false);
+    const [isSaved, setIsSaved] = useState(() => {
+        try {
+            const saved = localStorage.getItem("savedPosts");
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                return parsed.includes(post._id);
+            }
+        } catch (e) {
+            console.error(e);
+        }
+        return false;
+    });
+
+    useEffect(() => {
+        if (post) {
+            setLikes(post.likes || []);
+            setComments(post.comments || []);
+        }
+    }, [post]);
     
     if (!post) return null;
 
@@ -39,6 +65,73 @@ const PostCard = ({ post, onDelete }) => {
         } catch (err) {
             console.error("Failed to delete post", err);
             setShowDeleteConfirm(false);
+        }
+    };
+
+    const handleLike = async () => {
+        if (!user) return;
+        const userId = user._id;
+        const index = likes.indexOf(userId);
+        let newLikes = [...likes];
+        if (index === -1) {
+            newLikes.push(userId);
+        } else {
+            newLikes.splice(index, 1);
+        }
+        setLikes(newLikes);
+
+        try {
+            const data = await postApi.likePost(post._id);
+            setLikes(data.likes || []);
+        } catch (err) {
+            console.error("Failed to like post", err);
+            setLikes(likes);
+        }
+    };
+
+    const handleCommentSubmit = async (e) => {
+        e.preventDefault();
+        if (!newCommentText.trim() || isSubmittingComment) return;
+
+        setIsSubmittingComment(true);
+        try {
+            const data = await postApi.commentPost(post._id, newCommentText);
+            setComments(data.comments || []);
+            setNewCommentText("");
+        } catch (err) {
+            console.error("Failed to submit comment", err);
+        } finally {
+            setIsSubmittingComment(false);
+        }
+    };
+
+    const handleShare = () => {
+        const shareUrl = `${window.location.origin}/feed#post-${post._id}`;
+        navigator.clipboard.writeText(shareUrl)
+            .then(() => {
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+            })
+            .catch((err) => {
+                console.error("Failed to copy share link", err);
+            });
+    };
+
+    const handleSave = () => {
+        try {
+            const saved = localStorage.getItem("savedPosts");
+            let parsed = saved ? JSON.parse(saved) : [];
+            const index = parsed.indexOf(post._id);
+            if (index === -1) {
+                parsed.push(post._id);
+                setIsSaved(true);
+            } else {
+                parsed.splice(index, 1);
+                setIsSaved(false);
+            }
+            localStorage.setItem("savedPosts", JSON.stringify(parsed));
+        } catch (e) {
+            console.error(e);
         }
     };
 
@@ -158,6 +251,131 @@ const PostCard = ({ post, onDelete }) => {
                         </div>
                     )}
                 </div>
+
+                {/* Actions Bar */}
+                <div className="post-actions-bar">
+                    <div className="post-actions-left">
+                        <button 
+                            onClick={handleLike} 
+                            className={`post-action-btn ${likes.includes(user?._id) ? 'active' : ''}`}
+                        >
+                            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+                            </svg>
+                            {likes.length > 0 && <span>{likes.length}</span>}
+                        </button>
+
+                        <button 
+                            onClick={() => setShowComments(!showComments)} 
+                            className="post-action-btn"
+                        >
+                            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                            </svg>
+                            {comments.length > 0 && <span>{comments.length}</span>}
+                        </button>
+
+                        <button 
+                            onClick={handleShare} 
+                            className="post-action-btn"
+                            style={{ position: 'relative' }}
+                        >
+                            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="18" cy="5" r="3" />
+                                <circle cx="6" cy="12" r="3" />
+                                <circle cx="18" cy="19" r="3" />
+                                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                            </svg>
+                            {copied && <span className="share-alert">Link copied!</span>}
+                        </button>
+                    </div>
+
+                    <div className="post-actions-right">
+                        <button 
+                            onClick={handleSave} 
+                            className={`post-action-btn ${isSaved ? 'active' : ''}`}
+                        >
+                            {isSaved ? (
+                                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                            ) : (
+                                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                            )}
+                            <span>{isSaved ? 'Saved' : 'Save'}</span>
+                        </button>
+                    </div>
+                </div>
+
+                {/* Comments Section */}
+                {showComments && (
+                    <div className="post-comments-section">
+                        {/* Add Comment Input */}
+                        <div className="comment-input-wrapper">
+                            <img 
+                                src={user?.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"} 
+                                alt={user?.name || "Me"} 
+                                className="comment-input-avatar"
+                            />
+                            <form onSubmit={handleCommentSubmit} className="comment-form">
+                                <input 
+                                    type="text"
+                                    value={newCommentText}
+                                    onChange={(e) => setNewCommentText(e.target.value)}
+                                    placeholder="Add a comment..."
+                                    className="comment-input"
+                                    disabled={isSubmittingComment}
+                                />
+                                <button 
+                                    type="submit" 
+                                    className="btn-comment-submit"
+                                    disabled={!newCommentText.trim() || isSubmittingComment}
+                                >
+                                    {isSubmittingComment ? "Posting..." : "Post"}
+                                </button>
+                            </form>
+                        </div>
+
+                        {/* Comments List */}
+                        {comments.length > 0 && (
+                            <div className="comments-list">
+                                {comments.map((comment) => {
+                                    const commentAuthor = comment.author || {};
+                                    return (
+                                        <div key={comment._id || comment.createdAt} className="comment-item">
+                                            <img 
+                                                src={commentAuthor.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"} 
+                                                alt={commentAuthor.name || "User"} 
+                                                className="comment-avatar"
+                                            />
+                                            <div className="comment-bubble">
+                                                <div className="comment-header">
+                                                    <div>
+                                                        {commentAuthor.username ? (
+                                                            <Link to={`/users/${commentAuthor.username}`} className="comment-author-name">
+                                                                {commentAuthor.name}
+                                                            </Link>
+                                                        ) : (
+                                                            <span className="comment-author-name">{commentAuthor.name}</span>
+                                                        )}
+                                                        {commentAuthor.additionalName && (
+                                                            <span className="comment-author-handle">({commentAuthor.additionalName})</span>
+                                                        )}
+                                                    </div>
+                                                    <span className="comment-time">{timeAgo(comment.createdAt)}</span>
+                                                </div>
+                                                <div className="comment-content">{comment.content}</div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );
