@@ -67,4 +67,27 @@ export const postApi = {
             method: "POST",
             body: JSON.stringify({ content }),
         }),
+    likeComment: (postId, commentId) =>
+        request(`/api/posts/${postId}/comments/${commentId}/like`, { method: "POST" }),
+    replyComment: (postId, commentId, content) =>
+        request(`/api/posts/${postId}/comments/${commentId}/reply`, {
+            method: "POST",
+            body: JSON.stringify({ content }),
+        }),
+    editComment: (postId, commentId, content) =>
+        request(`/api/posts/${postId}/comments/${commentId}`, {
+            method: "PUT",
+            body: JSON.stringify({ content }),
+        }),
+    deleteComment: (postId, commentId) =>
+        request(`/api/posts/${postId}/comments/${commentId}`, { method: "DELETE" }),
+    likeReply: (postId, commentId, replyId) =>
+        request(`/api/posts/${postId}/comments/${commentId}/replies/${replyId}/like`, { method: "POST" }),
+    editReply: (postId, commentId, replyId, content) =>
+        request(`/api/posts/${postId}/comments/${commentId}/replies/${replyId}`, {
+            method: "PUT",
+            body: JSON.stringify({ content }),
+        }),
+    deleteReply: (postId, commentId, replyId) =>
+        request(`/api/posts/${postId}/comments/${commentId}/replies/${replyId}`, { method: "DELETE" }),
 };
