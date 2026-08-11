@@ -15,6 +15,7 @@ import UserProfile_Page from "./pages/UserProfile.jsx";
 import OrganizationMembers_Page from "./pages/OrganizationMembers.jsx";
 import SavedPosts_Page from "./pages/SavedPosts.jsx";
 import LikedPosts_Page from "./pages/LikedPosts.jsx";
+import CommentedPosts_Page from "./pages/CommentedPosts.jsx";
 
 const App = () => {
     return (
@@ -53,6 +54,14 @@ const App = () => {
                     element={
                         <ProtectedRoute>
                             <LikedPosts_Page />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/commented"
+                    element={
+                        <ProtectedRoute>
+                            <CommentedPosts_Page />
                         </ProtectedRoute>
                     }
                 />

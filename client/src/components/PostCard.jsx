@@ -472,7 +472,7 @@ const CommentItem = ({ comment, postId, currentUserId, currentUserProfilePic, on
     );
 };
 
-const PostCard = ({ post, onDelete, onSaveToggle, onLikeToggle }) => {
+const PostCard = ({ post, onDelete, onSaveToggle, onLikeToggle, onCommentsChange }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const { user } = useAuth();
@@ -536,6 +536,12 @@ const PostCard = ({ post, onDelete, onSaveToggle, onLikeToggle }) => {
             setImage(post.image || "");
         }
     }, [post]);
+
+    useEffect(() => {
+        if (onCommentsChange) {
+            onCommentsChange(post._id, comments);
+        }
+    }, [comments]);
 
     if (!post) return null;
 
