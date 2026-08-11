@@ -1960,10 +1960,10 @@ a:hover {
 
 /* Create Post Card (Start a post) */
 .create-post-card {
-  background: #16181c;
+  background: #1d2226;
   border: 1px solid #2f3336;
   border-radius: 10px;
-  padding: 0.75rem 1rem;
+  padding: 0.9rem 1.25rem;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -1987,21 +1987,21 @@ a:hover {
 .create-post-trigger-btn {
   flex-grow: 1;
   background: transparent;
-  border: 1px solid #536471;
+  border: 1px solid #8f9397;
   border-radius: 35px;
-  padding: 0 1rem;
+  padding: 0 1.25rem;
   height: 48px;
-  color: #71767b;
+  color: #e7e9ea;
   text-align: left;
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: 0.92rem;
+  font-weight: 700;
   cursor: pointer;
   transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .create-post-trigger-btn:hover {
   background-color: rgba(231, 233, 234, 0.04);
-  border-color: #71767b;
+  border-color: #e7e9ea;
 }
 
 .create-post-options {
@@ -2013,36 +2013,36 @@ a:hover {
 .create-post-opt-btn {
   background: transparent;
   border: none;
-  color: #71767b;
-  font-size: 0.85rem;
-  font-weight: 600;
+  color: #e7e9ea;
+  font-size: 0.88rem;
+  font-weight: 700;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.65rem;
   cursor: pointer;
-  padding: 0.5rem 0.75rem;
+  padding: 0.65rem 0.75rem;
   border-radius: 4px;
   transition: background-color 0.2s ease;
 }
 
 .create-post-opt-btn:hover {
-  background-color: rgba(231, 233, 234, 0.04);
+  background-color: rgba(231, 233, 234, 0.06);
 }
 
 .create-post-opt-btn.photo svg {
-  color: #378fe9;
+  color: #70b5f9;
 }
 
 .create-post-opt-btn.video svg {
-  color: #5f9b41;
+  color: #7fc15c;
 }
 
 .create-post-opt-btn.event svg {
-  color: #c37d16;
+  color: #e7a33e;
 }
 
 .create-post-opt-btn.article svg {
-  color: #e05e5e;
+  color: #f5987e;
 }
 
 /* Sort Divider */
