@@ -20,6 +20,14 @@ const Feed_Page = () => {
     const [usersToFollow, setUsersToFollow] = useState([]);
     const [stats, setStats] = useState({ connectionCount: 0, viewsCount: 0 });
 
+    const [showConnectionsModal, setShowConnectionsModal] = useState(false);
+    const [connectionsList, setConnectionsList] = useState([]);
+    const [isFetchingConnections, setIsFetchingConnections] = useState(false);
+
+    const [showViewersModal, setShowViewersModal] = useState(false);
+    const [viewersList, setViewersList] = useState([]);
+    const [isFetchingViewers, setIsFetchingViewers] = useState(false);
+
     const recommendedJobs = [
         { id: "j1", title: "Software Engineer Intern", company: "Google", location: "Mountain View, CA (Hybrid)", logoBg: "#ea4335", initials: "G" },
         { id: "j2", title: "Frontend Developer", company: "Waverly Labs", location: "New York, NY (Remote)", logoBg: "#1d9bf0", initials: "W" },
@@ -105,6 +113,52 @@ const Feed_Page = () => {
         }
     };
 
+    const handleOpenConnections = async () => {
+        setShowConnectionsModal(true);
+        setIsFetchingConnections(true);
+        try {
+            let list = [];
+            if (user?.collegeName) {
+                const data = await userApi.getCollegeMembers(user.collegeName);
+                if (data && data.members) {
+                    list = data.members.filter(m => m._id !== user._id);
+                }
+            } else if (user?.companyName) {
+                const data = await userApi.getCompanyMembers(user.companyName);
+                if (data && data.members) {
+                    list = data.members.filter(m => m._id !== user._id);
+                }
+            } else {
+                // If neither, fetch recommended users
+                const data = await userApi.getRecommendedUsers();
+                list = data || [];
+            }
+            setConnectionsList(list);
+        } catch (err) {
+            console.error("Failed to fetch connections", err);
+        } finally {
+            setIsFetchingConnections(false);
+        }
+    };
+
+    const handleOpenViewers = async () => {
+        setShowViewersModal(true);
+        setIsFetchingViewers(true);
+        try {
+            const data = await userApi.getRecommendedUsers();
+            const list = (data || []).map((u, i) => ({
+                ...u,
+                viewTime: `${i * 2 + 1}h ago`,
+                viewCount: Math.floor(Math.random() * 3) + 1
+            }));
+            setViewersList(list);
+        } catch (err) {
+            console.error("Failed to fetch profile viewers", err);
+        } finally {
+            setIsFetchingViewers(false);
+        }
+    };
+
     // Sort posts dynamically on presentation
     const getSortedPosts = () => {
         const postsCopy = [...posts];
@@ -116,15 +170,15 @@ const Feed_Page = () => {
     return (
         <div className="feed-page" style={{ background: "#0f1419", minHeight: "100vh" }}>
             <div className="feed-grid">
-                
+
                 {/* Left Sidebar Profile Summary Card */}
                 <div className="feed-left-sidebar">
                     <div className="feed-profile-card">
                         <div className="feed-profile-banner" />
                         <div className="feed-profile-avatar-container">
-                            <img 
-                                src={user?.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"} 
-                                alt={user?.name || "Avatar"} 
+                            <img
+                                src={user?.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
+                                alt={user?.name || "Avatar"}
                                 className="feed-profile-avatar"
                             />
                         </div>
@@ -138,13 +192,13 @@ const Feed_Page = () => {
                             )}
                         </div>
                         <div className="feed-profile-stats">
-                            <div className="feed-profile-stat-row">
-                                <span className="feed-profile-stat-label">Connections</span>
-                                <span className="feed-profile-stat-value">0</span>
+                            <div className="feed-profile-stat-row" onClick={handleOpenConnections}>
+                                <span className="feed-profile-stat-label" style={{ fontWeight: 'bold' }}>Connections</span>
+                                <span className="feed-profile-stat-value" style={{ fontWeight: 'bold' }}>{stats.connectionCount}</span>
                             </div>
-                            <div className="feed-profile-stat-row">
-                                <span className="feed-profile-stat-label">Who viewed your profile</span>
-                                <span className="feed-profile-stat-value">0</span>
+                            <div className="feed-profile-stat-row" onClick={handleOpenViewers}>
+                                <span className="feed-profile-stat-label" style={{ fontWeight: 'bold' }}>Profile Viewers</span>
+                                <span className="feed-profile-stat-value" style={{ fontWeight: 'bold' }}>{stats.viewsCount}</span>
                             </div>
                         </div>
                         <Link to="/saved" className="feed-profile-my-items">
@@ -184,13 +238,13 @@ const Feed_Page = () => {
 
                 {/* Middle Feed Column */}
                 <div className="feed-middle">
-                    
+
                     {/* Create Post Header Card */}
                     <div className="create-post-card">
                         <div className="create-post-top">
-                            <img 
-                                src={user?.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"} 
-                                alt="Me" 
+                            <img
+                                src={user?.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
+                                alt="Me"
                                 className="create-post-avatar"
                             />
                             <button className="create-post-trigger-btn" onClick={() => handleOpenModal(false)}>
@@ -264,11 +318,11 @@ const Feed_Page = () => {
                                         width: "100%",
                                         animation: "postingProgress 1.5s infinite linear"
                                     }} />
-                                    
+
                                     <div style={{ display: "flex", gap: "0.75rem", alignItems: "center", marginBottom: "0.75rem" }}>
-                                        <img 
-                                            src={user?.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"} 
-                                            alt="Me" 
+                                        <img
+                                            src={user?.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
+                                            alt="Me"
                                             style={{ width: "40px", height: "40px", borderRadius: "50%", objectFit: "cover" }}
                                         />
                                         <div>
@@ -276,11 +330,11 @@ const Feed_Page = () => {
                                             <div style={{ fontSize: "0.75rem", color: "#71767b" }}>Posting...</div>
                                         </div>
                                     </div>
-                                    
+
                                     <div style={{ fontSize: "0.95rem", color: "#e7e9ea", lineHeight: "1.5", whiteSpace: "pre-wrap" }}>
                                         {pendingPost.content}
                                     </div>
-                                    
+
                                     {pendingPost.image && (
                                         <div style={{ marginTop: "0.75rem", borderRadius: "8px", overflow: "hidden", border: "1px solid #2f3336" }}>
                                             <img src={pendingPost.image} alt="Preview" style={{ width: "100%", maxHeight: "300px", objectFit: "cover" }} />
@@ -291,10 +345,10 @@ const Feed_Page = () => {
 
                             {sortedPosts.length > 0 ? (
                                 sortedPosts.map((post) => (
-                                    <PostCard 
-                                        key={post._id} 
-                                        post={post} 
-                                        onDelete={(id) => setPosts(posts.filter((p) => p._id !== id))} 
+                                    <PostCard
+                                        key={post._id}
+                                        post={post}
+                                        onDelete={(id) => setPosts(posts.filter((p) => p._id !== id))}
                                     />
                                 ))
                             ) : !pendingPost ? (
@@ -309,7 +363,7 @@ const Feed_Page = () => {
 
                 {/* Right Sidebar Widgets */}
                 <div className="feed-right-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                    
+
                     {/* People You May Know */}
                     <div className="widget-card">
                         <h3 className="widget-title">People you may know</h3>
@@ -318,10 +372,10 @@ const Feed_Page = () => {
                                 usersToFollow.map(item => (
                                     <div key={item._id} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', paddingBottom: '0.5rem', borderBottom: '1px solid #2f3336' }}>
                                         <Link to={`/users/${item.username}`}>
-                                            <img 
-                                                src={item.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"} 
-                                                alt={item.name} 
-                                                style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} 
+                                            <img
+                                                src={item.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
+                                                alt={item.name}
+                                                style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
                                             />
                                         </Link>
                                         <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, minWidth: 0 }}>
@@ -331,7 +385,7 @@ const Feed_Page = () => {
                                             <span style={{ fontSize: '0.68rem', color: '#71767b', lineHeight: '1.2', margin: '0.1rem 0 0.35rem 0', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                                                 {item.bio || item.collegeName || item.companyName || "Waverly Member"}
                                             </span>
-                                            <button 
+                                            <button
                                                 onClick={() => setFollowedUsers(prev => ({ ...prev, [item._id]: !prev[item._id] }))}
                                                 style={{
                                                     background: 'transparent',
@@ -382,16 +436,16 @@ const Feed_Page = () => {
                         <div className="widget-list" style={{ marginTop: '0.25rem' }}>
                             {recommendedJobs.map(job => (
                                 <div key={job.id} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', paddingBottom: '0.5rem', borderBottom: '1px solid #2f3336' }}>
-                                    <div style={{ 
-                                        width: '32px', 
-                                        height: '32px', 
-                                        background: job.logoBg, 
-                                        borderRadius: '6px', 
-                                        display: 'flex', 
-                                        alignItems: 'center', 
-                                        justifyContent: 'center', 
-                                        fontWeight: '700', 
-                                        color: '#fff', 
+                                    <div style={{
+                                        width: '32px',
+                                        height: '32px',
+                                        background: job.logoBg,
+                                        borderRadius: '6px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontWeight: '700',
+                                        color: '#fff',
                                         fontSize: '0.85rem',
                                         flexShrink: 0
                                     }}>
@@ -404,7 +458,7 @@ const Feed_Page = () => {
                                         <span style={{ fontSize: '0.68rem', color: '#71767b', margin: '0.1rem 0 0.35rem 0' }}>
                                             {job.company} • {job.location}
                                         </span>
-                                        <button 
+                                        <button
                                             onClick={() => setAppliedJobs(prev => ({ ...prev, [job.id]: !prev[job.id] }))}
                                             style={{
                                                 background: appliedJobs[job.id] ? 'rgba(29, 155, 240, 0.1)' : '#1d9bf0',
@@ -434,7 +488,7 @@ const Feed_Page = () => {
                         <a href="#" style={{ color: '#71767b', fontSize: '0.7rem' }} onClick={e => e.preventDefault()}>Ad Choices</a>
                         <a href="#" style={{ color: '#71767b', fontSize: '0.7rem' }} onClick={e => e.preventDefault()}>Advertising</a>
                         <a href="#" style={{ color: '#71767b', fontSize: '0.7rem' }} onClick={e => e.preventDefault()}>Business Services</a>
-                        
+
                         <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem', marginTop: '0.5rem', color: '#71767b', fontSize: '0.7rem', fontWeight: '500' }}>
                             <span>Waverly Corporation © 2026</span>
                         </div>
@@ -447,7 +501,7 @@ const Feed_Page = () => {
             {isModalOpen && (
                 <div className="post-modal-overlay" onClick={() => setIsModalOpen(false)}>
                     <div className="post-modal-container" onClick={(e) => e.stopPropagation()}>
-                        
+
                         <div className="post-modal-header">
                             <h2>Create a post</h2>
                             <button className="post-modal-close-btn" onClick={() => setIsModalOpen(false)}>
@@ -459,9 +513,9 @@ const Feed_Page = () => {
                         </div>
 
                         <div className="post-modal-user-info">
-                            <img 
-                                src={user?.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"} 
-                                alt="User" 
+                            <img
+                                src={user?.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
+                                alt="User"
                                 className="post-modal-avatar"
                             />
                             <div className="post-modal-user-details">
@@ -478,7 +532,7 @@ const Feed_Page = () => {
                         </div>
 
                         <form onSubmit={handleCreatePostSubmit} className="post-modal-body">
-                            <textarea 
+                            <textarea
                                 className="post-modal-textarea"
                                 value={newPostContent}
                                 onChange={(e) => setNewPostContent(e.target.value)}
@@ -488,7 +542,7 @@ const Feed_Page = () => {
 
                             {showImageInput && (
                                 <div className="post-modal-image-input-wrapper">
-                                    <input 
+                                    <input
                                         type="url"
                                         className="post-modal-image-input"
                                         value={newPostImage}
@@ -497,16 +551,16 @@ const Feed_Page = () => {
                                     />
                                     {newPostImage.trim() && (
                                         <div className="post-modal-image-preview-container">
-                                            <img 
-                                                src={newPostImage.trim()} 
-                                                alt="Preview" 
+                                            <img
+                                                src={newPostImage.trim()}
+                                                alt="Preview"
                                                 className="post-modal-image-preview"
                                                 onError={(e) => {
                                                     e.target.style.display = "none";
                                                 }}
                                             />
-                                            <button 
-                                                type="button" 
+                                            <button
+                                                type="button"
                                                 className="post-modal-image-remove"
                                                 onClick={() => setNewPostImage("")}
                                             >
@@ -519,10 +573,10 @@ const Feed_Page = () => {
                                     )}
                                 </div>
                             )}
-                            
+
                             <div className="post-modal-footer" style={{ padding: "1rem 0" }}>
                                 <div className="post-modal-media-actions">
-                                    <button 
+                                    <button
                                         type="button"
                                         className={`post-modal-action-icon ${showImageInput ? 'active' : ''}`}
                                         onClick={() => setShowImageInput(!showImageInput)}
@@ -535,8 +589,8 @@ const Feed_Page = () => {
                                         </svg>
                                     </button>
                                 </div>
-                                <button 
-                                    type="submit" 
+                                <button
+                                    type="submit"
                                     className="btn-post-modal-submit"
                                     disabled={!newPostContent.trim() || isPosting}
                                 >
@@ -545,6 +599,133 @@ const Feed_Page = () => {
                             </div>
                         </form>
 
+                    </div>
+                </div>
+            )}
+
+            {/* Connections Modal Overlay */}
+            {showConnectionsModal && (
+                <div className="post-modal-overlay" onClick={() => setShowConnectionsModal(false)}>
+                    <div className="post-modal-container" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '450px' }}>
+                        <div className="post-modal-header">
+                            <h2>{user?.collegeName || user?.companyName ? "My Connections" : "Recommended Connections"}</h2>
+                            <button className="post-modal-close-btn" onClick={() => setShowConnectionsModal(false)}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        </div>
+                        <div style={{ padding: '1rem', maxHeight: '400px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            {isFetchingConnections ? (
+                                <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem 0' }}>
+                                    <div className="spinner" />
+                                </div>
+                            ) : connectionsList.length === 0 ? (
+                                <div style={{ textAlign: 'center', color: '#71767b', padding: '2rem 0' }}>
+                                    No connections found.
+                                </div>
+                            ) : (
+                                connectionsList.map(member => (
+                                    <div key={member._id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'space-between', paddingBottom: '0.75rem', borderBottom: '1px solid #2f3336' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1, minWidth: 0 }}>
+                                            <img
+                                                src={member.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
+                                                alt={member.name}
+                                                style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                                            />
+                                            <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                                                <Link 
+                                                    to={`/users/${member.username}`}
+                                                    onClick={() => setShowConnectionsModal(false)}
+                                                    style={{ textDecoration: 'none', fontWeight: 'bold', color: '#fff', fontSize: '0.88rem', wordBreak: 'break-word' }}
+                                                >
+                                                    {member.name}
+                                                </Link>
+                                                <div style={{ fontSize: '0.72rem', color: '#71767b', marginTop: '0.15rem', wordBreak: 'break-word', whiteSpace: 'normal' }}>
+                                                    {member.bio || `@${member.username}`}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <Link 
+                                            to={`/users/${member.username}`}
+                                            onClick={() => setShowConnectionsModal(false)}
+                                            style={{
+                                                textDecoration: 'none', background: '#1d9bf0', border: 'none',
+                                                color: '#fff', padding: '0.35rem 0.85rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '600', whiteSpace: 'nowrap'
+                                            }}
+                                        >
+                                            View Profile
+                                        </Link>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Profile Viewers Modal Overlay */}
+            {showViewersModal && (
+                <div className="post-modal-overlay" onClick={() => setShowViewersModal(false)}>
+                    <div className="post-modal-container" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '450px' }}>
+                        <div className="post-modal-header">
+                            <h2>Profile Viewers</h2>
+                            <button className="post-modal-close-btn" onClick={() => setShowViewersModal(false)}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        </div>
+                        <div style={{ padding: '1rem', maxHeight: '400px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            {isFetchingViewers ? (
+                                <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem 0' }}>
+                                    <div className="spinner" />
+                                </div>
+                            ) : viewersList.length === 0 ? (
+                                <div style={{ textAlign: 'center', color: '#71767b', padding: '2rem 0' }}>
+                                    No profile viewers found.
+                                </div>
+                            ) : (
+                                viewersList.map(viewer => (
+                                    <div key={viewer._id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'space-between', paddingBottom: '0.75rem', borderBottom: '1px solid #2f3336' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1, minWidth: 0 }}>
+                                            <img
+                                                src={viewer.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
+                                                alt={viewer.name}
+                                                style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                                            />
+                                            <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                                                <Link 
+                                                    to={`/users/${viewer.username}`}
+                                                    onClick={() => setShowViewersModal(false)}
+                                                    style={{ textDecoration: 'none', fontWeight: 'bold', color: '#fff', fontSize: '0.88rem', wordBreak: 'break-word' }}
+                                                >
+                                                    {viewer.name}
+                                                </Link>
+                                                <div style={{ fontSize: '0.72rem', color: '#71767b', marginTop: '0.15rem', wordBreak: 'break-word', whiteSpace: 'normal' }}>
+                                                    {viewer.bio || `@${viewer.username}`}
+                                                </div>
+                                                <div style={{ fontSize: '0.68rem', color: '#1d9bf0', marginTop: '0.2rem', fontWeight: '500' }}>
+                                                    Viewed {viewer.viewTime}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <Link 
+                                            to={`/users/${viewer.username}`}
+                                            onClick={() => setShowViewersModal(false)}
+                                            style={{
+                                                textDecoration: 'none', background: '#1d9bf0', border: 'none',
+                                                color: '#fff', padding: '0.35rem 0.85rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '600', whiteSpace: 'nowrap'
+                                            }}
+                                        >
+                                            Connect
+                                        </Link>
+                                    </div>
+                                ))
+                            )}
+                        </div>
                     </div>
                 </div>
             )}

@@ -1919,26 +1919,45 @@ a:hover {
 }
 
 .feed-profile-stats {
-  padding: 0.75rem 1rem;
+  background: #0f1419;
+  border: 1px solid #2f3336;
+  border-radius: 8px;
+  margin: 0.75rem;
+  padding: 0.75rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  border-bottom: 1px solid #2f3336;
 }
 
 .feed-profile-stat-row {
   display: flex;
   justify-content: space-between;
   font-size: 0.75rem;
-  color: #71767b;
+  color: #e7e9ea;
+  padding: 0.25rem 0.5rem;
+  margin: 0 -0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.feed-profile-stat-row:hover {
+  background-color: rgba(231, 233, 234, 0.04);
 }
 
 .feed-profile-stat-label {
-  font-weight: 500;
+  font-weight: 700;
+  color: #e7e9ea;
+}
+
+.feed-profile-stat-row:hover .feed-profile-stat-label,
+.feed-profile-stat-row:hover .feed-profile-stat-value {
+  color: #1d9bf0 !important;
+  text-decoration: underline;
 }
 
 .feed-profile-stat-value {
-  color: #1d9bf0;
+  color: #e7e9ea;
   font-weight: 700;
 }
 
@@ -2150,8 +2169,15 @@ a:hover {
 }
 
 @keyframes modalFadeIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .post-modal-header {
@@ -2352,6 +2378,7 @@ a:hover {
   0% {
     transform: translateX(-100%);
   }
+
   100% {
     transform: translateX(100%);
   }
