@@ -14,6 +14,7 @@ import Search_Page from "./pages/Search.jsx";
 import UserProfile_Page from "./pages/UserProfile.jsx";
 import OrganizationMembers_Page from "./pages/OrganizationMembers.jsx";
 import SavedPosts_Page from "./pages/SavedPosts.jsx";
+import LikedPosts_Page from "./pages/LikedPosts.jsx";
 
 const App = () => {
     return (
@@ -44,6 +45,14 @@ const App = () => {
                     element={
                         <ProtectedRoute>
                             <SavedPosts_Page />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/liked"
+                    element={
+                        <ProtectedRoute>
+                            <LikedPosts_Page />
                         </ProtectedRoute>
                     }
                 />

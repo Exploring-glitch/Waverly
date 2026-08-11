@@ -472,7 +472,7 @@ const CommentItem = ({ comment, postId, currentUserId, currentUserProfilePic, on
     );
 };
 
-const PostCard = ({ post, onDelete, onSaveToggle }) => {
+const PostCard = ({ post, onDelete, onSaveToggle, onLikeToggle }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const { user } = useAuth();
@@ -566,7 +566,11 @@ const PostCard = ({ post, onDelete, onSaveToggle }) => {
 
         try {
             const data = await postApi.likePost(post._id);
-            setLikes(data.likes || []);
+            const updatedLikes = data.likes || [];
+            setLikes(updatedLikes);
+            if (onLikeToggle) {
+                onLikeToggle(post._id, updatedLikes.includes(userId));
+            }
         } catch (err) {
             console.error("Failed to like post", err);
             setLikes(likes);

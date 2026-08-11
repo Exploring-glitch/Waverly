@@ -165,6 +165,14 @@ const Feed_Page = () => {
         return postsCopy.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     };
 
+    if (isLoading) {
+        return (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh', background: '#0f1419' }}>
+                <div className="spinner" />
+            </div>
+        );
+    }
+
     const sortedPosts = getSortedPosts();
 
     return (
@@ -173,7 +181,7 @@ const Feed_Page = () => {
 
                 {/* Left Sidebar Profile Summary Card */}
                 <div className="feed-left-sidebar">
-                    <div className="feed-profile-card">
+                    <Link to="/profile" className="feed-profile-card" style={{ textDecoration: 'none', color: 'inherit' }}>
                         <div className="feed-profile-banner" />
                         <div className="feed-profile-avatar-container">
                             <img
@@ -184,7 +192,7 @@ const Feed_Page = () => {
                         </div>
                         <div className="feed-profile-info" style={{ borderBottom: 'none' }}>
                             <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.35rem', flexWrap: 'wrap', width: '100%' }}>
-                                <Link to="/profile" className="feed-profile-name">{user?.name}</Link>
+                                <span className="feed-profile-name">{user?.name}</span>
                                 {user?.additionalName && (
                                     <span style={{ fontSize: '0.85rem', color: '#71767b', fontWeight: '600' }}>
                                         ({user.additionalName})
@@ -218,7 +226,7 @@ const Feed_Page = () => {
                                 </div>
                             )}
                         </div>
-                    </div>
+                    </Link>
 
                     <div className="feed-profile-card" style={{ marginTop: '0.5rem' }}>
                         <div className="feed-profile-stats">
@@ -233,39 +241,19 @@ const Feed_Page = () => {
                         </div>
                     </div>
 
-                    <div className="feed-profile-card" style={{ marginTop: '0.5rem' }}>
-                        <Link to="/saved" className="feed-profile-my-items" style={{ padding: '0.75rem 1rem' }}>
+                    <div className="feed-profile-card" style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column' }}>
+                        <Link to="/saved" className="feed-profile-my-items" style={{ padding: '0.75rem 1rem', borderBottom: '1px solid #2f3336', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
                             </svg>
                             My Saved Posts
                         </Link>
-                    </div>
-
-                    <div className="feed-profile-card" style={{ marginTop: '0.75rem' }}>
-                        <div style={{ padding: '0.75rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                                <span style={{ fontSize: '0.75rem', color: '#71767b', fontWeight: '600' }}>Recent</span>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#e7e9ea', fontSize: '0.75rem', fontWeight: '600', cursor: 'pointer' }}>
-                                    <span style={{ color: '#71767b' }}>#</span>
-                                    <span>javascript</span>
-                                </div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#e7e9ea', fontSize: '0.75rem', fontWeight: '600', cursor: 'pointer' }}>
-                                    <span style={{ color: '#71767b' }}>#</span>
-                                    <span>reactjs</span>
-                                </div>
-                            </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', paddingTop: '0.25rem', borderTop: '1px solid #2f3336' }}>
-                                <span style={{ fontSize: '0.75rem', color: '#1d9bf0', fontWeight: '600', cursor: 'pointer' }}>Groups</span>
-                                <span style={{ fontSize: '0.75rem', color: '#1d9bf0', fontWeight: '600', cursor: 'pointer' }}>Events</span>
-                                <span style={{ fontSize: '0.75rem', color: '#1d9bf0', fontWeight: '600', cursor: 'pointer' }}>Followed Hashtags</span>
-                            </div>
-                        </div>
-                        <div style={{ borderTop: '1px solid #2f3336', padding: '0.6rem 1rem', textAlign: 'center' }}>
-                            <a href="#" style={{ color: '#71767b', fontSize: '0.75rem', fontWeight: '600', textDecoration: 'none' }} onClick={e => e.preventDefault()}>
-                                Discover more
-                            </a>
-                        </div>
+                        <Link to="/liked" className="feed-profile-my-items" style={{ padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+                            </svg>
+                            Liked Posts
+                        </Link>
                     </div>
                 </div>
 
@@ -668,7 +656,7 @@ const Feed_Page = () => {
                                                 style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
                                             />
                                             <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-                                                <Link 
+                                                <Link
                                                     to={`/users/${member.username}`}
                                                     onClick={() => setShowConnectionsModal(false)}
                                                     style={{ textDecoration: 'none', fontWeight: 'bold', color: '#fff', fontSize: '0.88rem', wordBreak: 'break-word' }}
@@ -680,7 +668,7 @@ const Feed_Page = () => {
                                                 </div>
                                             </div>
                                         </div>
-                                        <Link 
+                                        <Link
                                             to={`/users/${member.username}`}
                                             onClick={() => setShowConnectionsModal(false)}
                                             style={{
@@ -730,7 +718,7 @@ const Feed_Page = () => {
                                                 style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
                                             />
                                             <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-                                                <Link 
+                                                <Link
                                                     to={`/users/${viewer.username}`}
                                                     onClick={() => setShowViewersModal(false)}
                                                     style={{ textDecoration: 'none', fontWeight: 'bold', color: '#fff', fontSize: '0.88rem', wordBreak: 'break-word' }}
@@ -745,7 +733,7 @@ const Feed_Page = () => {
                                                 </div>
                                             </div>
                                         </div>
-                                        <Link 
+                                        <Link
                                             to={`/users/${viewer.username}`}
                                             onClick={() => setShowViewersModal(false)}
                                             style={{

@@ -1911,13 +1911,10 @@ a:hover {
   display: block;
 }
 
-.feed-profile-name:hover {
-  text-decoration: underline;
-}
-
 .feed-profile-handle {
   font-size: 0.75rem;
   color: #71767b;
+  font-weight: 700;
   margin-top: 0.15rem;
   display: block;
 }
