@@ -1814,6 +1814,33 @@ a:hover {
   width: 100%;
 }
 
+.feed-left-sidebar {
+  position: sticky;
+  top: 80px;
+  align-self: start;
+}
+
+.feed-right-sidebar {
+  position: sticky;
+  top: 80px;
+  align-self: start;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+}
+
+.feed-right-sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.feed-right-sidebar::-webkit-scrollbar-thumb {
+  background: #2f3336;
+  border-radius: 4px;
+}
+
+.feed-right-sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 @media (max-width: 992px) {
   .feed-grid {
     grid-template-columns: 200px 1fr;
