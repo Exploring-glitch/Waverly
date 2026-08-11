@@ -2347,3 +2347,12 @@ a:hover {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+@keyframes postingProgress {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}

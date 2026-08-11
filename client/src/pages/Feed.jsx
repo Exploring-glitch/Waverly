@@ -13,7 +13,7 @@ const Feed_Page = () => {
     const [newPostImage, setNewPostImage] = useState("");
     const [showImageInput, setShowImageInput] = useState(false);
     const [isPosting, setIsPosting] = useState(false);
-    const [sortBy, setSortBy] = useState("recent");
+    const [pendingPost, setPendingPost] = useState(null);
     const [followedUsers, setFollowedUsers] = useState({});
     const [appliedJobs, setAppliedJobs] = useState({});
 
@@ -62,23 +62,38 @@ const Feed_Page = () => {
         e.preventDefault();
         if (!newPostContent.trim() || isPosting) return;
 
+        const content = newPostContent.trim();
+        const image = newPostImage.trim() || "";
+
+        // Optimistically set the pending post and close the modal
+        setPendingPost({ content, image });
         setIsPosting(true);
+        setIsModalOpen(false);
+
+        // Reset inputs
+        setNewPostContent("");
+        setNewPostImage("");
+        setShowImageInput(false);
+
         try {
-            const payload = { content: newPostContent.trim() };
-            if (newPostImage.trim()) {
-                payload.image = newPostImage.trim();
+            const payload = { content };
+            if (image) {
+                payload.image = image;
             }
-            const newPost = await postApi.createPost(payload);
-            setPosts((prevPosts) => [newPost, ...prevPosts]);
-            
-            // Reset state and close modal
-            setNewPostContent("");
-            setNewPostImage("");
-            setShowImageInput(false);
-            setIsModalOpen(false);
+            const data = await postApi.createPost(payload);
+            if (data && data.post) {
+                setPosts((prevPosts) => [data.post, ...prevPosts]);
+            }
         } catch (err) {
             console.error("Failed to create post", err);
+            alert("Failed to create post. Please try again.");
+            // Restore inputs and reopen modal
+            setNewPostContent(content);
+            setNewPostImage(image);
+            if (image) setShowImageInput(true);
+            setIsModalOpen(true);
         } finally {
+            setPendingPost(null);
             setIsPosting(false);
         }
     };
@@ -92,19 +107,7 @@ const Feed_Page = () => {
 
     // Sort posts dynamically on presentation
     const getSortedPosts = () => {
-        const filteredPosts = posts.filter(post => post.author?._id !== user?._id);
-        const postsCopy = [...filteredPosts];
-        if (sortBy === "top") {
-            return postsCopy.sort((a, b) => {
-                const aLikes = a.likes ? a.likes.length : 0;
-                const bLikes = b.likes ? b.likes.length : 0;
-                if (bLikes !== aLikes) {
-                    return bLikes - aLikes;
-                }
-                return new Date(b.createdAt) - new Date(a.createdAt);
-            });
-        }
-        // default recent
+        const postsCopy = [...posts];
         return postsCopy.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     };
 
@@ -232,39 +235,74 @@ const Feed_Page = () => {
                         </div>
                     </div>
 
-                    {/* Sorting Bar */}
-                    <div className="feed-sort-divider">
-                        <div className="feed-sort-line" />
-                        <span className="feed-sort-label">Sort by:</span>
-                        <select 
-                            className="feed-sort-select" 
-                            value={sortBy} 
-                            onChange={(e) => setSortBy(e.target.value)}
-                        >
-                            <option value="recent">Recent</option>
-                            <option value="top">Top Likes</option>
-                        </select>
-                    </div>
 
                     {/* Posts Feed */}
                     {isLoading ? (
                         <div className="page-center" style={{ padding: "3rem 0" }}>
                             <div className="spinner" />
                         </div>
-                    ) : sortedPosts.length > 0 ? (
-                        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                            {sortedPosts.map((post) => (
-                                <PostCard 
-                                    key={post._id} 
-                                    post={post} 
-                                    onDelete={(id) => setPosts(posts.filter((p) => p._id !== id))} 
-                                />
-                            ))}
-                        </div>
                     ) : (
-                        <div style={{ background: "#16181c", border: "1px solid #2f3336", borderRadius: "10px", padding: "3rem 1rem", textAlign: "center", color: "#71767b" }}>
-                            <h3 style={{ margin: "0 0 0.5rem 0", color: "#e7e9ea" }}>No posts in the feed yet</h3>
-                            <p style={{ margin: 0 }}>Be the first to share something with the campus!</p>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                            {/* Render Pending Post Card */}
+                            {pendingPost && (
+                                <div className="pending-post-card" style={{
+                                    background: "#16181c",
+                                    border: "1px solid #2f3336",
+                                    borderRadius: "10px",
+                                    padding: "1rem",
+                                    opacity: 0.75,
+                                    position: "relative",
+                                    overflow: "hidden"
+                                }}>
+                                    {/* Top Progress Bar */}
+                                    <div style={{
+                                        position: "absolute",
+                                        top: 0,
+                                        left: 0,
+                                        height: "3px",
+                                        background: "#1d9bf0",
+                                        width: "100%",
+                                        animation: "postingProgress 1.5s infinite linear"
+                                    }} />
+                                    
+                                    <div style={{ display: "flex", gap: "0.75rem", alignItems: "center", marginBottom: "0.75rem" }}>
+                                        <img 
+                                            src={user?.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"} 
+                                            alt="Me" 
+                                            style={{ width: "40px", height: "40px", borderRadius: "50%", objectFit: "cover" }}
+                                        />
+                                        <div>
+                                            <div style={{ fontWeight: "700", color: "#e7e9ea", fontSize: "0.9rem" }}>{user?.name}</div>
+                                            <div style={{ fontSize: "0.75rem", color: "#71767b" }}>Posting...</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div style={{ fontSize: "0.95rem", color: "#e7e9ea", lineHeight: "1.5", whiteSpace: "pre-wrap" }}>
+                                        {pendingPost.content}
+                                    </div>
+                                    
+                                    {pendingPost.image && (
+                                        <div style={{ marginTop: "0.75rem", borderRadius: "8px", overflow: "hidden", border: "1px solid #2f3336" }}>
+                                            <img src={pendingPost.image} alt="Preview" style={{ width: "100%", maxHeight: "300px", objectFit: "cover" }} />
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {sortedPosts.length > 0 ? (
+                                sortedPosts.map((post) => (
+                                    <PostCard 
+                                        key={post._id} 
+                                        post={post} 
+                                        onDelete={(id) => setPosts(posts.filter((p) => p._id !== id))} 
+                                    />
+                                ))
+                            ) : !pendingPost ? (
+                                <div style={{ background: "#16181c", border: "1px solid #2f3336", borderRadius: "10px", padding: "3rem 1rem", textAlign: "center", color: "#71767b" }}>
+                                    <h3 style={{ margin: "0 0 0.5rem 0", color: "#e7e9ea" }}>No posts in the feed yet</h3>
+                                    <p style={{ margin: 0 }}>Be the first to share something with the campus!</p>
+                                </div>
+                            ) : null}
                         </div>
                     )}
                 </div>
