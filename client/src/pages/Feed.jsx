@@ -92,7 +92,8 @@ const Feed_Page = () => {
 
     // Sort posts dynamically on presentation
     const getSortedPosts = () => {
-        const postsCopy = [...posts];
+        const filteredPosts = posts.filter(post => post.author?._id !== user?._id);
+        const postsCopy = [...filteredPosts];
         if (sortBy === "top") {
             return postsCopy.sort((a, b) => {
                 const aLikes = a.likes ? a.likes.length : 0;

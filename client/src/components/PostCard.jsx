@@ -31,9 +31,9 @@ const renderReplyContent = (content) => {
         const restText = match[2];
         return (
             <>
-                <Link 
-                    to={`/users/${username}`} 
-                    className="reply-mention" 
+                <Link
+                    to={`/users/${username}`}
+                    className="reply-mention"
                     style={{ color: '#1d9bf0', fontWeight: '600', marginRight: '4px', textDecoration: 'none' }}
                 >
                     @{username}
@@ -95,7 +95,7 @@ const ReplyItem = ({ reply, postId, commentId, currentUserId, onCommentsUpdate, 
                         alt={replyAuthor.name || "User"}
                         className="reply-avatar"
                     />
-                    
+
                     <div className="comment-row">
                         <div className="reply-bubble">
                             <div className="reply-header">
@@ -162,17 +162,17 @@ const ReplyItem = ({ reply, postId, commentId, currentUserId, onCommentsUpdate, 
 
             {/* Deletion popover modal overlay centered on the reply item */}
             {showDeleteConfirm && (
-                <div style={{ 
+                <div style={{
                     position: 'absolute',
                     top: '50%',
                     left: '50%',
                     transform: 'translate(-50%, -50%)',
-                    background: 'rgba(22, 24, 28, 0.96)', 
-                    border: '1px solid #2f3336', 
-                    borderRadius: '12px', 
-                    padding: '0.85rem 1rem', 
-                    width: '240px', 
-                    boxShadow: '0 8px 32px rgba(0,0,0,0.65)', 
+                    background: 'rgba(22, 24, 28, 0.96)',
+                    border: '1px solid #2f3336',
+                    borderRadius: '12px',
+                    padding: '0.85rem 1rem',
+                    width: '240px',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.65)',
                     zIndex: 20,
                     textAlign: 'center',
                 }}>
@@ -180,32 +180,32 @@ const ReplyItem = ({ reply, postId, commentId, currentUserId, onCommentsUpdate, 
                         Are you sure you want to delete this reply?
                     </p>
                     <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-                        <button 
+                        <button
                             onClick={() => setShowDeleteConfirm(false)}
-                            style={{ 
-                                background: 'transparent', 
-                                border: '1px solid #71767b', 
-                                color: '#fff', 
-                                cursor: 'pointer', 
-                                padding: '0.3rem 0.7rem', 
-                                borderRadius: '20px', 
+                            style={{
+                                background: 'transparent',
+                                border: '1px solid #71767b',
+                                color: '#fff',
+                                cursor: 'pointer',
+                                padding: '0.3rem 0.7rem',
+                                borderRadius: '20px',
                                 fontSize: '0.7rem',
                                 fontWeight: '600'
                             }}
                         >
                             Cancel
                         </button>
-                        <button 
+                        <button
                             onClick={handleDelete}
-                            style={{ 
-                                background: '#f4212e', 
-                                border: 'none', 
-                                color: '#fff', 
-                                cursor: 'pointer', 
-                                padding: '0.3rem 0.7rem', 
-                                borderRadius: '20px', 
-                                fontSize: '0.7rem', 
-                                fontWeight: 'bold' 
+                            style={{
+                                background: '#f4212e',
+                                border: 'none',
+                                color: '#fff',
+                                cursor: 'pointer',
+                                padding: '0.3rem 0.7rem',
+                                borderRadius: '20px',
+                                fontSize: '0.7rem',
+                                fontWeight: 'bold'
                             }}
                         >
                             Delete
@@ -368,17 +368,17 @@ const CommentItem = ({ comment, postId, currentUserId, currentUserProfilePic, on
 
             {/* Absolute overlay delete confirmation box (rendered centered on top of the blurred content) */}
             {showDeleteConfirm && (
-                <div style={{ 
+                <div style={{
                     position: 'absolute',
                     top: '50%',
                     left: '50%',
                     transform: 'translate(-50%, -50%)',
-                    background: 'rgba(22, 24, 28, 0.96)', 
-                    border: '1px solid #2f3336', 
-                    borderRadius: '12px', 
-                    padding: '0.85rem 1rem', 
-                    width: '260px', 
-                    boxShadow: '0 8px 32px rgba(0,0,0,0.65)', 
+                    background: 'rgba(22, 24, 28, 0.96)',
+                    border: '1px solid #2f3336',
+                    borderRadius: '12px',
+                    padding: '0.85rem 1rem',
+                    width: '260px',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.65)',
                     zIndex: 20,
                     textAlign: 'center',
                 }}>
@@ -386,32 +386,32 @@ const CommentItem = ({ comment, postId, currentUserId, currentUserProfilePic, on
                         Are you sure you want to delete this comment?
                     </p>
                     <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-                        <button 
+                        <button
                             onClick={() => setShowDeleteConfirm(false)}
-                            style={{ 
-                                background: 'transparent', 
-                                border: '1px solid #71767b', 
-                                color: '#fff', 
-                                cursor: 'pointer', 
-                                padding: '0.35rem 0.8rem', 
-                                borderRadius: '20px', 
+                            style={{
+                                background: 'transparent',
+                                border: '1px solid #71767b',
+                                color: '#fff',
+                                cursor: 'pointer',
+                                padding: '0.35rem 0.8rem',
+                                borderRadius: '20px',
                                 fontSize: '0.75rem',
                                 fontWeight: '600'
                             }}
                         >
                             Cancel
                         </button>
-                        <button 
+                        <button
                             onClick={handleDelete}
-                            style={{ 
-                                background: '#f4212e', 
-                                border: 'none', 
-                                color: '#fff', 
-                                cursor: 'pointer', 
-                                padding: '0.35rem 0.8rem', 
-                                borderRadius: '20px', 
-                                fontSize: '0.75rem', 
-                                fontWeight: 'bold' 
+                            style={{
+                                background: '#f4212e',
+                                border: 'none',
+                                color: '#fff',
+                                cursor: 'pointer',
+                                padding: '0.35rem 0.8rem',
+                                borderRadius: '20px',
+                                fontSize: '0.75rem',
+                                fontWeight: 'bold'
                             }}
                         >
                             Delete
@@ -604,6 +604,9 @@ const PostCard = ({ post, onDelete, onSaveToggle }) => {
             </div>
         );
     };
+
+
+
 
     return (
         <div className="post-card" style={{ marginBottom: '1rem', maxWidth: '600px', width: '100%', position: 'relative' }}>
