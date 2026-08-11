@@ -60,6 +60,8 @@ export const searchApi = {
 export const postApi = {
     createPost: (body) =>
         request("/api/posts", { method: "POST", body: JSON.stringify(body) }),
+    updatePost: (id, body) =>
+        request(`/api/posts/${id}`, { method: "PUT", body: JSON.stringify(body) }),
     getPosts: () => request("/api/posts"),
     getMyPosts: () => request("/api/posts/me"),
     getPostsByUsername: (username) =>

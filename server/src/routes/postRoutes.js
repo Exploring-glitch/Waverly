@@ -5,6 +5,7 @@ import {
     getAllPosts,
     getMyPosts,
     getPostsByUsername,
+    updatePost,
     deletePost,
     likePost,
     commentPost,
@@ -23,6 +24,7 @@ postRouter.get("/", protect, getAllPosts);
 postRouter.get("/me", protect, getMyPosts);
 postRouter.get("/user/:username", protect, getPostsByUsername);
 postRouter.delete("/:id", protect, deletePost);
+postRouter.put("/:id", protect, updatePost);
 postRouter.post("/:id/like", protect, likePost);
 postRouter.post("/:id/comment", protect, commentPost);
 postRouter.post("/:id/comments/:commentId/like", protect, likeComment);

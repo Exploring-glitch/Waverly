@@ -478,6 +478,38 @@ const PostCard = ({ post, onDelete, onSaveToggle }) => {
     const { user } = useAuth();
 
     const [likes, setLikes] = useState(post.likes || []);
+    const [content, setContent] = useState(post.content || "");
+    const [image, setImage] = useState(post.image || "");
+    const [showMenu, setShowMenu] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editContent, setEditContent] = useState(post.content || "");
+    const [editImage, setEditImage] = useState(post.image || "");
+    const [showImageInput, setShowImageInput] = useState(!!post.image);
+    const [isSaving, setIsSaving] = useState(false);
+
+    const handleEditSubmit = async (e) => {
+        e.preventDefault();
+        if (!editContent.trim() || isSaving) return;
+
+        setIsSaving(true);
+        try {
+            const payload = {
+                content: editContent.trim(),
+                image: editImage.trim() || ""
+            };
+            const data = await postApi.updatePost(post._id, payload);
+            if (data && data.post) {
+                setContent(data.post.content || "");
+                setImage(data.post.image || "");
+                setIsEditing(false);
+            }
+        } catch (err) {
+            console.error("Failed to edit post", err);
+            alert("Failed to save changes. Please try again.");
+        } finally {
+            setIsSaving(false);
+        }
+    };
     const [comments, setComments] = useState(post.comments || []);
     const [showComments, setShowComments] = useState(false);
     const [newCommentText, setNewCommentText] = useState("");
@@ -500,6 +532,8 @@ const PostCard = ({ post, onDelete, onSaveToggle }) => {
         if (post) {
             setLikes(post.likes || []);
             setComments(post.comments || []);
+            setContent(post.content || "");
+            setImage(post.image || "");
         }
     }, [post]);
 
@@ -587,14 +621,14 @@ const PostCard = ({ post, onDelete, onSaveToggle }) => {
     };
 
     const renderContent = () => {
-        if (!post.content) return null;
+        if (!content) return null;
         const maxLength = 150;
-        if (post.content.length <= maxLength || isExpanded) {
-            return <div className="post-content" style={{ marginTop: '0.5rem', fontSize: '0.95rem', lineHeight: '1.5' }}>{post.content}</div>;
+        if (content.length <= maxLength || isExpanded) {
+            return <div className="post-content" style={{ marginTop: '0.5rem', fontSize: '0.95rem', lineHeight: '1.5' }}>{content}</div>;
         }
         return (
             <div className="post-content" style={{ marginTop: '0.5rem', fontSize: '0.95rem', lineHeight: '1.5' }}>
-                {post.content.substring(0, maxLength)}...
+                {content.substring(0, maxLength)}...
                 <button
                     onClick={() => setIsExpanded(true)}
                     style={{ background: 'transparent', border: 'none', color: '#1d9bf0', cursor: 'pointer', padding: 0, marginLeft: '5px', fontSize: 'inherit' }}
@@ -657,39 +691,105 @@ const PostCard = ({ post, onDelete, onSaveToggle }) => {
                     {isOwner && (
                         <div style={{ position: 'relative' }}>
                             <button
-                                className={`post-delete-btn ${showDeleteConfirm ? 'active' : ''}`}
-                                onClick={() => setShowDeleteConfirm(!showDeleteConfirm)}
-                                title="Delete post"
+                                className="post-menu-trigger-btn"
+                                onClick={() => setShowMenu(!showMenu)}
+                                title="Post options"
+                                style={{
+                                    background: 'transparent',
+                                    border: 'none',
+                                    color: '#71767b',
+                                    cursor: 'pointer',
+                                    padding: '0.5rem',
+                                    borderRadius: '50%',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    transition: 'background-color 0.2s, color 0.2s'
+                                }}
                             >
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <polyline points="3 6 5 6 21 6"></polyline>
-                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                    <circle cx="12" cy="12" r="1.5"></circle>
+                                    <circle cx="19" cy="12" r="1.5"></circle>
+                                    <circle cx="5" cy="12" r="1.5"></circle>
                                 </svg>
                             </button>
 
-                            {showDeleteConfirm && (
-                                <div style={{
-                                    position: 'absolute', top: '100%', right: '0', marginTop: '0.5rem',
-                                    background: '#000', border: '1px solid #1d9bf0', borderRadius: '12px',
-                                    padding: '1rem', width: '220px', boxShadow: '0 4px 12px rgba(255,255,255,0.1)',
-                                    zIndex: 10
-                                }}>
-                                    <p style={{ margin: '0 0 1rem 0', color: '#fff', fontSize: '0.95rem' }}>Are you sure you want to delete?</p>
-                                    <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                            {showMenu && (
+                                <>
+                                    <div 
+                                        onClick={() => setShowMenu(false)} 
+                                        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99, background: 'transparent' }}
+                                    />
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: '100%',
+                                        right: '0',
+                                        marginTop: '0.25rem',
+                                        background: '#16181c',
+                                        border: '1px solid #2f3336',
+                                        borderRadius: '8px',
+                                        boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+                                        zIndex: 100,
+                                        width: '160px',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        overflow: 'hidden'
+                                    }}>
                                         <button
-                                            onClick={() => setShowDeleteConfirm(false)}
-                                            style={{ background: 'transparent', border: '1px solid #71767b', color: '#fff', cursor: 'pointer', padding: '0.4rem 0.8rem', borderRadius: '20px', fontSize: '0.85rem' }}
+                                            onClick={() => {
+                                                setEditContent(content);
+                                                setEditImage(image);
+                                                setShowImageInput(!!image);
+                                                setIsEditing(true);
+                                                setShowMenu(false);
+                                            }}
+                                            style={{
+                                                background: 'transparent',
+                                                border: 'none',
+                                                color: '#e7e9ea',
+                                                padding: '0.75rem 1rem',
+                                                textAlign: 'left',
+                                                cursor: 'pointer',
+                                                fontSize: '0.85rem',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '0.5rem',
+                                                width: '100%'
+                                            }}
                                         >
-                                            Cancel
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                                <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                            </svg>
+                                            Edit post
                                         </button>
                                         <button
-                                            onClick={handleDelete}
-                                            style={{ background: '#f4212e', border: 'none', color: '#fff', cursor: 'pointer', padding: '0.4rem 0.8rem', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold' }}
+                                            onClick={() => {
+                                                setShowDeleteConfirm(true);
+                                                setShowMenu(false);
+                                            }}
+                                            style={{
+                                                background: 'transparent',
+                                                border: 'none',
+                                                color: '#f4212e',
+                                                padding: '0.75rem 1rem',
+                                                textAlign: 'left',
+                                                cursor: 'pointer',
+                                                fontSize: '0.85rem',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '0.5rem',
+                                                width: '100%'
+                                            }}
                                         >
-                                            Delete
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <polyline points="3 6 5 6 21 6"></polyline>
+                                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                            </svg>
+                                            Delete post
                                         </button>
                                     </div>
-                                </div>
+                                </>
                             )}
                         </div>
                     )}
@@ -699,12 +799,170 @@ const PostCard = ({ post, onDelete, onSaveToggle }) => {
                 <div className="post-main" style={{ width: '100%' }}>
                     {renderContent()}
 
-                    {post.image && (
+                    {image && (
                         <div className="post-image-container" style={{ marginTop: '1rem' }}>
-                            <img src={post.image} alt="Post content" className="post-image" />
+                            <img src={image} alt="Post content" className="post-image" />
                         </div>
                     )}
                 </div>
+
+                {/* Edit Post Modal Overlay */}
+                {isEditing && (
+                    <div className="post-modal-overlay" onClick={() => setIsEditing(false)}>
+                        <div className="post-modal-container" onClick={(e) => e.stopPropagation()}>
+                            
+                            <div className="post-modal-header">
+                                <h2>Edit post</h2>
+                                <button className="post-modal-close-btn" onClick={() => setIsEditing(false)}>
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <div className="post-modal-user-info">
+                                <img 
+                                    src={author?.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"} 
+                                    alt="User" 
+                                    className="post-modal-avatar"
+                                />
+                                <div className="post-modal-user-details">
+                                    <span className="post-modal-name">{author?.name}</span>
+                                    <div className="post-modal-dropdown">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <circle cx="12" cy="12" r="10"></circle>
+                                            <line x1="2" y1="12" x2="22" y2="12"></line>
+                                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                                        </svg>
+                                        <span>Anyone</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <form onSubmit={handleEditSubmit} className="post-modal-body">
+                                <textarea 
+                                    className="post-modal-textarea"
+                                    value={editContent}
+                                    onChange={(e) => setEditContent(e.target.value)}
+                                    placeholder="What do you want to talk about?"
+                                    required
+                                />
+
+                                {showImageInput && (
+                                    <div className="post-modal-image-input-wrapper">
+                                        <input 
+                                            type="url"
+                                            className="post-modal-image-input"
+                                            value={editImage}
+                                            onChange={(e) => setEditImage(e.target.value)}
+                                            placeholder="Paste image URL here..."
+                                        />
+                                        {editImage.trim() && (
+                                            <div className="post-modal-image-preview-container">
+                                                <img 
+                                                    src={editImage.trim()} 
+                                                    alt="Preview" 
+                                                    className="post-modal-image-preview"
+                                                    onError={(e) => {
+                                                        e.target.style.display = "none";
+                                                    }}
+                                                />
+                                                <button 
+                                                    type="button" 
+                                                    className="post-modal-image-remove"
+                                                    onClick={() => setEditImage("")}
+                                                >
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                                                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                                
+                                <div className="post-modal-footer" style={{ padding: "1rem 0" }}>
+                                    <div className="post-modal-media-actions">
+                                        <button 
+                                            type="button"
+                                            className={`post-modal-action-icon ${showImageInput ? 'active' : ''}`}
+                                            onClick={() => setShowImageInput(!showImageInput)}
+                                            title="Add a photo"
+                                        >
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                                <polyline points="21 15 16 10 5 21"></polyline>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <button 
+                                        type="submit" 
+                                        className="btn-post-modal-submit"
+                                        disabled={!editContent.trim() || isSaving}
+                                    >
+                                        {isSaving ? "Saving..." : "Save"}
+                                    </button>
+                                </div>
+                            </form>
+
+                        </div>
+                    </div>
+                )}
+
+                {/* Delete Confirmation Modal Overlay */}
+                {showDeleteConfirm && (
+                    <div className="post-modal-overlay" onClick={() => setShowDeleteConfirm(false)}>
+                        <div className="post-modal-container" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+                            <div className="post-modal-header">
+                                <h2>Delete post?</h2>
+                                <button className="post-modal-close-btn" onClick={() => setShowDeleteConfirm(false)}>
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div style={{ padding: '1rem', color: '#71767b', fontSize: '0.95rem' }}>
+                                Are you sure you want to permanently delete this post? This action cannot be undone.
+                            </div>
+                            <div className="post-modal-footer" style={{ padding: '1rem', justifyContent: 'flex-end', gap: '0.75rem' }}>
+                                <button
+                                    onClick={() => setShowDeleteConfirm(false)}
+                                    style={{
+                                        background: 'transparent',
+                                        border: '1px solid #71767b',
+                                        color: '#fff',
+                                        cursor: 'pointer',
+                                        padding: '0.5rem 1.25rem',
+                                        borderRadius: '20px',
+                                        fontSize: '0.85rem',
+                                        fontWeight: '600'
+                                    }}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleDelete}
+                                    style={{
+                                        background: '#f4212e',
+                                        border: 'none',
+                                        color: '#fff',
+                                        cursor: 'pointer',
+                                        padding: '0.5rem 1.25rem',
+                                        borderRadius: '20px',
+                                        fontSize: '0.85rem',
+                                        fontWeight: 'bold'
+                                    }}
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Actions Bar */}
                 <div className="post-actions-bar">

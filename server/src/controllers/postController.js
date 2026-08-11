@@ -512,3 +512,40 @@ export const deleteReply = async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 };
+
+export const updatePost = async (req, res) => {
+    try {
+        const { content, image } = req.body;
+        const post = await Post.findById(req.params.id);
+
+        if (!post) {
+            return res.status(404).json({ message: "Post not found" });
+        }
+
+        if (post.author.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ message: "You are not authorized to update this post" });
+        }
+
+        if (content !== undefined) {
+            if (!content || !content.trim()) {
+                return res.status(400).json({ message: "Content is required to update a post" });
+            }
+            post.content = content.trim();
+        }
+
+        if (image !== undefined) {
+            post.image = image.trim();
+        }
+
+        const updatedPost = await post.save();
+        const populatedPost = await updatedPost.populate("author", "name username profilePic additionalName");
+
+        res.status(200).json({
+            message: "Post updated successfully",
+            post: populatedPost
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
