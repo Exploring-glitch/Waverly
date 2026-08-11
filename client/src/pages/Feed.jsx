@@ -182,15 +182,45 @@ const Feed_Page = () => {
                                 className="feed-profile-avatar"
                             />
                         </div>
-                        <div className="feed-profile-info">
-                            <Link to="/profile" className="feed-profile-name">{user?.name}</Link>
-                            <span className="feed-profile-handle">@{user?.username}</span>
-                            {user?.additionalName && (
-                                <span className="feed-profile-handle" style={{ fontSize: "0.7rem", color: "#1d9bf0", fontStyle: "italic", marginTop: "0.1rem" }}>
-                                    {user?.additionalName}
-                                </span>
+                        <div className="feed-profile-info" style={{ borderBottom: 'none' }}>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.35rem', flexWrap: 'wrap', width: '100%' }}>
+                                <Link to="/profile" className="feed-profile-name">{user?.name}</Link>
+                                {user?.additionalName && (
+                                    <span style={{ fontSize: '0.85rem', color: '#71767b', fontWeight: '600' }}>
+                                        ({user.additionalName})
+                                    </span>
+                                )}
+                            </div>
+                            <span className="feed-profile-handle" style={{ marginTop: '0.1rem' }}>@{user?.username}</span>
+                            {user?.bio && (
+                                <p className="feed-profile-bio-clamp" style={{ margin: '0.35rem 0 0 0' }}>
+                                    {user.bio}
+                                </p>
+                            )}
+                            {user?.collegeName && (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.5rem', width: '100%' }}>
+                                    <svg viewBox="0 0 24 24" fill="#fff" width="16" height="16" aria-hidden="true" style={{ flexShrink: 0 }}>
+                                        <path d="M22 7.24L12 3.3 2 7.24l10 3.93L22 7.24zM2.5 12h1v4h-1v-4zm15.5 0h1v4h-1v-4zM12 18.25L4.5 15.3v-4.06l7.5 2.95 7.5-2.95v4.06l-7.5 2.95z" />
+                                    </svg>
+                                    <span style={{ fontSize: '0.72rem', color: '#fff', fontWeight: '500', wordBreak: 'break-word' }}>
+                                        {user.collegeName}
+                                    </span>
+                                </div>
+                            )}
+                            {user?.companyName && !user?.collegeName && (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.5rem', width: '100%' }}>
+                                    <svg viewBox="0 0 24 24" fill="#fff" width="16" height="16" aria-hidden="true" style={{ flexShrink: 0 }}>
+                                        <path d="M3 21h18v-2H3v2zM3 8v8h4V8H3zm6 0v8h4V8H9zm6 0v8h4V8h-4zM3 3v4h18V3H3z" />
+                                    </svg>
+                                    <span style={{ fontSize: '0.72rem', color: '#fff', fontWeight: '500', wordBreak: 'break-word' }}>
+                                        {user.companyName}
+                                    </span>
+                                </div>
                             )}
                         </div>
+                    </div>
+
+                    <div className="feed-profile-card" style={{ marginTop: '0.5rem' }}>
                         <div className="feed-profile-stats">
                             <div className="feed-profile-stat-row" onClick={handleOpenConnections}>
                                 <span className="feed-profile-stat-label" style={{ fontWeight: 'bold' }}>Connections</span>
@@ -201,7 +231,10 @@ const Feed_Page = () => {
                                 <span className="feed-profile-stat-value" style={{ fontWeight: 'bold' }}>{stats.viewsCount}</span>
                             </div>
                         </div>
-                        <Link to="/saved" className="feed-profile-my-items">
+                    </div>
+
+                    <div className="feed-profile-card" style={{ marginTop: '0.5rem' }}>
+                        <Link to="/saved" className="feed-profile-my-items" style={{ padding: '0.75rem 1rem' }}>
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
                             </svg>

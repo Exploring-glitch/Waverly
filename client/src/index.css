@@ -1863,7 +1863,7 @@ a:hover {
 
 /* Left Sidebar Profile Summary Card */
 .feed-profile-card {
-  background: #16181c;
+  background: #1d2226;
   border: 1px solid #2f3336;
   border-radius: 10px;
   overflow: hidden;
@@ -1879,28 +1879,32 @@ a:hover {
 }
 
 .feed-profile-avatar-container {
-  margin-top: -30px;
-  align-self: center;
-  margin-bottom: 0.75rem;
+  margin-top: -40px;
+  align-self: flex-start;
+  margin-left: 1.25rem;
+  margin-bottom: 0.5rem;
   position: relative;
 }
 
 .feed-profile-avatar {
-  width: 60px;
-  height: 60px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
-  border: 2px solid #16181c;
+  border: 2.5px solid #d8a035;
   object-fit: cover;
+  background: #1d2226;
 }
 
 .feed-profile-info {
-  text-align: center;
-  padding: 0 1rem 1rem 1rem;
-  border-bottom: 1px solid #2f3336;
+  text-align: left;
+  padding: 0 1.25rem 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .feed-profile-name {
-  font-size: 0.95rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: #e7e9ea;
   text-decoration: none;
@@ -1918,12 +1922,20 @@ a:hover {
   display: block;
 }
 
+.feed-profile-bio-clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.75rem;
+  color: #fff;
+  margin-top: 0.35rem;
+  line-height: 1.3;
+}
+
 .feed-profile-stats {
-  background: #0f1419;
-  border: 1px solid #2f3336;
-  border-radius: 8px;
-  margin: 0.75rem;
-  padding: 0.75rem;
+  padding: 0.75rem 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
