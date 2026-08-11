@@ -624,10 +624,10 @@ const PostCard = ({ post, onDelete, onSaveToggle }) => {
         if (!content) return null;
         const maxLength = 150;
         if (content.length <= maxLength || isExpanded) {
-            return <div className="post-content" style={{ marginTop: '0.5rem', fontSize: '0.95rem', lineHeight: '1.5' }}>{content}</div>;
+            return <div className="post-content" style={{ marginTop: '0', fontSize: '0.95rem', lineHeight: '1.5' }}>{content}</div>;
         }
         return (
-            <div className="post-content" style={{ marginTop: '0.5rem', fontSize: '0.95rem', lineHeight: '1.5' }}>
+            <div className="post-content" style={{ marginTop: '0', fontSize: '0.95rem', lineHeight: '1.5' }}>
                 {content.substring(0, maxLength)}...
                 <button
                     onClick={() => setIsExpanded(true)}
@@ -643,47 +643,47 @@ const PostCard = ({ post, onDelete, onSaveToggle }) => {
 
 
     return (
-        <div className="post-card" style={{ marginBottom: '1rem', maxWidth: '600px', width: '100%', position: 'relative' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                {/* Header Section (Avatar + User Info + Delete) */}
+        <div className="linkedin-post-card">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                {/* Header Section (Avatar + User Info + Options) */}
                 <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                     <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
                         <img
                             src={author.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
                             alt={author.name || "User"}
                             className="post-avatar"
-                            style={{ width: '52px', height: '52px', minWidth: '52px', borderRadius: '50%', objectFit: 'cover' }}
+                            style={{ width: '48px', height: '48px', minWidth: '48px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }}
                         />
 
                         <div className="post-header" style={{ flexDirection: 'column', flexGrow: 1 }}>
                             {/* Name and additional name */}
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                                 {author.username ? (
-                                    <Link to={`/users/${author.username}`} className="post-author-link">
-                                        <span className="post-author-name">{author.name}</span>
+                                    <Link to={`/users/${author.username}`} style={{ textDecoration: 'none', fontWeight: '700', color: '#f3f5f8', fontSize: '0.95rem' }} className="hover-underline">
+                                        {author.name}
                                     </Link>
                                 ) : (
-                                    <span className="post-author-name">{author.name}</span>
+                                    <span style={{ fontWeight: '700', color: '#f3f5f8', fontSize: '0.95rem' }}>{author.name}</span>
                                 )}
                                 {author.additionalName && (
-                                    <span className="post-additional-name-badge">({author.additionalName})</span>
+                                    <span style={{ fontSize: '0.75rem', color: '#71767b' }}>({author.additionalName})</span>
                                 )}
                             </div>
 
                             {/* Username */}
-                            <div style={{ color: '#71767b', fontSize: '0.85rem', fontWeight: '500', marginTop: '0.1rem' }}>
-                                {author.username ? (
-                                    <Link to={`/users/${author.username}`} className="post-author-link">
-                                        @{author.username}
-                                    </Link>
-                                ) : (
-                                    `@${author.username}`
-                                )}
+                            <div style={{ color: '#71767b', fontSize: '0.75rem', marginTop: '0.15rem' }}>
+                                @{author.username}
                             </div>
 
-                            {/* Created Date */}
-                            <div className="post-timestamp" style={{ marginTop: '-0.1rem', fontSize: '0.75rem', color: '#71767b', letterSpacing: '-0.03em' }}>
-                                {timeAgo(post.createdAt)}
+                            {/* Created Date + Public Visibility icon */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#71767b', fontSize: '0.72rem', marginTop: '0.15rem' }}>
+                                <span>{timeAgo(post.createdAt)}</span>
+                                <span>•</span>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#71767b' }}>
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="2" y1="12" x2="22" y2="12"></line>
+                                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                                </svg>
                             </div>
                         </div>
                     </div>
@@ -796,12 +796,12 @@ const PostCard = ({ post, onDelete, onSaveToggle }) => {
                 </div>
 
                 {/* Content Section (Below Avatar & Header) */}
-                <div className="post-main" style={{ width: '100%' }}>
+                <div className="post-main" style={{ width: '100%', marginTop: '0.1rem' }}>
                     {renderContent()}
 
                     {image && (
-                        <div className="post-image-container" style={{ marginTop: '1rem' }}>
-                            <img src={image} alt="Post content" className="post-image" />
+                        <div style={{ margin: '0.75rem -1.25rem 0 -1.25rem', borderTop: '1px solid #2f3336', borderBottom: '1px solid #2f3336', background: '#090a0f', overflow: 'hidden' }}>
+                            <img src={image} alt="Post content" style={{ width: '100%', height: 'auto', display: 'block' }} />
                         </div>
                     )}
                 </div>
@@ -963,7 +963,6 @@ const PostCard = ({ post, onDelete, onSaveToggle }) => {
                         </div>
                     </div>
                 )}
-
                 {/* Actions Bar */}
                 <div className="post-actions-bar">
                     <div className="post-actions-left">
