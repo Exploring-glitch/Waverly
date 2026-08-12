@@ -34,7 +34,7 @@ const ProfileHeader = ({ user, connectionCount = 0 }) => {
                     <p className="profile-handle">@{user.username}</p>
                 </div>
 
-                <ProfileInfo user={user} connectionCount={connectionCount} />
+                <ProfileInfo user={user} connectionCount={connectionCount} showConnections={true} />
             </div>
         </div>
     );

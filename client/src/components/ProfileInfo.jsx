@@ -1,4 +1,4 @@
-const ProfileInfo = ({ user, showEmail = true, connectionCount = 0 }) => {
+const ProfileInfo = ({ user, showEmail = true, connectionCount = 0, showConnections = false }) => {
     return (
         <>
             {/* Bio */}
@@ -10,10 +10,19 @@ const ProfileInfo = ({ user, showEmail = true, connectionCount = 0 }) => {
                 </p>
             )}
 
+            {/* Location City */}
+            {user.locationCity && (
+                <p className="profile-location" style={{ margin: '0.5rem 0 0.25rem 0', fontSize: '0.9rem', color: '#71767b' }}>
+                    {user.locationCity}
+                </p>
+            )}
+
             {/* Connections */}
-            <p className="profile-connections" style={{ margin: '0.25rem 0 1rem 0', fontSize: '0.9rem', color: '#1d9bf0', fontWeight: '600' }}>
-                <span className="hover-underline" style={{ cursor: 'pointer' }}>{connectionCount} connections</span>
-            </p>
+            {showConnections && (
+                <p className="profile-connections" style={{ margin: '0.25rem 0 1rem 0', fontSize: '0.9rem', color: '#1d9bf0', fontWeight: '600' }}>
+                    <span className="hover-underline" style={{ cursor: 'pointer' }}>{connectionCount} connections</span>
+                </p>
+            )}
 
             {/* College details and email */}
             <div className="profile-metadata">

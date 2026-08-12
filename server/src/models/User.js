@@ -59,6 +59,18 @@ const userSchema = new mongoose.Schema(
             type: Number,
             default: 0
         },
+        locationCountry: {
+            type: String,
+            default: "",
+        },
+        locationPostalCode: {
+            type: String,
+            default: "",
+        },
+        locationCity: {
+            type: String,
+            default: "",
+        },
         // Future: college verification via student ID upload
         isCollegeVerified: {
             type: Boolean,

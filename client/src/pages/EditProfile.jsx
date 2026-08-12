@@ -15,6 +15,9 @@ const Edit_Profile_Page = () => {
     const [companyName, setCompanyName] = useState("");
     const [startYear, setStartYear] = useState("");
     const [endYear, setEndYear] = useState("");
+    const [locationCountry, setLocationCountry] = useState("");
+    const [locationPostalCode, setLocationPostalCode] = useState("");
+    const [locationCity, setLocationCity] = useState("");
 
     // UI Feedback states
     const [error, setError] = useState("");
@@ -33,6 +36,9 @@ const Edit_Profile_Page = () => {
             // If year is 0 or empty, prefill empty string for nicer UX
             setStartYear(user.startYear ? String(user.startYear) : "");
             setEndYear(user.endYear ? String(user.endYear) : "");
+            setLocationCountry(user.locationCountry || "");
+            setLocationPostalCode(user.locationPostalCode || "");
+            setLocationCity(user.locationCity || "");
         }
     }, [user]);
 
@@ -62,6 +68,9 @@ const Edit_Profile_Page = () => {
                 startYear: startYear.trim() === "" ? "" : Number(startYear),
                 endYear: endYear.trim() === "" ? "" : Number(endYear),
                 profilePic,
+                locationCountry,
+                locationPostalCode,
+                locationCity,
             });
 
             setShowToast(true);
@@ -222,6 +231,46 @@ const Edit_Profile_Page = () => {
                                 placeholder="e.g. Google"
                                 value={companyName}
                                 onChange={(e) => setCompanyName(e.target.value)}
+                            />
+                        </div>
+                    </div>
+
+                    {/* SECTION 4: LOCATION */}
+                    <div className="edit-profile-section">
+                        <h3 className="edit-section-title">Location</h3>
+
+                        <div className="form-grid form-grid-2" style={{ marginBottom: "1.25rem" }}>
+                            <div className="form-group">
+                                <label htmlFor="locationCountry">Country/Region</label>
+                                <input
+                                    id="locationCountry"
+                                    type="text"
+                                    placeholder="e.g. United States"
+                                    value={locationCountry}
+                                    onChange={(e) => setLocationCountry(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="locationCity">City</label>
+                                <input
+                                    id="locationCity"
+                                    type="text"
+                                    placeholder="e.g. San Francisco"
+                                    value={locationCity}
+                                    onChange={(e) => setLocationCity(e.target.value)}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="locationPostalCode">Postal/ZIP Code</label>
+                            <input
+                                id="locationPostalCode"
+                                type="text"
+                                placeholder="e.g. 94105"
+                                value={locationPostalCode}
+                                onChange={(e) => setLocationPostalCode(e.target.value)}
                             />
                         </div>
                     </div>
