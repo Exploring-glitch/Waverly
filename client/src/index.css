@@ -49,18 +49,18 @@ a:hover {
   left: 0.85rem;
   width: 18px;
   height: 18px;
-  fill: #71767b;
+  fill: #cbd5e1;
   pointer-events: none;
 }
 
 .navbar-search-input {
   width: 100%;
   padding: 0.6rem 1rem 0.6rem 2.5rem;
-  border: 1px solid #2f3336;
+  border: 1px solid #3e4144;
   border-radius: 9999px;
-  background: #0f1419;
+  background: #202327;
   color: #e7e9ea;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
 }
 
 .navbar-search-input:focus {
@@ -78,17 +78,17 @@ a:hover {
 .navbar-actions {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 1.5rem;
 }
 
 .navbar-link {
   color: #cbd5e1;
   text-decoration: none;
-  font-weight: 600;
+  font-weight: 500;
   font-size: 1.1rem;
   padding: 0.25rem 0;
   transition: color 0.2s ease, border-color 0.2s ease;
-  border-bottom: 2px solid transparent;
+  border-bottom: 1px solid transparent;
 }
 
 .navbar-link:hover {
@@ -98,7 +98,7 @@ a:hover {
 
 .navbar-link.active {
   color: #1d9bf0;
-  border-bottom: 2px solid #1d9bf0;
+  border-bottom: 1px solid #1d9bf0;
   text-decoration: none;
 }
 
