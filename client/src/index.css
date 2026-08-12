@@ -2473,3 +2473,56 @@ a:hover {
   color: #fff;
   margin-right: 0.25rem;
 }
+
+/* Profile Layout with Right Sidebar */
+.profile-grid {
+  display: grid;
+  grid-template-columns: 1fr 290px;
+  gap: 1.5rem;
+  max-width: 1128px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+  width: 100%;
+  align-items: start;
+}
+
+.profile-main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-width: 0;
+}
+
+.profile-right-sidebar {
+  position: sticky;
+  top: 80px;
+  align-self: start;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.profile-right-sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.profile-right-sidebar::-webkit-scrollbar-thumb {
+  background: #2f3336;
+  border-radius: 4px;
+}
+
+.profile-right-sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@media (max-width: 992px) {
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .profile-right-sidebar {
+    display: none;
+  }
+}
