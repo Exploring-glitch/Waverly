@@ -12,7 +12,7 @@ const ProfileInfo = ({ user, showEmail = true, connectionCount = 0, showConnecti
 
             {/* Location City */}
             {user.locationCity && (
-                <p className="profile-location" style={{ margin: '0.5rem 0 0.25rem 0', fontSize: '0.9rem', color: '#71767b' }}>
+                <p className="profile-location" style={{ margin: '0.15rem 0 0.25rem 0', fontSize: '0.9rem', color: '#71767b' }}>
                     {user.locationCity}
                 </p>
             )}
