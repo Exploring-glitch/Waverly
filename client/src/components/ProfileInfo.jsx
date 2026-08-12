@@ -1,4 +1,4 @@
-const ProfileInfo = ({ user, showEmail = true }) => {
+const ProfileInfo = ({ user, showEmail = true, connectionCount = 0 }) => {
     return (
         <>
             {/* Bio */}
@@ -9,6 +9,11 @@ const ProfileInfo = ({ user, showEmail = true }) => {
                     No bio added yet.
                 </p>
             )}
+
+            {/* Connections */}
+            <p className="profile-connections" style={{ margin: '0.25rem 0 1rem 0', fontSize: '0.9rem', color: '#1d9bf0', fontWeight: '600' }}>
+                <span className="hover-underline" style={{ cursor: 'pointer' }}>{connectionCount} connections</span>
+            </p>
 
             {/* College details and email */}
             <div className="profile-metadata">

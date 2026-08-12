@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import ProfileInfo from "./ProfileInfo";
 
-const ProfileHeader = ({ user }) => {
+const ProfileHeader = ({ user, connectionCount = 0 }) => {
     return (
         <div className="profile-container">
             {/* Banner */}
@@ -34,7 +34,7 @@ const ProfileHeader = ({ user }) => {
                     <p className="profile-handle">@{user.username}</p>
                 </div>
 
-                <ProfileInfo user={user} />
+                <ProfileInfo user={user} connectionCount={connectionCount} />
             </div>
         </div>
     );

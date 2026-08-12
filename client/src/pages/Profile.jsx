@@ -14,6 +14,7 @@ const Profile_Page = () => {
     const [followedUsers, setFollowedUsers] = useState({});
     const [isCollegeModalOpen, setIsCollegeModalOpen] = useState(false);
     const [isRecommendModalOpen, setIsRecommendModalOpen] = useState(false);
+    const [connectionCount, setConnectionCount] = useState(0);
 
     useEffect(() => {
         const fetchRecommendations = async () => {
@@ -41,9 +42,19 @@ const Profile_Page = () => {
             }
         };
 
+        const fetchStats = async () => {
+            try {
+                const data = await userApi.getConnectionStats();
+                setConnectionCount(data?.connectionCount || 0);
+            } catch (err) {
+                console.error("Failed to fetch connection stats", err);
+            }
+        };
+
         if (user) {
             fetchRecommendations();
             fetchCollegePeers();
+            fetchStats();
         }
     }, [user]);
 
@@ -55,7 +66,7 @@ const Profile_Page = () => {
         <>
             <div className="profile-grid">
                 <div className="profile-main-content">
-                    <ProfileHeader user={user} />
+                    <ProfileHeader user={user} connectionCount={connectionCount} />
                     <ProfileAbout user={user} isOwnProfile={true} />
                     <ProfileSkills user={user} isOwnProfile={true} />
                     <ProfileActivity />
