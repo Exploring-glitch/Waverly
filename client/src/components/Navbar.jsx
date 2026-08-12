@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Button from "./Button";
 
@@ -39,16 +39,16 @@ const Navbar = () => {
             <div className="navbar-actions">
                 {user ? (
                     <>
-                        <Link to="/dashboard">Dashboard</Link>
-                        <Link to="/feed">Feed</Link>
-                        <Link to="/profile" className="navbar-user">Hi, {user.name}</Link>
+                        <NavLink to="/dashboard" className={({ isActive }) => `navbar-link ${isActive ? "active" : ""}`}>Dashboard</NavLink>
+                        <NavLink to="/feed" className={({ isActive }) => `navbar-link ${isActive ? "active" : ""}`}>Feed</NavLink>
+                        <NavLink to="/profile" className={({ isActive }) => `navbar-link ${isActive ? "active" : ""}`}>Hi, {user.name}</NavLink>
                         <Button variant="secondary" onClick={logout}>
                             Logout
                         </Button>
                     </>
                 ) : (
                     <>
-                        <Link to="/login">Login</Link>
+                        <NavLink to="/login" className={({ isActive }) => `navbar-link ${isActive ? "active" : ""}`}>Login</NavLink>
                         <Link to="/register" className="btn btn-primary btn-link">
                             Sign up
                         </Link>
@@ -60,3 +60,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
