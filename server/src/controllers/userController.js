@@ -87,7 +87,20 @@ export const getUserByUsername = async (req, res) => {
             delete userObj.email;
         }
 
-        res.status(200).json({ user: userObj, isOwnProfile });
+        let connectionCount = 0;
+        if (user.collegeName || user.companyName) {
+            connectionCount = await User.countDocuments({
+                _id: { $ne: user._id },
+                $or: [
+                    { collegeName: user.collegeName ? user.collegeName : "___none___" },
+                    { companyName: user.companyName ? user.companyName : "___none___" }
+                ]
+            });
+        } else {
+            connectionCount = await User.countDocuments({ _id: { $ne: user._id } });
+        }
+
+        res.status(200).json({ user: userObj, isOwnProfile, connectionCount });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "Internal server error" });
@@ -164,6 +177,33 @@ export const getConnectionStats = async (req, res) => {
             connectionCount,
             viewsCount
         });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+export const getUserConnections = async (req, res) => {
+    try {
+        const user = await User.findOne({ username: req.params.username });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        let connections = [];
+        if (user.collegeName || user.companyName) {
+            connections = await User.find({
+                _id: { $ne: user._id },
+                $or: [
+                    { collegeName: user.collegeName ? user.collegeName : "___none___" },
+                    { companyName: user.companyName ? user.companyName : "___none___" }
+                ]
+            }).select("-password -email");
+        } else {
+            connections = await User.find({ _id: { $ne: user._id } }).select("-password -email");
+        }
+
+        res.status(200).json(connections);
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "Internal server error" });

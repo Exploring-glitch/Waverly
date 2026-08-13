@@ -1,4 +1,27 @@
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { userApi } from "../services/api";
+
 const ProfileInfo = ({ user, showEmail = true, connectionCount = 0, showConnections = false }) => {
+    const [showConnectionsModal, setShowConnectionsModal] = useState(false);
+    const [connectionsList, setConnectionsList] = useState([]);
+    const [isFetchingConnections, setIsFetchingConnections] = useState(false);
+
+    const handleOpenConnections = async () => {
+        setShowConnectionsModal(true);
+        setIsFetchingConnections(true);
+        try {
+            if (user?.username) {
+                const data = await userApi.getUserConnections(user.username);
+                setConnectionsList(data || []);
+            }
+        } catch (err) {
+            console.error("Failed to fetch connections", err);
+        } finally {
+            setIsFetchingConnections(false);
+        }
+    };
+
     return (
         <>
             {/* Bio */}
@@ -20,8 +43,70 @@ const ProfileInfo = ({ user, showEmail = true, connectionCount = 0, showConnecti
             {/* Connections */}
             {showConnections && (
                 <p className="profile-connections" style={{ margin: '0.25rem 0 1rem 0', fontSize: '0.9rem', color: '#1d9bf0', fontWeight: '600' }}>
-                    <span className="hover-underline" style={{ cursor: 'pointer' }}>{connectionCount} connections</span>
+                    <span className="hover-underline" style={{ cursor: 'pointer' }} onClick={handleOpenConnections}>
+                        {connectionCount} connections
+                    </span>
                 </p>
+            )}
+
+            {/* Connections Modal Overlay */}
+            {showConnectionsModal && (
+                <div className="post-modal-overlay" onClick={() => setShowConnectionsModal(false)}>
+                    <div className="post-modal-container" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '450px' }}>
+                        <div className="post-modal-header">
+                            <h2>Connections</h2>
+                            <button className="post-modal-close-btn" onClick={() => setShowConnectionsModal(false)}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        </div>
+                        <div style={{ padding: '1rem', maxHeight: '400px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            {isFetchingConnections ? (
+                                <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem 0' }}>
+                                    <div className="spinner" />
+                                </div>
+                            ) : connectionsList.length === 0 ? (
+                                <div style={{ textAlign: 'center', color: '#71767b', padding: '2rem 0' }}>
+                                    No connections found.
+                                </div>
+                            ) : (
+                                connectionsList.map(member => (
+                                    <div key={member._id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'space-between', paddingBottom: '0.75rem', borderBottom: '1px solid #2f3336' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1, minWidth: 0 }}>
+                                            <img
+                                                src={member.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
+                                                alt={member.name}
+                                                style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                                            />
+                                            <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                                                <Link
+                                                    to={`/users/${member.username}`}
+                                                    onClick={() => setShowConnectionsModal(false)}
+                                                    style={{ textDecoration: 'none', fontWeight: 'bold', color: '#fff', fontSize: '0.88rem', wordBreak: 'break-word' }}
+                                                >
+                                                    {member.name}
+                                                </Link>
+                                                <div style={{ fontSize: '0.72rem', color: '#71767b', marginTop: '0.15rem', wordBreak: 'break-word', whiteSpace: 'normal' }}>
+                                                    {member.bio || `@${member.username}`}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <Link
+                                            to={`/users/${member.username}`}
+                                            onClick={() => setShowConnectionsModal(false)}
+                                            className="btn btn-secondary"
+                                            style={{ fontSize: '0.75rem', padding: '0.3rem 0.75rem', borderRadius: '20px' }}
+                                        >
+                                            View
+                                        </Link>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                </div>
             )}
 
             {/* College details and email */}

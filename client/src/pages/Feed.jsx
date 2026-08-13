@@ -105,23 +105,10 @@ const Feed_Page = () => {
         setShowConnectionsModal(true);
         setIsFetchingConnections(true);
         try {
-            let list = [];
-            if (user?.collegeName) {
-                const data = await userApi.getCollegeMembers(user.collegeName);
-                if (data && data.members) {
-                    list = data.members.filter(m => m._id !== user._id);
-                }
-            } else if (user?.companyName) {
-                const data = await userApi.getCompanyMembers(user.companyName);
-                if (data && data.members) {
-                    list = data.members.filter(m => m._id !== user._id);
-                }
-            } else {
-                // If neither, fetch recommended users
-                const data = await userApi.getRecommendedUsers();
-                list = data || [];
+            if (user?.username) {
+                const data = await userApi.getUserConnections(user.username);
+                setConnectionsList(data || []);
             }
-            setConnectionsList(list);
         } catch (err) {
             console.error("Failed to fetch connections", err);
         } finally {
@@ -557,7 +544,7 @@ const Feed_Page = () => {
                 <div className="post-modal-overlay" onClick={() => setShowConnectionsModal(false)}>
                     <div className="post-modal-container" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '450px' }}>
                         <div className="post-modal-header">
-                            <h2>{user?.collegeName || user?.companyName ? "My Connections" : "Recommended Connections"}</h2>
+                            <h2>My Connections</h2>
                             <button className="post-modal-close-btn" onClick={() => setShowConnectionsModal(false)}>
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <line x1="18" y1="6" x2="6" y2="18"></line>

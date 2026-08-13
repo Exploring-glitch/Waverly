@@ -8,6 +8,7 @@ import {
     getUsersByCompany,
     getRecommendedUsers,
     getConnectionStats,
+    getUserConnections,
 } from "../controllers/userController.js";
 const userRouter = express.Router();
 
@@ -18,6 +19,7 @@ userRouter.get("/college/:name/members", protect, getUsersByCollege)
 userRouter.get("/company/:name/members", protect, getUsersByCompany)
 userRouter.get("/recommend", protect, getRecommendedUsers)
 userRouter.get("/stats", protect, getConnectionStats)
+userRouter.get("/:username/connections", protect, getUserConnections)
 userRouter.get("/:username", protect, getUserByUsername)
 
 

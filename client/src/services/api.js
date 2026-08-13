@@ -48,6 +48,8 @@ export const userApi = {
     getRecommendedUsers: () => request("/api/users/recommend"),
 
     getConnectionStats: () => request("/api/users/stats"),
+
+    getUserConnections: (username) => request(`/api/users/${encodeURIComponent(username)}/connections`),
 };
 
 export const searchApi = {

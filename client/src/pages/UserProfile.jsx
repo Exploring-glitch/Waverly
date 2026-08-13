@@ -48,7 +48,7 @@ const UserProfile_Page = () => {
         );
     }
 
-    const { user, isOwnProfile } = profile;
+    const { user, isOwnProfile, connectionCount } = profile;
 
     return (
         <div className="page">
@@ -83,7 +83,7 @@ const UserProfile_Page = () => {
                         <p className="profile-handle">@{user.username}</p>
                     </div>
 
-                    <ProfileInfo user={user} showEmail={isOwnProfile} />
+                    <ProfileInfo user={user} showEmail={isOwnProfile} connectionCount={connectionCount} showConnections={true} />
                 </div>
             </div>
 
