@@ -41,6 +41,7 @@ const Navbar = () => {
                     <>
                         <NavLink to="/dashboard" className={({ isActive }) => `navbar-link ${isActive ? "active" : ""}`}>Dashboard</NavLink>
                         <NavLink to="/feed" className={({ isActive }) => `navbar-link ${isActive ? "active" : ""}`}>Feed</NavLink>
+                        <NavLink to="/network" className={({ isActive }) => `navbar-link ${isActive ? "active" : ""}`}>My Network</NavLink>
                         <NavLink to="/profile" className={({ isActive }) => `navbar-link ${isActive ? "active" : ""}`}>Hi, {user.name}</NavLink>
                         <Button variant="secondary" onClick={logout}>
                             Logout

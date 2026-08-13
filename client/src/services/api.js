@@ -45,11 +45,25 @@ export const userApi = {
     getCompanyMembers: (name) =>
         request(`/api/users/company/${encodeURIComponent(name)}/members`),
 
+    getCityMembers: (name) =>
+        request(`/api/users/city/${encodeURIComponent(name)}/members`),
+
     getRecommendedUsers: () => request("/api/users/recommend"),
 
     getConnectionStats: () => request("/api/users/stats"),
 
     getUserConnections: (username) => request(`/api/users/${encodeURIComponent(username)}/connections`),
+
+    sendConnectionRequest: (userId) =>
+        request(`/api/users/connect/${userId}`, { method: "POST" }),
+
+    acceptConnectionRequest: (senderId) =>
+        request(`/api/users/connect/accept/${senderId}`, { method: "POST" }),
+
+    rejectConnectionRequest: (targetUserId) =>
+        request(`/api/users/connect/reject/${targetUserId}`, { method: "POST" }),
+
+    getReceivedConnections: () => request("/api/users/connect/requests/received"),
 };
 
 export const searchApi = {

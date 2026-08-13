@@ -11,7 +11,49 @@ const Profile_Page = () => {
     const { user } = useAuth();
     const [usersToFollow, setUsersToFollow] = useState([]);
     const [collegeUsers, setCollegeUsers] = useState([]);
-    const [followedUsers, setFollowedUsers] = useState({});
+
+    const handleConnectUser = async (userId, listType) => {
+        try {
+            await userApi.sendConnectionRequest(userId);
+            const updater = prev => prev.map(item => item._id === userId ? { ...item, connectionStatus: "pending_sent" } : item);
+            if (listType === "suggestions") {
+                setUsersToFollow(updater);
+            } else if (listType === "college") {
+                setCollegeUsers(updater);
+            }
+        } catch (err) {
+            console.error("Failed to send connection request", err);
+        }
+    };
+
+    const handleCancelUserRequest = async (userId, listType) => {
+        try {
+            await userApi.rejectConnectionRequest(userId);
+            const updater = prev => prev.map(item => item._id === userId ? { ...item, connectionStatus: "none" } : item);
+            if (listType === "suggestions") {
+                setUsersToFollow(updater);
+            } else if (listType === "college") {
+                setCollegeUsers(updater);
+            }
+        } catch (err) {
+            console.error("Failed to cancel connection request", err);
+        }
+    };
+
+    const handleAcceptUserRequest = async (userId, listType) => {
+        try {
+            await userApi.acceptConnectionRequest(userId);
+            const updater = prev => prev.map(item => item._id === userId ? { ...item, connectionStatus: "accepted" } : item);
+            if (listType === "suggestions") {
+                setUsersToFollow(updater);
+            } else if (listType === "college") {
+                setCollegeUsers(updater);
+            }
+            setConnectionCount(prev => prev + 1);
+        } catch (err) {
+            console.error("Failed to accept connection request", err);
+        }
+    };
     const [isCollegeModalOpen, setIsCollegeModalOpen] = useState(false);
     const [isRecommendModalOpen, setIsRecommendModalOpen] = useState(false);
     const [connectionCount, setConnectionCount] = useState(0);
@@ -103,40 +145,75 @@ const Profile_Page = () => {
                                             <span style={{ fontSize: '0.8rem', color: '#71767b', lineHeight: '1.25', margin: '0.15rem 0 0.45rem 0', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                                                 {item.bio || item.collegeName || item.companyName || "Waverly Member"}
                                             </span>
-                                            <button
-                                                onClick={() => setFollowedUsers(prev => ({ ...prev, [item._id]: !prev[item._id] }))}
-                                                style={{
-                                                    background: 'transparent',
-                                                    border: followedUsers[item._id] ? '1px solid #71767b' : '1px solid #1d9bf0',
-                                                    color: followedUsers[item._id] ? '#71767b' : '#1d9bf0',
-                                                    borderRadius: '20px',
-                                                    padding: '0.3rem 0.9rem',
-                                                    fontSize: '0.75rem',
-                                                    fontWeight: '600',
-                                                    cursor: 'pointer',
-                                                    width: 'fit-content',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: '0.2rem'
-                                                }}
-                                            >
-                                                {followedUsers[item._id] ? (
-                                                    <>
-                                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                                                            <polyline points="20 6 9 17 4 12"></polyline>
-                                                        </svg>
-                                                        Pending
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                                                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                                                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                                                        </svg>
-                                                        Connect
-                                                    </>
-                                                )}
-                                            </button>
+                                            {item.connectionStatus === "accepted" ? (
+                                                <button
+                                                    onClick={() => handleCancelUserRequest(item._id, "college")}
+                                                    style={{
+                                                        background: 'transparent',
+                                                        border: '1px solid #71767b',
+                                                        color: '#71767b',
+                                                        borderRadius: '20px',
+                                                        padding: '0.3rem 0.9rem',
+                                                        fontSize: '0.75rem',
+                                                        fontWeight: '600',
+                                                        cursor: 'pointer',
+                                                        width: 'fit-content'
+                                                    }}
+                                                >
+                                                    Connected
+                                                </button>
+                                            ) : item.connectionStatus === "pending_sent" ? (
+                                                <button
+                                                    onClick={() => handleCancelUserRequest(item._id, "college")}
+                                                    style={{
+                                                        background: 'transparent',
+                                                        border: '1px solid #71767b',
+                                                        color: '#71767b',
+                                                        borderRadius: '20px',
+                                                        padding: '0.3rem 0.9rem',
+                                                        fontSize: '0.75rem',
+                                                        fontWeight: '600',
+                                                        cursor: 'pointer',
+                                                        width: 'fit-content'
+                                                    }}
+                                                >
+                                                    Pending
+                                                </button>
+                                            ) : item.connectionStatus === "pending_received" ? (
+                                                <button
+                                                    onClick={() => handleAcceptUserRequest(item._id, "college")}
+                                                    style={{
+                                                        background: '#1d9bf0',
+                                                        border: '1px solid #1d9bf0',
+                                                        color: '#fff',
+                                                        borderRadius: '20px',
+                                                        padding: '0.3rem 0.9rem',
+                                                        fontSize: '0.75rem',
+                                                        fontWeight: '600',
+                                                        cursor: 'pointer',
+                                                        width: 'fit-content'
+                                                    }}
+                                                >
+                                                    Accept
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    onClick={() => handleConnectUser(item._id, "college")}
+                                                    style={{
+                                                        background: 'transparent',
+                                                        border: '1px solid #1d9bf0',
+                                                        color: '#1d9bf0',
+                                                        borderRadius: '20px',
+                                                        padding: '0.3rem 0.9rem',
+                                                        fontSize: '0.75rem',
+                                                        fontWeight: '600',
+                                                        cursor: 'pointer',
+                                                        width: 'fit-content'
+                                                    }}
+                                                >
+                                                    Connect
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                 ))
@@ -180,40 +257,75 @@ const Profile_Page = () => {
                                             <span style={{ fontSize: '0.8rem', color: '#71767b', lineHeight: '1.25', margin: '0.15rem 0 0.45rem 0', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                                                 {item.bio || item.collegeName || item.companyName || "Waverly Member"}
                                             </span>
-                                            <button
-                                                onClick={() => setFollowedUsers(prev => ({ ...prev, [item._id]: !prev[item._id] }))}
-                                                style={{
-                                                    background: 'transparent',
-                                                    border: followedUsers[item._id] ? '1px solid #71767b' : '1px solid #1d9bf0',
-                                                    color: followedUsers[item._id] ? '#71767b' : '#1d9bf0',
-                                                    borderRadius: '20px',
-                                                    padding: '0.3rem 0.9rem',
-                                                    fontSize: '0.75rem',
-                                                    fontWeight: '600',
-                                                    cursor: 'pointer',
-                                                    width: 'fit-content',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: '0.2rem'
-                                                }}
-                                            >
-                                                {followedUsers[item._id] ? (
-                                                    <>
-                                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                                                            <polyline points="20 6 9 17 4 12"></polyline>
-                                                        </svg>
-                                                        Pending
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                                                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                                                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                                                        </svg>
-                                                        Connect
-                                                    </>
-                                                )}
-                                            </button>
+                                            {item.connectionStatus === "accepted" ? (
+                                                <button
+                                                    onClick={() => handleCancelUserRequest(item._id, "suggestions")}
+                                                    style={{
+                                                        background: 'transparent',
+                                                        border: '1px solid #71767b',
+                                                        color: '#71767b',
+                                                        borderRadius: '20px',
+                                                        padding: '0.3rem 0.9rem',
+                                                        fontSize: '0.75rem',
+                                                        fontWeight: '600',
+                                                        cursor: 'pointer',
+                                                        width: 'fit-content'
+                                                    }}
+                                                >
+                                                    Connected
+                                                </button>
+                                            ) : item.connectionStatus === "pending_sent" ? (
+                                                <button
+                                                    onClick={() => handleCancelUserRequest(item._id, "suggestions")}
+                                                    style={{
+                                                        background: 'transparent',
+                                                        border: '1px solid #71767b',
+                                                        color: '#71767b',
+                                                        borderRadius: '20px',
+                                                        padding: '0.3rem 0.9rem',
+                                                        fontSize: '0.75rem',
+                                                        fontWeight: '600',
+                                                        cursor: 'pointer',
+                                                        width: 'fit-content'
+                                                    }}
+                                                >
+                                                    Pending
+                                                </button>
+                                            ) : item.connectionStatus === "pending_received" ? (
+                                                <button
+                                                    onClick={() => handleAcceptUserRequest(item._id, "suggestions")}
+                                                    style={{
+                                                        background: '#1d9bf0',
+                                                        border: '1px solid #1d9bf0',
+                                                        color: '#fff',
+                                                        borderRadius: '20px',
+                                                        padding: '0.3rem 0.9rem',
+                                                        fontSize: '0.75rem',
+                                                        fontWeight: '600',
+                                                        cursor: 'pointer',
+                                                        width: 'fit-content'
+                                                    }}
+                                                >
+                                                    Accept
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    onClick={() => handleConnectUser(item._id, "suggestions")}
+                                                    style={{
+                                                        background: 'transparent',
+                                                        border: '1px solid #1d9bf0',
+                                                        color: '#1d9bf0',
+                                                        borderRadius: '20px',
+                                                        padding: '0.3rem 0.9rem',
+                                                        fontSize: '0.75rem',
+                                                        fontWeight: '600',
+                                                        cursor: 'pointer',
+                                                        width: 'fit-content'
+                                                    }}
+                                                >
+                                                    Connect
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                 ))
@@ -269,40 +381,75 @@ const Profile_Page = () => {
                                         <span style={{ fontSize: '0.8rem', color: '#71767b', lineHeight: '1.25', margin: '0.15rem 0 0.45rem 0', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                                             {item.bio || item.collegeName || item.companyName || "Waverly Member"}
                                         </span>
-                                        <button
-                                            onClick={() => setFollowedUsers(prev => ({ ...prev, [item._id]: !prev[item._id] }))}
-                                            style={{
-                                                background: 'transparent',
-                                                border: followedUsers[item._id] ? '1px solid #71767b' : '1px solid #1d9bf0',
-                                                color: followedUsers[item._id] ? '#71767b' : '#1d9bf0',
-                                                borderRadius: '20px',
-                                                padding: '0.3rem 0.9rem',
-                                                fontSize: '0.75rem',
-                                                fontWeight: '600',
-                                                cursor: 'pointer',
-                                                width: 'fit-content',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '0.2rem'
-                                            }}
-                                        >
-                                            {followedUsers[item._id] ? (
-                                                <>
-                                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                                                        <polyline points="20 6 9 17 4 12"></polyline>
-                                                    </svg>
-                                                    Pending
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                                                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                                                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                                                    </svg>
-                                                    Connect
-                                                </>
-                                            )}
-                                        </button>
+                                        {item.connectionStatus === "accepted" ? (
+                                            <button
+                                                onClick={() => handleCancelUserRequest(item._id, "college")}
+                                                style={{
+                                                    background: 'transparent',
+                                                    border: '1px solid #71767b',
+                                                    color: '#71767b',
+                                                    borderRadius: '20px',
+                                                    padding: '0.3rem 0.9rem',
+                                                    fontSize: '0.75rem',
+                                                    fontWeight: '600',
+                                                    cursor: 'pointer',
+                                                    width: 'fit-content'
+                                                }}
+                                            >
+                                                Connected
+                                            </button>
+                                        ) : item.connectionStatus === "pending_sent" ? (
+                                            <button
+                                                onClick={() => handleCancelUserRequest(item._id, "college")}
+                                                style={{
+                                                    background: 'transparent',
+                                                    border: '1px solid #71767b',
+                                                    color: '#71767b',
+                                                    borderRadius: '20px',
+                                                    padding: '0.3rem 0.9rem',
+                                                    fontSize: '0.75rem',
+                                                    fontWeight: '600',
+                                                    cursor: 'pointer',
+                                                    width: 'fit-content'
+                                                }}
+                                            >
+                                                Pending
+                                            </button>
+                                        ) : item.connectionStatus === "pending_received" ? (
+                                            <button
+                                                onClick={() => handleAcceptUserRequest(item._id, "college")}
+                                                style={{
+                                                    background: '#1d9bf0',
+                                                    border: '1px solid #1d9bf0',
+                                                    color: '#fff',
+                                                    borderRadius: '20px',
+                                                    padding: '0.3rem 0.9rem',
+                                                    fontSize: '0.75rem',
+                                                    fontWeight: '600',
+                                                    cursor: 'pointer',
+                                                    width: 'fit-content'
+                                                }}
+                                            >
+                                                Accept
+                                            </button>
+                                        ) : (
+                                            <button
+                                                onClick={() => handleConnectUser(item._id, "college")}
+                                                style={{
+                                                    background: 'transparent',
+                                                    border: '1px solid #1d9bf0',
+                                                    color: '#1d9bf0',
+                                                    borderRadius: '20px',
+                                                    padding: '0.3rem 0.9rem',
+                                                    fontSize: '0.75rem',
+                                                    fontWeight: '600',
+                                                    cursor: 'pointer',
+                                                    width: 'fit-content'
+                                                }}
+                                            >
+                                                Connect
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             ))}
@@ -344,40 +491,75 @@ const Profile_Page = () => {
                                         <span style={{ fontSize: '0.8rem', color: '#71767b', lineHeight: '1.25', margin: '0.15rem 0 0.45rem 0', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                                             {item.bio || item.collegeName || item.companyName || "Waverly Member"}
                                         </span>
-                                        <button
-                                            onClick={() => setFollowedUsers(prev => ({ ...prev, [item._id]: !prev[item._id] }))}
-                                            style={{
-                                                background: 'transparent',
-                                                border: followedUsers[item._id] ? '1px solid #71767b' : '1px solid #1d9bf0',
-                                                color: followedUsers[item._id] ? '#71767b' : '#1d9bf0',
-                                                borderRadius: '20px',
-                                                padding: '0.3rem 0.9rem',
-                                                fontSize: '0.75rem',
-                                                fontWeight: '600',
-                                                cursor: 'pointer',
-                                                width: 'fit-content',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '0.2rem'
-                                            }}
-                                        >
-                                            {followedUsers[item._id] ? (
-                                                <>
-                                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                                                        <polyline points="20 6 9 17 4 12"></polyline>
-                                                    </svg>
-                                                    Pending
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                                                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                                                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                                                    </svg>
-                                                    Connect
-                                                </>
-                                            )}
-                                        </button>
+                                        {item.connectionStatus === "accepted" ? (
+                                            <button
+                                                onClick={() => handleCancelUserRequest(item._id, "suggestions")}
+                                                style={{
+                                                    background: 'transparent',
+                                                    border: '1px solid #71767b',
+                                                    color: '#71767b',
+                                                    borderRadius: '20px',
+                                                    padding: '0.3rem 0.9rem',
+                                                    fontSize: '0.75rem',
+                                                    fontWeight: '600',
+                                                    cursor: 'pointer',
+                                                    width: 'fit-content'
+                                                }}
+                                            >
+                                                Connected
+                                            </button>
+                                        ) : item.connectionStatus === "pending_sent" ? (
+                                            <button
+                                                onClick={() => handleCancelUserRequest(item._id, "suggestions")}
+                                                style={{
+                                                    background: 'transparent',
+                                                    border: '1px solid #71767b',
+                                                    color: '#71767b',
+                                                    borderRadius: '20px',
+                                                    padding: '0.3rem 0.9rem',
+                                                    fontSize: '0.75rem',
+                                                    fontWeight: '600',
+                                                    cursor: 'pointer',
+                                                    width: 'fit-content'
+                                                }}
+                                            >
+                                                Pending
+                                            </button>
+                                        ) : item.connectionStatus === "pending_received" ? (
+                                            <button
+                                                onClick={() => handleAcceptUserRequest(item._id, "suggestions")}
+                                                style={{
+                                                    background: '#1d9bf0',
+                                                    border: '1px solid #1d9bf0',
+                                                    color: '#fff',
+                                                    borderRadius: '20px',
+                                                    padding: '0.3rem 0.9rem',
+                                                    fontSize: '0.75rem',
+                                                    fontWeight: '600',
+                                                    cursor: 'pointer',
+                                                    width: 'fit-content'
+                                                }}
+                                            >
+                                                Accept
+                                            </button>
+                                        ) : (
+                                            <button
+                                                onClick={() => handleConnectUser(item._id, "suggestions")}
+                                                style={{
+                                                    background: 'transparent',
+                                                    border: '1px solid #1d9bf0',
+                                                    color: '#1d9bf0',
+                                                    borderRadius: '20px',
+                                                    padding: '0.3rem 0.9rem',
+                                                    fontSize: '0.75rem',
+                                                    fontWeight: '600',
+                                                    cursor: 'pointer',
+                                                    width: 'fit-content'
+                                                }}
+                                            >
+                                                Connect
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             ))}

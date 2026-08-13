@@ -9,6 +9,7 @@ import Dashboard_Page from "./pages/Dashboard.jsx";
 import Profile_Page from "./pages/Profile.jsx";
 import Edit_Profile_Page from "./pages/EditProfile.jsx";
 import Feed_Page from "./pages/Feed.jsx";
+import MyNetwork_Page from "./pages/MyNetwork.jsx";
 import ProfilePosts_Page from "./pages/ProfilePosts.jsx";
 import Search_Page from "./pages/Search.jsx";
 import UserProfile_Page from "./pages/UserProfile.jsx";
@@ -38,6 +39,14 @@ const App = () => {
                     element={
                         <ProtectedRoute>
                             <Feed_Page />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/network"
+                    element={
+                        <ProtectedRoute>
+                            <MyNetwork_Page />
                         </ProtectedRoute>
                     }
                 />

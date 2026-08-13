@@ -48,7 +48,59 @@ const UserProfile_Page = () => {
         );
     }
 
-    const { user, isOwnProfile, connectionCount } = profile;
+    const { user, isOwnProfile, connectionCount, connectionStatus } = profile;
+
+    const handleConnect = async () => {
+        try {
+            await userApi.sendConnectionRequest(user._id);
+            setProfile(prev => ({
+                ...prev,
+                connectionStatus: "pending_sent"
+            }));
+        } catch (err) {
+            console.error("Failed to connect", err);
+        }
+    };
+
+    const handleAcceptRequest = async () => {
+        try {
+            await userApi.acceptConnectionRequest(user._id);
+            setProfile(prev => ({
+                ...prev,
+                connectionStatus: "accepted",
+                connectionCount: prev.connectionCount + 1
+            }));
+        } catch (err) {
+            console.error("Failed to accept request", err);
+        }
+    };
+
+    const handleIgnoreRequest = async () => {
+        try {
+            await userApi.rejectConnectionRequest(user._id);
+            setProfile(prev => ({
+                ...prev,
+                connectionStatus: "none"
+            }));
+        } catch (err) {
+            console.error("Failed to ignore request", err);
+        }
+    };
+
+    const handleCancelRequest = async () => {
+        try {
+            if (window.confirm(connectionStatus === "accepted" ? "Are you sure you want to disconnect?" : "Cancel connection request?")) {
+                await userApi.rejectConnectionRequest(user._id);
+                setProfile(prev => ({
+                    ...prev,
+                    connectionStatus: "none",
+                    connectionCount: connectionStatus === "accepted" ? prev.connectionCount - 1 : prev.connectionCount
+                }));
+            }
+        } catch (err) {
+            console.error("Failed to cancel request / disconnect", err);
+        }
+    };
 
     return (
         <div className="page">
@@ -68,6 +120,35 @@ const UserProfile_Page = () => {
                             <Link to="/edit-profile" className="btn btn-secondary">
                                 Edit Profile
                             </Link>
+                        )}
+                        {!isOwnProfile && (
+                            <div style={{ display: "flex", gap: "0.5rem", alignSelf: "center" }}>
+                                {connectionStatus === "none" && (
+                                    <button onClick={handleConnect} className="btn btn-primary" style={{ borderRadius: "20px", padding: "0.4rem 1.25rem", fontSize: "0.85rem" }}>
+                                        Connect
+                                    </button>
+                                )}
+                                {connectionStatus === "pending_sent" && (
+                                    <button onClick={handleCancelRequest} className="btn btn-secondary" style={{ borderRadius: "20px", padding: "0.4rem 1.25rem", fontSize: "0.85rem" }}>
+                                        Pending
+                                    </button>
+                                )}
+                                {connectionStatus === "pending_received" && (
+                                    <div style={{ display: "flex", gap: "0.5rem" }}>
+                                        <button onClick={handleIgnoreRequest} className="btn btn-secondary" style={{ borderRadius: "20px", padding: "0.4rem 1.25rem", fontSize: "0.85rem" }}>
+                                            Ignore
+                                        </button>
+                                        <button onClick={handleAcceptRequest} className="btn btn-primary" style={{ borderRadius: "20px", padding: "0.4rem 1.25rem", fontSize: "0.85rem" }}>
+                                            Accept
+                                        </button>
+                                    </div>
+                                )}
+                                {connectionStatus === "accepted" && (
+                                    <button onClick={handleCancelRequest} className="btn btn-secondary" style={{ borderRadius: "20px", padding: "0.4rem 1.25rem", fontSize: "0.85rem" }}>
+                                        Connected
+                                    </button>
+                                )}
+                            </div>
                         )}
                     </div>
 
