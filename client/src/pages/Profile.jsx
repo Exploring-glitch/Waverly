@@ -62,7 +62,8 @@ const Profile_Page = () => {
         const fetchRecommendations = async () => {
             try {
                 const users = await userApi.getRecommendedUsers();
-                setUsersToFollow(users || []);
+                const filtered = (users || []).filter(u => u._id !== user?._id && u.username !== user?.username);
+                setUsersToFollow(filtered);
             } catch (err) {
                 console.error("Failed to fetch recommended users", err);
             }
@@ -73,7 +74,7 @@ const Profile_Page = () => {
                 try {
                     const data = await userApi.getCollegeMembers(user.collegeName);
                     if (data && data.members) {
-                        const filtered = data.members.filter(m => m._id !== user._id);
+                        const filtered = data.members.filter(m => m._id !== user?._id && m.username !== user?.username);
                         // Sort alphabetically by name
                         filtered.sort((a, b) => a.name.localeCompare(b.name));
                         setCollegeUsers(filtered);
@@ -136,11 +137,15 @@ const Profile_Page = () => {
                                                 src={item.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
                                                 alt={item.name}
                                                 style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                                                onError={(e) => {
+                                                    e.currentTarget.src = "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
+                                                }}
                                             />
                                         </Link>
                                         <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, minWidth: 0 }}>
                                             <Link to={`/users/${item.username}`} style={{ fontSize: '0.95rem', fontWeight: '700', color: '#e7e9ea', textDecoration: 'none' }} className="hover-underline">
                                                 {item.name}
+                                                <span style={{ fontSize: '0.8rem', color: '#71767b', fontWeight: '400', marginLeft: '0.35rem' }}>@{item.username}</span>
                                             </Link>
                                             <span style={{ fontSize: '0.8rem', color: '#71767b', lineHeight: '1.25', margin: '0.15rem 0 0.45rem 0', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                                                 {item.bio || item.collegeName || item.companyName || "Waverly Member"}
@@ -248,11 +253,15 @@ const Profile_Page = () => {
                                                 src={item.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
                                                 alt={item.name}
                                                 style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                                                onError={(e) => {
+                                                    e.currentTarget.src = "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
+                                                }}
                                             />
                                         </Link>
                                         <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, minWidth: 0 }}>
                                             <Link to={`/users/${item.username}`} style={{ fontSize: '0.95rem', fontWeight: '700', color: '#e7e9ea', textDecoration: 'none' }} className="hover-underline">
                                                 {item.name}
+                                                <span style={{ fontSize: '0.8rem', color: '#71767b', fontWeight: '400', marginLeft: '0.35rem' }}>@{item.username}</span>
                                             </Link>
                                             <span style={{ fontSize: '0.8rem', color: '#71767b', lineHeight: '1.25', margin: '0.15rem 0 0.45rem 0', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                                                 {item.bio || item.collegeName || item.companyName || "Waverly Member"}
@@ -372,11 +381,15 @@ const Profile_Page = () => {
                                             src={item.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
                                             alt={item.name}
                                             style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                                            onError={(e) => {
+                                                e.currentTarget.src = "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
+                                            }}
                                         />
                                     </Link>
                                     <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, minWidth: 0 }}>
                                         <Link to={`/users/${item.username}`} onClick={() => setIsCollegeModalOpen(false)} style={{ fontSize: '0.95rem', fontWeight: '700', color: '#e7e9ea', textDecoration: 'none' }} className="hover-underline">
                                             {item.name}
+                                            <span style={{ fontSize: '0.8rem', color: '#71767b', fontWeight: '400', marginLeft: '0.35rem' }}>@{item.username}</span>
                                         </Link>
                                         <span style={{ fontSize: '0.8rem', color: '#71767b', lineHeight: '1.25', margin: '0.15rem 0 0.45rem 0', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                                             {item.bio || item.collegeName || item.companyName || "Waverly Member"}
@@ -482,11 +495,15 @@ const Profile_Page = () => {
                                             src={item.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
                                             alt={item.name}
                                             style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                                            onError={(e) => {
+                                                e.currentTarget.src = "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
+                                            }}
                                         />
                                     </Link>
                                     <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, minWidth: 0 }}>
                                         <Link to={`/users/${item.username}`} onClick={() => setIsRecommendModalOpen(false)} style={{ fontSize: '0.95rem', fontWeight: '700', color: '#e7e9ea', textDecoration: 'none' }} className="hover-underline">
                                             {item.name}
+                                            <span style={{ fontSize: '0.8rem', color: '#71767b', fontWeight: '400', marginLeft: '0.35rem' }}>@{item.username}</span>
                                         </Link>
                                         <span style={{ fontSize: '0.8rem', color: '#71767b', lineHeight: '1.25', margin: '0.15rem 0 0.45rem 0', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                                             {item.bio || item.collegeName || item.companyName || "Waverly Member"}

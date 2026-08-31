@@ -33,10 +33,10 @@ const ProfileInfo = ({ user, showEmail = true, connectionCount = 0, showConnecti
                 </p>
             )}
 
-            {/* Location City */}
-            {user.locationCity && (
+            {/* Location */}
+            {(user.locationCity || user.locationCountry) && (
                 <p className="profile-location" style={{ margin: '0.15rem 0 0.25rem 0', fontSize: '0.9rem', color: '#71767b' }}>
-                    {user.locationCity}
+                    {[user.locationCity, user.locationCountry].filter(Boolean).join(", ")}
                 </p>
             )}
 
@@ -127,12 +127,18 @@ const ProfileInfo = ({ user, showEmail = true, connectionCount = 0, showConnecti
                         <span>{user.companyName}</span>
                     </div>
                 )}
-                {(user.startYear || user.endYear) ? (
+                {((Number(user.startYear) > 0) || (Number(user.endYear) > 0)) ? (
                     <div className="metadata-item">
                         <svg viewBox="0 0 24 24" aria-hidden="true">
                             <path d="M19 4h-2V3c0-.55-.45-1-1-1s-1 .45-1 1v1H9V3c0-.55-.45-1-1-1s-1 .45-1 1v1H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V8h14v12z" />
                         </svg>
-                        <span>{user.startYear} - {user.endYear}</span>
+                        <span>
+                            {Number(user.startYear) > 0 && Number(user.endYear) > 0
+                                ? `${user.startYear} - ${user.endYear}`
+                                : Number(user.startYear) > 0
+                                ? `${user.startYear}`
+                                : `${user.endYear}`}
+                        </span>
                     </div>
                 ) : null}
                 {showEmail && (

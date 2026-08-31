@@ -12,9 +12,12 @@ const ProfileHeader = ({ user, connectionCount = 0 }) => {
                     {/* Avatar */}
                     <div className="profile-avatar-wrapper">
                         <img
-                            src={user.profilePic}
+                            src={user.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
                             alt={user.name}
                             className="profile-avatar"
+                            onError={(e) => {
+                                e.currentTarget.src = "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
+                            }}
                         />
                     </div>
                     {/* Edit Button Link */}
