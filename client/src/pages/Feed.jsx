@@ -337,9 +337,14 @@ const Feed_Page = () => {
                                         {pendingPost.content}
                                     </div>
 
-                                    {pendingPost.image && (
+                                    {pendingPost.image && typeof pendingPost.image === 'string' && pendingPost.image.trim() !== '' && (
                                         <div style={{ marginTop: "0.75rem", borderRadius: "8px", overflow: "hidden", border: "1px solid #2f3336" }}>
-                                            <img src={pendingPost.image} alt="Preview" style={{ width: "100%", maxHeight: "300px", objectFit: "cover" }} />
+                                            <img 
+                                                src={pendingPost.image.trim()} 
+                                                alt="" 
+                                                onError={(e) => { e.currentTarget.parentElement.style.display = 'none'; }}
+                                                style={{ width: "100%", maxHeight: "300px", objectFit: "cover" }} 
+                                            />
                                         </div>
                                     )}
                                 </div>

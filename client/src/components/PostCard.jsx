@@ -480,6 +480,7 @@ const PostCard = ({ post, onDelete, onSaveToggle, onLikeToggle, onCommentsChange
     const [likes, setLikes] = useState(post.likes || []);
     const [content, setContent] = useState(post.content || "");
     const [image, setImage] = useState(post.image || "");
+    const [imageError, setImageError] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editContent, setEditContent] = useState(post.content || "");
@@ -534,6 +535,7 @@ const PostCard = ({ post, onDelete, onSaveToggle, onLikeToggle, onCommentsChange
             setComments(post.comments || []);
             setContent(post.content || "");
             setImage(post.image || "");
+            setImageError(false);
         }
     }, [post]);
 
@@ -809,9 +811,14 @@ const PostCard = ({ post, onDelete, onSaveToggle, onLikeToggle, onCommentsChange
                 <div className="post-main" style={{ width: '100%', marginTop: '0.1rem' }}>
                     {renderContent()}
 
-                    {image && (
+                    {image && typeof image === 'string' && image.trim() !== '' && !imageError && (
                         <div style={{ margin: '0.75rem -1.25rem 0 -1.25rem', borderTop: '1px solid #2f3336', borderBottom: '1px solid #2f3336', background: '#090a0f', overflow: 'hidden' }}>
-                            <img src={image} alt="Post content" style={{ width: '100%', height: 'auto', display: 'block' }} />
+                            <img 
+                                src={image.trim()} 
+                                alt="" 
+                                onError={() => setImageError(true)} 
+                                style={{ width: '100%', height: 'auto', display: 'block' }} 
+                            />
                         </div>
                     )}
                 </div>
