@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { postApi, userApi } from "../services/api";
 import PostCard from "../components/PostCard";
+import Button from "../components/Button";
 
 const Feed_Page = () => {
     const { user } = useAuth();
@@ -26,9 +27,16 @@ const Feed_Page = () => {
     const [isFetchingViewers, setIsFetchingViewers] = useState(false);
 
     const recommendedJobs = [
-        { id: "j1", title: "Software Engineer Intern", company: "Google", location: "Mountain View, CA (Hybrid)", logoBg: "#ea4335", initials: "G" },
-        { id: "j2", title: "Frontend Developer", company: "Waverly Labs", location: "New York, NY (Remote)", logoBg: "#1d9bf0", initials: "W" },
-        { id: "j3", title: "UI/UX Designer", company: "Figma", location: "San Francisco, CA (Hybrid)", logoBg: "#a259ff", initials: "F" }
+        { id: "j1", title: "Software Engineer Intern", company: "Google", location: "Mountain View, CA", type: "Hybrid", logoBg: "#ea4335", initials: "G" },
+        { id: "j2", title: "Frontend Developer", company: "Waverly Labs", location: "New York, NY", type: "Remote", logoBg: "#0284c7", initials: "W" },
+        { id: "j3", title: "UI/UX Designer", company: "Figma", location: "San Francisco, CA", type: "Hybrid", logoBg: "#a855f7", initials: "F" }
+    ];
+
+    const trendingTopics = [
+        { tag: "CampusPlacements", count: "1.4k posts" },
+        { tag: "WebDevelopment", count: "892 posts" },
+        { tag: "OpenSource", count: "640 posts" },
+        { tag: "AIandRobotics", count: "2.1k posts" },
     ];
 
     useEffect(() => {
@@ -120,13 +128,8 @@ const Feed_Page = () => {
         setShowViewersModal(true);
         setIsFetchingViewers(true);
         try {
-            const data = await userApi.getRecommendedUsers();
-            const list = (data || []).map((u, i) => ({
-                ...u,
-                viewTime: `${i * 2 + 1}h ago`,
-                viewCount: Math.floor(Math.random() * 3) + 1
-            }));
-            setViewersList(list);
+            const data = await userApi.getProfileViewers();
+            setViewersList(data?.viewers || []);
         } catch (err) {
             console.error("Failed to fetch profile viewers", err);
         } finally {
@@ -134,7 +137,23 @@ const Feed_Page = () => {
         }
     };
 
-    // Sort posts dynamically on presentation
+    const handleApplyJob = (jobId) => {
+        setAppliedJobs(prev => ({
+            ...prev,
+            [jobId]: !prev[jobId]
+        }));
+    };
+
+    const handlePostDelete = (deletedPostId) => {
+        setPosts((prevPosts) => prevPosts.filter((p) => p._id !== deletedPostId));
+    };
+
+    const handlePostUpdate = (updatedPost) => {
+        setPosts((prevPosts) =>
+            prevPosts.map((p) => (p._id === updatedPost._id ? updatedPost : p))
+        );
+    };
+
     const getSortedPosts = () => {
         const postsCopy = [...posts];
         return postsCopy.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -142,7 +161,7 @@ const Feed_Page = () => {
 
     if (isLoading) {
         return (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh', background: '#0f1419' }}>
+            <div className="page-center" style={{ minHeight: "80vh" }}>
                 <div className="spinner" />
             </div>
         );
@@ -151,452 +170,477 @@ const Feed_Page = () => {
     const sortedPosts = getSortedPosts();
 
     return (
-        <div className="feed-page" style={{ background: "#0f1419", minHeight: "100vh" }}>
-            <div className="feed-grid">
-
-                {/* Left Sidebar Profile Summary Card */}
-                <div className="feed-left-sidebar">
-                    <Link to="/profile" className="feed-profile-card" style={{ textDecoration: 'none', color: 'inherit' }}>
-                        <div className="feed-profile-banner" />
-                        <div className="feed-profile-avatar-container">
-                            <img
-                                src={user?.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
-                                alt={user?.name || "Avatar"}
-                                className="feed-profile-avatar"
-                            />
+        <div className="feed-page-wrapper">
+            <div className="feed-grid-layout">
+                {/* ============================================================
+                   LEFT COLUMN: User Profile Card & Navigation Shortcuts
+                   ============================================================ */}
+                <aside className="feed-left-col">
+                    {/* User Profile Mini Hero Card */}
+                    <div className="feed-profile-mini-card">
+                        <div className="feed-mini-banner">
+                            {user?.coverPic ? (
+                                <img src={user.coverPic} alt="" className="feed-mini-banner-img" />
+                            ) : (
+                                <div className="feed-mini-banner-glow" />
+                            )}
                         </div>
-                        <div className="feed-profile-info" style={{ borderBottom: 'none' }}>
-                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.35rem', flexWrap: 'wrap', width: '100%' }}>
-                                <span className="feed-profile-name">{user?.name}</span>
-                                {user?.additionalName && (
-                                    <span style={{ fontSize: '0.85rem', color: '#71767b', fontWeight: '600' }}>
-                                        ({user.additionalName})
-                                    </span>
-                                )}
-                            </div>
-                            <span className="feed-profile-handle" style={{ marginTop: '0.1rem' }}>@{user?.username}</span>
+
+                        <div className="feed-mini-avatar-wrap">
+                            <Link to="/profile">
+                                <img
+                                    src={user?.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
+                                    alt={user?.name || "Avatar"}
+                                    className="feed-mini-avatar"
+                                />
+                            </Link>
+                        </div>
+
+                        <div className="feed-mini-body">
+                            <Link to="/profile" className="feed-mini-name">
+                                <span>{user?.name}</span>
+                                <span className="profile-verified-badge" style={{ padding: "2px" }} title="Verified">
+                                    <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor">
+                                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
+                                    </svg>
+                                </span>
+                            </Link>
+                            <span className="feed-mini-handle">@{user?.username}</span>
+
                             {user?.bio && (
-                                <p className="feed-profile-bio-clamp" style={{ margin: '0.35rem 0 0 0' }}>
-                                    {user.bio}
-                                </p>
+                                <p className="feed-mini-bio">{user.bio}</p>
                             )}
+
                             {user?.collegeName && (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.5rem', width: '100%' }}>
-                                    <svg viewBox="0 0 24 24" fill="#fff" width="16" height="16" aria-hidden="true" style={{ flexShrink: 0 }}>
-                                        <path d="M22 7.24L12 3.3 2 7.24l10 3.93L22 7.24zM2.5 12h1v4h-1v-4zm15.5 0h1v4h-1v-4zM12 18.25L4.5 15.3v-4.06l7.5 2.95 7.5-2.95v4.06l-7.5 2.95z" />
-                                    </svg>
-                                    <span style={{ fontSize: '0.72rem', color: '#fff', fontWeight: '500', wordBreak: 'break-word' }}>
-                                        {user.collegeName}
-                                    </span>
-                                </div>
-                            )}
-                            {user?.companyName && !user?.collegeName && (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.5rem', width: '100%' }}>
-                                    <svg viewBox="0 0 24 24" fill="#fff" width="16" height="16" aria-hidden="true" style={{ flexShrink: 0 }}>
-                                        <path d="M3 21h18v-2H3v2zM3 8v8h4V8H3zm6 0v8h4V8H9zm6 0v8h4V8h-4zM3 3v4h18V3H3z" />
-                                    </svg>
-                                    <span style={{ fontSize: '0.72rem', color: '#fff', fontWeight: '500', wordBreak: 'break-word' }}>
-                                        {user.companyName}
-                                    </span>
+                                <div className="feed-mini-badge-row">
+                                    <span className="feed-mini-tag">🎓 {user.collegeName}</span>
                                 </div>
                             )}
                         </div>
-                    </Link>
 
-                    <div className="feed-profile-card" style={{ marginTop: '0.5rem' }}>
-                        <div className="feed-profile-stats">
-                            <div className="feed-profile-stat-row" onClick={handleOpenConnections}>
-                                <span className="feed-profile-stat-label" style={{ fontWeight: 'bold' }}>Connections</span>
-                                <span className="feed-profile-stat-value" style={{ fontWeight: 'bold' }}>{stats.connectionCount}</span>
+                        {/* Interactive Stats */}
+                        <div className="feed-mini-stats-section">
+                            <div className="feed-stat-item hover-lift" onClick={handleOpenConnections}>
+                                <div className="feed-stat-label-group">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                        <circle cx="9" cy="7" r="4" />
+                                    </svg>
+                                    <span>Connections</span>
+                                </div>
+                                <span className="feed-stat-num highlight">{stats.connectionCount}</span>
                             </div>
-                            <div className="feed-profile-stat-row" onClick={handleOpenViewers}>
-                                <span className="feed-profile-stat-label" style={{ fontWeight: 'bold' }}>Profile Viewers</span>
-                                <span className="feed-profile-stat-value" style={{ fontWeight: 'bold' }}>{stats.viewsCount}</span>
+
+                            <div className="feed-stat-item hover-lift" onClick={handleOpenViewers}>
+                                <div className="feed-stat-label-group">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                        <circle cx="12" cy="12" r="3" />
+                                    </svg>
+                                    <span>Profile views</span>
+                                </div>
+                                <span className="feed-stat-num">{stats.viewsCount}</span>
                             </div>
                         </div>
                     </div>
 
-                    <div className="feed-profile-card" style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column' }}>
-                        <Link to="/saved" className="feed-profile-my-items" style={{ padding: '0.75rem 1rem', borderBottom: '1px solid #2f3336', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-                            </svg>
-                            My Saved Posts
+                    {/* Quick Navigation Drawer Card */}
+                    <div className="feed-nav-shortcuts-card">
+                        <Link to="/saved" className="feed-nav-link-row">
+                            <div className="feed-nav-link-icon saved">
+                                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                                </svg>
+                            </div>
+                            <span>Saved Items</span>
                         </Link>
-                        <Link to="/liked" className="feed-profile-my-items" style={{ padding: '0.75rem 1rem', borderBottom: '1px solid #2f3336', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
-                            </svg>
-                            Liked Posts
+                        <Link to="/liked" className="feed-nav-link-row">
+                            <div className="feed-nav-link-icon liked">
+                                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+                                </svg>
+                            </div>
+                            <span>Liked Posts</span>
                         </Link>
-                        <Link to="/commented" className="feed-profile-my-items" style={{ padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-                            </svg>
-                            My Comments
+                        <Link to="/commented" className="feed-nav-link-row">
+                            <div className="feed-nav-link-icon commented">
+                                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                                </svg>
+                            </div>
+                            <span>My Comments</span>
                         </Link>
                     </div>
-                </div>
+                </aside>
 
-                {/* Middle Feed Column */}
-                <div className="feed-middle">
-
-                    {/* Create Post Header Card */}
-                    <div className="create-post-card">
-                        <div className="create-post-top">
+                {/* ============================================================
+                   MIDDLE COLUMN: Post Composer & Main Posts Feed
+                   ============================================================ */}
+                <main className="feed-main-col">
+                    {/* Modern Create Post Box */}
+                    <div className="feed-composer-card">
+                        <div className="feed-composer-top">
                             <img
                                 src={user?.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
                                 alt="Me"
-                                className="create-post-avatar"
+                                className="feed-composer-avatar"
                             />
-                            <button className="create-post-trigger-btn" onClick={() => handleOpenModal(false)}>
-                                Start a post
+                            <button
+                                type="button"
+                                className="feed-composer-trigger"
+                                onClick={() => handleOpenModal(false)}
+                            >
+                                <span>Share an update, project, or campus thought...</span>
                             </button>
                         </div>
-                        <div className="create-post-options">
-                            <button className="create-post-opt-btn photo" onClick={() => handleOpenModal(true)}>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                                    <polyline points="21 15 16 10 5 21"></polyline>
+
+                        <div className="feed-composer-actions-bar">
+                            <button
+                                type="button"
+                                className="composer-action-btn photo"
+                                onClick={() => handleOpenModal(true)}
+                            >
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                                    <circle cx="8.5" cy="8.5" r="1.5" />
+                                    <polyline points="21 15 16 10 5 21" />
                                 </svg>
                                 <span>Photo</span>
                             </button>
-                            <button className="create-post-opt-btn video" onClick={() => handleOpenModal(false)}>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <polygon points="23 7 16 12 23 17 23 7"></polygon>
-                                    <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                            <button
+                                type="button"
+                                className="composer-action-btn video"
+                                onClick={() => handleOpenModal(false)}
+                            >
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <polygon points="23 7 16 12 23 17 23 7" />
+                                    <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
                                 </svg>
                                 <span>Video</span>
                             </button>
-                            <button className="create-post-opt-btn event" onClick={() => handleOpenModal(false)}>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                                    <line x1="16" y1="2" x2="16" y2="6"></line>
-                                    <line x1="8" y1="2" x2="8" y2="6"></line>
-                                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                            <button
+                                type="button"
+                                className="composer-action-btn event"
+                                onClick={() => handleOpenModal(false)}
+                            >
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                                    <line x1="16" y1="2" x2="16" y2="6" />
+                                    <line x1="8" y1="2" x2="8" y2="6" />
+                                    <line x1="3" y1="10" x2="21" y2="10" />
                                 </svg>
                                 <span>Event</span>
                             </button>
-                            <button className="create-post-opt-btn article" onClick={() => handleOpenModal(false)}>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                    <polyline points="14 2 14 8 20 8"></polyline>
-                                    <line x1="16" y1="13" x2="8" y2="13"></line>
-                                    <line x1="16" y1="17" x2="8" y2="17"></line>
-                                    <polyline points="10 9 9 9 8 9"></polyline>
+                            <button
+                                type="button"
+                                className="composer-action-btn article"
+                                onClick={() => handleOpenModal(false)}
+                            >
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                    <polyline points="14 2 14 8 20 8" />
+                                    <line x1="16" y1="13" x2="8" y2="13" />
+                                    <line x1="16" y1="17" x2="8" y2="17" />
                                 </svg>
-                                <span>Write article</span>
+                                <span>Article</span>
                             </button>
                         </div>
                     </div>
 
-
-                    {/* Posts Feed */}
-                    {isLoading ? (
-                        <div className="page-center" style={{ padding: "3rem 0" }}>
-                            <div className="spinner" />
-                        </div>
-                    ) : (
-                        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                            {/* Render Pending Post Card */}
-                            {pendingPost && (
-                                <div className="pending-post-card" style={{
-                                    background: "#16181c",
-                                    border: "1px solid #2f3336",
-                                    borderRadius: "10px",
-                                    padding: "1rem",
-                                    opacity: 0.75,
-                                    position: "relative",
-                                    overflow: "hidden"
-                                }}>
-                                    {/* Top Progress Bar */}
-                                    <div style={{
-                                        position: "absolute",
-                                        top: 0,
-                                        left: 0,
-                                        height: "3px",
-                                        background: "#1d9bf0",
-                                        width: "100%",
-                                        animation: "postingProgress 1.5s infinite linear"
-                                    }} />
-
-                                    <div style={{ display: "flex", gap: "0.75rem", alignItems: "center", marginBottom: "0.75rem" }}>
-                                        <img
-                                            src={user?.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
-                                            alt="Me"
-                                            style={{ width: "40px", height: "40px", borderRadius: "50%", objectFit: "cover" }}
-                                        />
-                                        <div>
-                                            <div style={{ fontWeight: "700", color: "#e7e9ea", fontSize: "0.9rem" }}>{user?.name}</div>
-                                            <div style={{ fontSize: "0.75rem", color: "#71767b" }}>Posting...</div>
-                                        </div>
-                                    </div>
-
-                                    <div style={{ fontSize: "0.95rem", color: "#e7e9ea", lineHeight: "1.5", whiteSpace: "pre-wrap" }}>
-                                        {pendingPost.content}
-                                    </div>
-
-                                    {pendingPost.image && typeof pendingPost.image === 'string' && pendingPost.image.trim() !== '' && (
-                                        <div style={{ marginTop: "0.75rem", borderRadius: "8px", overflow: "hidden", border: "1px solid #2f3336" }}>
-                                            <img 
-                                                src={pendingPost.image.trim()} 
-                                                alt="" 
-                                                onError={(e) => { e.currentTarget.parentElement.style.display = 'none'; }}
-                                                style={{ width: "100%", maxHeight: "300px", objectFit: "cover" }} 
-                                            />
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                            {sortedPosts.length > 0 ? (
-                                sortedPosts.map((post) => (
-                                    <PostCard
-                                        key={post._id}
-                                        post={post}
-                                        onDelete={(id) => setPosts(posts.filter((p) => p._id !== id))}
+                    {/* Posts Stream */}
+                    <div className="feed-posts-stream">
+                        {/* Optimistic Pending Post */}
+                        {pendingPost && (
+                            <div className="pending-post-card">
+                                <div className="pending-post-progress-bar" />
+                                <div className="pending-post-header">
+                                    <img
+                                        src={user?.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
+                                        alt="Me"
+                                        className="pending-avatar"
                                     />
-                                ))
-                            ) : !pendingPost ? (
-                                <div style={{ background: "#16181c", border: "1px solid #2f3336", borderRadius: "10px", padding: "3rem 1rem", textAlign: "center", color: "#71767b" }}>
-                                    <h3 style={{ margin: "0 0 0.5rem 0", color: "#e7e9ea" }}>No posts in the feed yet</h3>
-                                    <p style={{ margin: 0 }}>Be the first to share something with the campus!</p>
+                                    <div>
+                                        <div className="pending-name">{user?.name}</div>
+                                        <div className="pending-status">Publishing post to feed...</div>
+                                    </div>
                                 </div>
-                            ) : null}
+                                <div className="pending-content">{pendingPost.content}</div>
+                                {pendingPost.image && (
+                                    <div className="pending-img-preview">
+                                        <img src={pendingPost.image.trim()} alt="" />
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {sortedPosts.length === 0 && !pendingPost ? (
+                            <div className="feed-empty-state-card">
+                                <div className="empty-state-icon-circle">
+                                    <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" strokeWidth="1.8">
+                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                                    </svg>
+                                </div>
+                                <h3>No posts in your feed yet</h3>
+                                <p>Be the first to share an update, project milestone, or question with your campus network!</p>
+                                <Button variant="primary" onClick={() => handleOpenModal(false)}>
+                                    Create First Post
+                                </Button>
+                            </div>
+                        ) : (
+                            sortedPosts.map((post) => (
+                                <PostCard
+                                    key={post._id}
+                                    post={post}
+                                    onDelete={handlePostDelete}
+                                    onUpdate={handlePostUpdate}
+                                />
+                            ))
+                        )}
+                    </div>
+                </main>
+
+                {/* ============================================================
+                   RIGHT COLUMN: Campus Jobs & Trending Topics Widgets
+                   ============================================================ */}
+                <aside className="feed-right-col">
+                    {/* Recommended Campus Jobs */}
+                    <div className="feed-sidebar-card">
+                        <div className="feed-sidebar-header">
+                            <div className="feed-sidebar-title-group">
+                                <div className="feed-sidebar-icon-badge jobs">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+                                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 className="feed-sidebar-title">Recommended Jobs</h4>
+                                    <span className="feed-sidebar-sub">Based on your profile</span>
+                                </div>
+                            </div>
                         </div>
-                    )}
-                </div>
 
-                {/* Right Sidebar Widgets */}
-                <div className="feed-right-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-
-                    {/* Recommended Jobs */}
-                    <div className="widget-card">
-                        <h3 className="widget-title">Recommended Jobs</h3>
-                        <div className="widget-list" style={{ marginTop: '0.25rem' }}>
-                            {recommendedJobs.map(job => (
-                                <div key={job.id} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', paddingBottom: '0.5rem', borderBottom: '1px solid #2f3336' }}>
-                                    <div style={{
-                                        width: '32px',
-                                        height: '32px',
-                                        background: job.logoBg,
-                                        borderRadius: '6px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        fontWeight: '700',
-                                        color: '#fff',
-                                        fontSize: '0.85rem',
-                                        flexShrink: 0
-                                    }}>
+                        <div className="feed-jobs-list">
+                            {recommendedJobs.map((job) => (
+                                <div key={job.id} className="feed-job-item">
+                                    <div
+                                        className="feed-job-logo"
+                                        style={{ background: job.logoBg }}
+                                    >
                                         {job.initials}
                                     </div>
-                                    <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, minWidth: 0 }}>
-                                        <span style={{ fontSize: '0.78rem', fontWeight: '700', color: '#e7e9ea', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                            {job.title}
-                                        </span>
-                                        <span style={{ fontSize: '0.68rem', color: '#71767b', margin: '0.1rem 0 0.35rem 0' }}>
-                                            {job.company} • {job.location}
-                                        </span>
-                                        <button
-                                            onClick={() => setAppliedJobs(prev => ({ ...prev, [job.id]: !prev[job.id] }))}
-                                            style={{
-                                                background: appliedJobs[job.id] ? 'rgba(29, 155, 240, 0.1)' : '#1d9bf0',
-                                                border: 'none',
-                                                color: appliedJobs[job.id] ? '#1d9bf0' : '#fff',
-                                                borderRadius: '20px',
-                                                padding: '0.2rem 0.75rem',
-                                                fontSize: '0.68rem',
-                                                fontWeight: '700',
-                                                cursor: 'pointer',
-                                                width: 'fit-content'
-                                            }}
-                                        >
-                                            {appliedJobs[job.id] ? "Applied" : "Easy Apply"}
-                                        </button>
+                                    <div className="feed-job-details">
+                                        <span className="feed-job-title">{job.title}</span>
+                                        <span className="feed-job-company">{job.company}</span>
+                                        <div className="feed-job-meta-row">
+                                            <span className="feed-job-loc">{job.location}</span>
+                                            <span className="feed-job-tag">{job.type}</span>
+                                        </div>
                                     </div>
+                                    <button
+                                        type="button"
+                                        className={`btn-job-apply ${appliedJobs[job.id] ? "applied" : ""}`}
+                                        onClick={() => handleApplyJob(job.id)}
+                                    >
+                                        {appliedJobs[job.id] ? "Applied" : "Apply"}
+                                    </button>
                                 </div>
                             ))}
                         </div>
                     </div>
 
-                    <div style={{ marginTop: '1rem', padding: '0 0.5rem', display: 'flex', flexWrap: 'wrap', gap: '0.4rem 0.8rem', justifyContent: 'center' }}>
-                        <a href="#" style={{ color: '#71767b', fontSize: '0.7rem' }} onClick={e => e.preventDefault()}>About</a>
-                        <a href="#" style={{ color: '#71767b', fontSize: '0.7rem' }} onClick={e => e.preventDefault()}>Accessibility</a>
-                        <a href="#" style={{ color: '#71767b', fontSize: '0.7rem' }} onClick={e => e.preventDefault()}>Help Center</a>
-                        <a href="#" style={{ color: '#71767b', fontSize: '0.7rem' }} onClick={e => e.preventDefault()}>Privacy & Terms</a>
-                        <a href="#" style={{ color: '#71767b', fontSize: '0.7rem' }} onClick={e => e.preventDefault()}>Ad Choices</a>
-                        <a href="#" style={{ color: '#71767b', fontSize: '0.7rem' }} onClick={e => e.preventDefault()}>Advertising</a>
-                        <a href="#" style={{ color: '#71767b', fontSize: '0.7rem' }} onClick={e => e.preventDefault()}>Business Services</a>
-
-                        <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem', marginTop: '0.5rem', color: '#71767b', fontSize: '0.7rem', fontWeight: '500' }}>
-                            <span>Waverly Corporation © 2026</span>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-            {/* Create Post Modal Overlay */}
-            {isModalOpen && (
-                <div className="post-modal-overlay" onClick={() => setIsModalOpen(false)}>
-                    <div className="post-modal-container" onClick={(e) => e.stopPropagation()}>
-
-                        <div className="post-modal-header">
-                            <h2>Create a post</h2>
-                            <button className="post-modal-close-btn" onClick={() => setIsModalOpen(false)}>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                                </svg>
-                            </button>
-                        </div>
-
-                        <div className="post-modal-user-info">
-                            <img
-                                src={user?.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
-                                alt="User"
-                                className="post-modal-avatar"
-                            />
-                            <div className="post-modal-user-details">
-                                <span className="post-modal-name">{user?.name}</span>
-                                <div className="post-modal-dropdown">
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <circle cx="12" cy="12" r="10"></circle>
-                                        <line x1="2" y1="12" x2="22" y2="12"></line>
-                                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                    {/* Trending Campus Topics */}
+                    <div className="feed-sidebar-card">
+                        <div className="feed-sidebar-header">
+                            <div className="feed-sidebar-title-group">
+                                <div className="feed-sidebar-icon-badge trending">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                                        <polyline points="17 6 23 6 23 12" />
                                     </svg>
-                                    <span>Anyone</span>
+                                </div>
+                                <div>
+                                    <h4 className="feed-sidebar-title">Trending Today</h4>
+                                    <span className="feed-sidebar-sub">Popular on Waverly</span>
                                 </div>
                             </div>
                         </div>
 
-                        <form onSubmit={handleCreatePostSubmit} className="post-modal-body">
+                        <div className="feed-trending-list">
+                            {trendingTopics.map((topic, i) => (
+                                <div key={i} className="feed-trending-item">
+                                    <span className="trending-hash">#{topic.tag}</span>
+                                    <span className="trending-count">{topic.count}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </aside>
+            </div>
+
+            {/* ============================================================
+               MODAL: Create New Post
+               ============================================================ */}
+            {isModalOpen && (
+                <div className="modal-overlay" onClick={() => setIsModalOpen(false)} style={{ zIndex: 3200 }}>
+                    <div className="modal-box feed-composer-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header-row">
+                            <div className="modal-header-title-group">
+                                <img
+                                    src={user?.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
+                                    alt="User"
+                                    className="post-modal-user-avatar"
+                                />
+                                <div>
+                                    <span className="post-modal-author-name">{user?.name}</span>
+                                    <div className="post-modal-visibility-tag">
+                                        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <circle cx="12" cy="12" r="10" />
+                                            <line x1="2" y1="12" x2="22" y2="12" />
+                                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                                        </svg>
+                                        <span>Public to Campus</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                className="crop-modal-close-btn"
+                                onClick={() => setIsModalOpen(false)}
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleCreatePostSubmit} className="feed-modal-form">
                             <textarea
-                                className="post-modal-textarea"
+                                className="feed-modal-textarea"
                                 value={newPostContent}
                                 onChange={(e) => setNewPostContent(e.target.value)}
-                                placeholder="What do you want to talk about?"
+                                placeholder="What do you want to share with your peers?"
+                                rows={5}
+                                autoFocus
                                 required
                             />
 
                             {showImageInput && (
-                                <div className="post-modal-image-input-wrapper">
+                                <div className="feed-modal-image-field">
                                     <input
                                         type="url"
-                                        className="post-modal-image-input"
+                                        className="feed-modal-image-input"
                                         value={newPostImage}
                                         onChange={(e) => setNewPostImage(e.target.value)}
-                                        placeholder="Paste image URL here..."
+                                        placeholder="Paste image link URL (https://...)..."
                                     />
                                     {newPostImage.trim() && (
-                                        <div className="post-modal-image-preview-container">
+                                        <div className="feed-modal-img-preview-box">
                                             <img
                                                 src={newPostImage.trim()}
                                                 alt="Preview"
-                                                className="post-modal-image-preview"
-                                                onError={(e) => {
-                                                    e.target.style.display = "none";
-                                                }}
+                                                onError={(e) => { e.currentTarget.parentElement.style.display = "none"; }}
                                             />
                                             <button
                                                 type="button"
-                                                className="post-modal-image-remove"
+                                                className="feed-preview-remove-btn"
                                                 onClick={() => setNewPostImage("")}
                                             >
-                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                                                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                                                </svg>
+                                                ✕
                                             </button>
                                         </div>
                                     )}
                                 </div>
                             )}
 
-                            <div className="post-modal-footer" style={{ padding: "1rem 0" }}>
-                                <div className="post-modal-media-actions">
+                            <div className="feed-modal-bottom-bar">
+                                <div className="feed-modal-tools">
                                     <button
                                         type="button"
-                                        className={`post-modal-action-icon ${showImageInput ? 'active' : ''}`}
+                                        className={`feed-tool-icon-btn ${showImageInput ? "active" : ""}`}
                                         onClick={() => setShowImageInput(!showImageInput)}
-                                        title="Add a photo"
+                                        title="Attach image link"
                                     >
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                                            <polyline points="21 15 16 10 5 21"></polyline>
+                                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                                            <circle cx="8.5" cy="8.5" r="1.5" />
+                                            <polyline points="21 15 16 10 5 21" />
                                         </svg>
                                     </button>
                                 </div>
-                                <button
-                                    type="submit"
-                                    className="btn-post-modal-submit"
-                                    disabled={!newPostContent.trim() || isPosting}
-                                >
-                                    {isPosting ? "Posting..." : "Post"}
-                                </button>
+
+                                <div className="feed-modal-submit-group">
+                                    <Button
+                                        variant="secondary"
+                                        onClick={() => setIsModalOpen(false)}
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        variant="primary"
+                                        type="submit"
+                                        disabled={!newPostContent.trim() || isPosting}
+                                        isLoading={isPosting}
+                                    >
+                                        {isPosting ? "Posting..." : "Publish Post"}
+                                    </Button>
+                                </div>
                             </div>
                         </form>
-
                     </div>
                 </div>
             )}
 
-            {/* Connections Modal Overlay */}
+            {/* Connections Modal */}
             {showConnectionsModal && (
-                <div className="post-modal-overlay" onClick={() => setShowConnectionsModal(false)}>
-                    <div className="post-modal-container" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '450px' }}>
-                        <div className="post-modal-header">
-                            <h2>My Connections</h2>
-                            <button className="post-modal-close-btn" onClick={() => setShowConnectionsModal(false)}>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                                </svg>
+                <div className="modal-overlay" onClick={() => setShowConnectionsModal(false)} style={{ zIndex: 3200 }}>
+                    <div className="modal-box connections-modal-box" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header-row">
+                            <div className="modal-header-title-group">
+                                <div className="modal-icon-badge">
+                                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                        <circle cx="9" cy="7" r="4" />
+                                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 className="modal-title">My Connections</h3>
+                                    <p className="modal-subtitle">{stats.connectionCount} active connections</p>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                className="crop-modal-close-btn"
+                                onClick={() => setShowConnectionsModal(false)}
+                            >
+                                ✕
                             </button>
                         </div>
-                        <div style={{ padding: '1rem', maxHeight: '400px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+
+                        <div className="connections-modal-list">
                             {isFetchingConnections ? (
-                                <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem 0' }}>
-                                    <div className="spinner" />
-                                </div>
+                                <div className="connections-loading-state"><div className="spinner" /></div>
                             ) : connectionsList.length === 0 ? (
-                                <div style={{ textAlign: 'center', color: '#71767b', padding: '2rem 0' }}>
-                                    No connections found.
-                                </div>
+                                <div className="connections-empty-state"><p>No connections found.</p></div>
                             ) : (
                                 connectionsList.map(member => (
-                                    <div key={member._id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'space-between', paddingBottom: '0.75rem', borderBottom: '1px solid #2f3336' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1, minWidth: 0 }}>
+                                    <div key={member._id} className="connection-member-row">
+                                        <Link to={`/users/${member.username}`} onClick={() => setShowConnectionsModal(false)} className="connection-avatar-link">
                                             <img
                                                 src={member.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
                                                 alt={member.name}
-                                                style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                                                className="connection-avatar-img"
                                             />
-                                            <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-                                                <Link
-                                                    to={`/users/${member.username}`}
-                                                    onClick={() => setShowConnectionsModal(false)}
-                                                    style={{ textDecoration: 'none', fontWeight: 'bold', color: '#fff', fontSize: '0.88rem', wordBreak: 'break-word' }}
-                                                >
-                                                    {member.name}
-                                                </Link>
-                                                <div style={{ fontSize: '0.72rem', color: '#71767b', marginTop: '0.15rem', wordBreak: 'break-word', whiteSpace: 'normal' }}>
-                                                    {member.bio || `@${member.username}`}
-                                                </div>
-                                            </div>
+                                        </Link>
+                                        <div className="connection-info-col">
+                                            <Link to={`/users/${member.username}`} onClick={() => setShowConnectionsModal(false)} className="connection-name-link">
+                                                {member.name}
+                                            </Link>
+                                            <span className="connection-handle-text">@{member.username}</span>
+                                            {member.bio && <span className="connection-college-text">{member.bio}</span>}
                                         </div>
-                                        <Link
-                                            to={`/users/${member.username}`}
-                                            onClick={() => setShowConnectionsModal(false)}
-                                            style={{
-                                                textDecoration: 'none', background: '#1d9bf0', border: 'none',
-                                                color: '#fff', padding: '0.35rem 0.85rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '600', whiteSpace: 'nowrap'
-                                            }}
-                                        >
-                                            View Profile
+                                        <Link to={`/users/${member.username}`} onClick={() => setShowConnectionsModal(false)} className="btn btn-secondary btn-sm">
+                                            View
                                         </Link>
                                     </div>
                                 ))
@@ -606,61 +650,59 @@ const Feed_Page = () => {
                 </div>
             )}
 
-            {/* Profile Viewers Modal Overlay */}
+            {/* Profile Viewers Modal */}
             {showViewersModal && (
-                <div className="post-modal-overlay" onClick={() => setShowViewersModal(false)}>
-                    <div className="post-modal-container" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '450px' }}>
-                        <div className="post-modal-header">
-                            <h2>Profile Viewers</h2>
-                            <button className="post-modal-close-btn" onClick={() => setShowViewersModal(false)}>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                                </svg>
+                <div className="modal-overlay" onClick={() => setShowViewersModal(false)} style={{ zIndex: 3200 }}>
+                    <div className="modal-box connections-modal-box" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header-row">
+                            <div className="modal-header-title-group">
+                                <div className="modal-icon-badge">
+                                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                        <circle cx="12" cy="12" r="3" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 className="modal-title">Profile Viewers</h3>
+                                    <p className="modal-subtitle">People who recently visited your profile</p>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                className="crop-modal-close-btn"
+                                onClick={() => setShowViewersModal(false)}
+                            >
+                                ✕
                             </button>
                         </div>
-                        <div style={{ padding: '1rem', maxHeight: '400px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+
+                        <div className="connections-modal-list">
                             {isFetchingViewers ? (
-                                <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem 0' }}>
-                                    <div className="spinner" />
-                                </div>
+                                <div className="connections-loading-state"><div className="spinner" /></div>
                             ) : viewersList.length === 0 ? (
-                                <div style={{ textAlign: 'center', color: '#71767b', padding: '2rem 0' }}>
-                                    No profile viewers found.
-                                </div>
+                                <div className="connections-empty-state"><p>No profile views recorded yet.</p></div>
                             ) : (
                                 viewersList.map(viewer => (
-                                    <div key={viewer._id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'space-between', paddingBottom: '0.75rem', borderBottom: '1px solid #2f3336' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1, minWidth: 0 }}>
+                                    <div key={viewer._id} className="connection-member-row">
+                                        <Link to={`/users/${viewer.username}`} onClick={() => setShowViewersModal(false)} className="connection-avatar-link">
                                             <img
                                                 src={viewer.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
                                                 alt={viewer.name}
-                                                style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                                                className="connection-avatar-img"
                                             />
-                                            <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-                                                <Link
-                                                    to={`/users/${viewer.username}`}
-                                                    onClick={() => setShowViewersModal(false)}
-                                                    style={{ textDecoration: 'none', fontWeight: 'bold', color: '#fff', fontSize: '0.88rem', wordBreak: 'break-word' }}
-                                                >
-                                                    {viewer.name}
-                                                </Link>
-                                                <div style={{ fontSize: '0.72rem', color: '#71767b', marginTop: '0.15rem', wordBreak: 'break-word', whiteSpace: 'normal' }}>
-                                                    {viewer.bio || `@${viewer.username}`}
-                                                </div>
-                                                <div style={{ fontSize: '0.68rem', color: '#1d9bf0', marginTop: '0.2rem', fontWeight: '500' }}>
+                                        </Link>
+                                        <div className="connection-info-col">
+                                            <Link to={`/users/${viewer.username}`} onClick={() => setShowViewersModal(false)} className="connection-name-link">
+                                                {viewer.name}
+                                            </Link>
+                                            <span className="connection-handle-text">@{viewer.username}</span>
+                                            {viewer.viewTime && (
+                                                <span className="connection-college-text" style={{ color: "var(--text-accent)" }}>
                                                     Viewed {viewer.viewTime}
-                                                </div>
-                                            </div>
+                                                </span>
+                                            )}
                                         </div>
-                                        <Link
-                                            to={`/users/${viewer.username}`}
-                                            onClick={() => setShowViewersModal(false)}
-                                            style={{
-                                                textDecoration: 'none', background: '#1d9bf0', border: 'none',
-                                                color: '#fff', padding: '0.35rem 0.85rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '600', whiteSpace: 'nowrap'
-                                            }}
-                                        >
+                                        <Link to={`/users/${viewer.username}`} onClick={() => setShowViewersModal(false)} className="btn btn-primary btn-sm">
                                             Connect
                                         </Link>
                                     </div>
