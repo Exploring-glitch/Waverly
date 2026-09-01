@@ -44,12 +44,14 @@ const ImageCropModal = ({
     currentImage = "",
     title = "Edit Cover Image",
     aspectRatio = 3.6, // width / height ratio
+    cropShape, // 'rect' | 'round' (defaults to 'round' when aspectRatio === 1)
     outputWidth = 1200,
     allowRemove = true,
 }) => {
+    const isRound = cropShape ? cropShape === "round" : aspectRatio === 1;
     const [imageSrc, setImageSrc] = useState(currentImage || "");
     const [naturalSize, setNaturalSize] = useState({ width: 0, height: 0 });
-    const [viewportSize, setViewportSize] = useState({ width: 600, height: 600 / aspectRatio });
+    const [viewportSize, setViewportSize] = useState({ width: 600, height: 320 });
     const [zoom, setZoom] = useState(1);
     const [rotation, setRotation] = useState(0); // 0, 90, 180, 270
     const [flipH, setFlipH] = useState(false);
@@ -69,10 +71,10 @@ const ImageCropModal = ({
     const updateViewportDimensions = useCallback(() => {
         if (viewportRef.current) {
             const w = viewportRef.current.clientWidth;
-            const h = w / aspectRatio;
+            const h = isRound ? 320 : w / aspectRatio;
             setViewportSize({ width: w, height: h });
         }
-    }, [aspectRatio]);
+    }, [aspectRatio, isRound]);
 
     // Load image natural dimensions whenever imageSrc changes
     useEffect(() => {
@@ -198,16 +200,22 @@ const ImageCropModal = ({
         else if (pos === "bottom") setPan(prev => ({ ...prev, y: -40 }));
     };
 
-    // Exact Base Scale: Fits the image to cover the viewport cleanly
+    // Circle Diameter for round mode
     const vpW = viewportSize.width || 600;
-    const vpH = viewportSize.height || 600 / aspectRatio;
+    const vpH = isRound ? 320 : (viewportSize.height || 600 / aspectRatio);
+    const circleDiameter = isRound ? Math.min(250, vpW - 40, vpH - 40) : 0;
 
+    // Exact Base Scale calculation
     let baseScale = 1;
     let baseW = vpW;
     let baseH = vpH;
 
     if (naturalSize.width > 0 && naturalSize.height > 0) {
-        baseScale = Math.max(vpW / naturalSize.width, vpH / naturalSize.height);
+        if (isRound) {
+            baseScale = Math.max(circleDiameter / naturalSize.width, circleDiameter / naturalSize.height);
+        } else {
+            baseScale = Math.max(vpW / naturalSize.width, vpH / naturalSize.height);
+        }
         baseW = naturalSize.width * baseScale;
         baseH = naturalSize.height * baseScale;
     }
@@ -224,8 +232,8 @@ const ImageCropModal = ({
         setErrorMessage("");
 
         try {
-            const outW = outputWidth;
-            const outH = Math.round(outputWidth / aspectRatio);
+            const outW = isRound ? 400 : outputWidth;
+            const outH = isRound ? 400 : Math.round(outputWidth / aspectRatio);
 
             const canvas = document.createElement("canvas");
             canvas.width = outW;
@@ -255,8 +263,9 @@ const ImageCropModal = ({
                 ctx.filter = activeFilterObj.filter;
             }
 
-            // Exact scale ratio between canvas and DOM viewport
-            const canvasScaleRatio = outW / vpW;
+            // Exact scale ratio between canvas and DOM target frame
+            const referenceFrameSize = isRound ? circleDiameter : vpW;
+            const canvasScaleRatio = outW / referenceFrameSize;
 
             ctx.save();
             // 1. Move to canvas center
@@ -271,15 +280,15 @@ const ImageCropModal = ({
             // 4. Apply flip
             ctx.scale(flipH ? -1 : 1, 1);
 
-            // 5. Draw image matching exact DOM viewport dimensions
+            // 5. Draw image matching exact DOM dimensions
             const targetDrawW = baseW * zoom * canvasScaleRatio;
             const targetDrawH = baseH * zoom * canvasScaleRatio;
 
             ctx.drawImage(img, -targetDrawW / 2, -targetDrawH / 2, targetDrawW, targetDrawH);
             ctx.restore();
 
-            // Export high-quality image URL (JPEG quality 0.88)
-            const croppedDataUrl = canvas.toDataURL("image/jpeg", 0.88);
+            // Export high-quality image URL (JPEG quality 0.9)
+            const croppedDataUrl = canvas.toDataURL("image/jpeg", 0.9);
             await onSave(croppedDataUrl);
             setIsProcessing(false);
             onClose();
@@ -324,14 +333,27 @@ const ImageCropModal = ({
                     <div className="crop-modal-title-group">
                         <div className="crop-modal-icon">
                             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                                <circle cx="8.5" cy="8.5" r="1.5" />
-                                <polyline points="21 15 16 10 5 21" />
+                                {isRound ? (
+                                    <>
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                        <circle cx="12" cy="7" r="4" />
+                                    </>
+                                ) : (
+                                    <>
+                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                                        <circle cx="8.5" cy="8.5" r="1.5" />
+                                        <polyline points="21 15 16 10 5 21" />
+                                    </>
+                                )}
                             </svg>
                         </div>
                         <div>
                             <h3 className="crop-modal-title">{title}</h3>
-                            <p className="crop-modal-subtitle">What you see in this frame will be your profile banner</p>
+                            <p className="crop-modal-subtitle">
+                                {isRound
+                                    ? "Adjust and frame your photo inside the circular avatar preview"
+                                    : "What you see in this frame will be your profile banner"}
+                            </p>
                         </div>
                     </div>
                     <button type="button" className="crop-modal-close-btn" onClick={onClose} aria-label="Close">
@@ -364,17 +386,19 @@ const ImageCropModal = ({
                         </svg>
                         Upload Photo
                     </button>
-                    <button
-                        type="button"
-                        className={`crop-tab-btn ${activeTab === "presets" ? "active" : ""}`}
-                        onClick={() => setActiveTab("presets")}
-                    >
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
-                            <circle cx="12" cy="12" r="10" />
-                            <path d="M12 2a7 7 0 0 0 7 7c0 2-1 3-2 4l-1 2H8l-1-2c-1-1-2-2-2-4a7 7 0 0 0 7-7z" />
-                        </svg>
-                        Theme Presets
-                    </button>
+                    {!isRound && (
+                        <button
+                            type="button"
+                            className={`crop-tab-btn ${activeTab === "presets" ? "active" : ""}`}
+                            onClick={() => setActiveTab("presets")}
+                        >
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
+                                <circle cx="12" cy="12" r="10" />
+                                <path d="M12 2a7 7 0 0 0 7 7c0 2-1 3-2 4l-1 2H8l-1-2c-1-1-2-2-2-4a7 7 0 0 0 7-7z" />
+                            </svg>
+                            Theme Presets
+                        </button>
+                    )}
                     <button
                         type="button"
                         className={`crop-tab-btn ${activeTab === "url" ? "active" : ""}`}
@@ -415,7 +439,7 @@ const ImageCropModal = ({
                 )}
 
                 {/* Subview: Presets */}
-                {activeTab === "presets" && (
+                {!isRound && activeTab === "presets" && (
                     <div className="crop-presets-grid">
                         {PRESET_BANNERS.map((preset) => (
                             <div
@@ -435,77 +459,103 @@ const ImageCropModal = ({
                     </div>
                 )}
 
-                {/* Interactive Crop Viewport (Exact WYSIWYG) */}
-                <div
-                    className="crop-viewport-wrapper"
-                    style={{ aspectRatio: `${aspectRatio}` }}
-                    ref={viewportRef}
-                    onMouseDown={handleMouseDown}
-                    onMouseMove={handleMouseMove}
-                    onMouseUp={handleMouseUp}
-                    onMouseLeave={handleMouseUp}
-                    onTouchStart={handleTouchStart}
-                    onTouchMove={handleTouchMove}
-                    onTouchEnd={handleMouseUp}
-                >
-                    {imageSrc ? (
-                        <>
-                            <div
-                                className="crop-image-layer"
-                                style={{
-                                    cursor: isDragging ? "grabbing" : "grab",
-                                }}
-                            >
-                                <img
-                                    src={imageSrc}
-                                    alt="Crop target"
+                {/* Interactive Crop Viewport */}
+                <div className={`crop-viewport-outer ${isRound ? "is-round-outer" : ""}`}>
+                    <div
+                        className={`crop-viewport-wrapper ${isRound ? "is-round-mode" : ""}`}
+                        style={{
+                            aspectRatio: isRound ? undefined : `${aspectRatio}`,
+                            height: isRound ? "320px" : undefined,
+                        }}
+                        ref={viewportRef}
+                        onMouseDown={handleMouseDown}
+                        onMouseMove={handleMouseMove}
+                        onMouseUp={handleMouseUp}
+                        onMouseLeave={handleMouseUp}
+                        onTouchStart={handleTouchStart}
+                        onTouchMove={handleTouchMove}
+                        onTouchEnd={handleMouseUp}
+                    >
+                        {imageSrc ? (
+                            <>
+                                {/* Draggable Image Layer */}
+                                <div
+                                    className="crop-image-layer"
                                     style={{
-                                        width: `${baseW}px`,
-                                        height: `${baseH}px`,
-                                        transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom}) rotate(${rotation}deg) scaleX(${flipH ? -1 : 1})`,
-                                        transformOrigin: "center center",
-                                        filter: currentFilterCss,
-                                        position: "absolute",
-                                        userSelect: "none",
-                                        pointerEvents: "none",
+                                        cursor: isDragging ? "grabbing" : "grab",
                                     }}
-                                    draggable={false}
-                                />
-                            </div>
+                                >
+                                    <img
+                                        src={imageSrc}
+                                        alt="Crop target"
+                                        style={{
+                                            width: `${baseW}px`,
+                                            height: `${baseH}px`,
+                                            transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom}) rotate(${rotation}deg) scaleX(${flipH ? -1 : 1})`,
+                                            transformOrigin: "center center",
+                                            filter: currentFilterCss,
+                                            position: "absolute",
+                                            userSelect: "none",
+                                            pointerEvents: "none",
+                                        }}
+                                        draggable={false}
+                                    />
+                                </div>
 
-                            {/* Aspect Ratio Guideline Grid Overlay */}
-                            <div className="crop-guideline-overlay">
-                                <div className="grid-line grid-line-h1" />
-                                <div className="grid-line grid-line-h2" />
-                                <div className="grid-line grid-line-v1" />
-                                <div className="grid-line grid-line-v2" />
-                            </div>
+                                {/* Mask & Guideline Overlays */}
+                                {isRound ? (
+                                    /* Circular Cutout Mask & Guides */
+                                    <div className="crop-round-mask-container">
+                                        <div
+                                            className="crop-round-aperture"
+                                            style={{
+                                                width: `${circleDiameter}px`,
+                                                height: `${circleDiameter}px`,
+                                            }}
+                                        >
+                                            <div className="crop-round-inner-border" />
+                                            <div className="crop-round-crosshair-h" />
+                                            <div className="crop-round-crosshair-v" />
+                                        </div>
+                                    </div>
+                                ) : (
+                                    /* Rectangular Banner Guidelines */
+                                    <div className="crop-guideline-overlay">
+                                        <div className="grid-line grid-line-h1" />
+                                        <div className="grid-line grid-line-h2" />
+                                        <div className="grid-line grid-line-v1" />
+                                        <div className="grid-line grid-line-v2" />
+                                    </div>
+                                )}
 
-                            <div className="crop-drag-hint">
-                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <polyline points="5 9 2 12 5 15" />
-                                    <polyline points="9 5 12 2 15 5" />
-                                    <polyline points="15 19 12 22 9 19" />
-                                    <polyline points="19 9 22 12 19 15" />
-                                    <line x1="2" y1="12" x2="22" y2="12" />
-                                    <line x1="12" y1="2" x2="12" y2="22" />
-                                </svg>
-                                <span>Drag to reposition inside the frame</span>
+                                <div className="crop-drag-hint">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <polyline points="5 9 2 12 5 15" />
+                                        <polyline points="9 5 12 2 15 5" />
+                                        <polyline points="15 19 12 22 9 19" />
+                                        <polyline points="19 9 22 12 19 15" />
+                                        <line x1="2" y1="12" x2="22" y2="12" />
+                                        <line x1="12" y1="2" x2="12" y2="22" />
+                                    </svg>
+                                    <span>Drag to reposition inside the {isRound ? "circle" : "frame"}</span>
+                                </div>
+                            </>
+                        ) : (
+                            <div className="crop-empty-placeholder" onClick={() => fileInputRef.current?.click()}>
+                                <div className="crop-empty-icon">
+                                    <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" strokeWidth="1.8">
+                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                                        <circle cx="8.5" cy="8.5" r="1.5" />
+                                        <polyline points="21 15 16 10 5 21" />
+                                    </svg>
+                                </div>
+                                <span className="crop-empty-text">
+                                    {isRound ? "Choose profile picture" : "Choose banner image"}
+                                </span>
+                                <span className="crop-empty-sub">JPG, PNG, WebP up to 20MB</span>
                             </div>
-                        </>
-                    ) : (
-                        <div className="crop-empty-placeholder" onClick={() => fileInputRef.current?.click()}>
-                            <div className="crop-empty-icon">
-                                <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" strokeWidth="1.8">
-                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                                    <circle cx="8.5" cy="8.5" r="1.5" />
-                                    <polyline points="21 15 16 10 5 21" />
-                                </svg>
-                            </div>
-                            <span className="crop-empty-text">Click to choose a banner image</span>
-                            <span className="crop-empty-sub">JPG, PNG, WebP up to 20MB</span>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
 
                 {/* Control Panel: Zoom, Rotate, Alignment, Filters */}
