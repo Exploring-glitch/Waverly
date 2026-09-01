@@ -1,7 +1,22 @@
 import { useState } from "react";
 
-const FormInput = ({ label, id, type = "text", value, onChange, required = true }) => {
+const FormInput = ({
+    label,
+    id,
+    type = "text",
+    value,
+    onChange,
+    required = true,
+    placeholder = "",
+    autoFocus = false,
+    icon = null,
+    hint = "",
+    error = "",
+    autoComplete,
+    ...props
+}) => {
     const [showPassword, setShowPassword] = useState(false);
+    const [isFocused, setIsFocused] = useState(false);
     const isPassword = type === "password";
 
     const togglePasswordVisibility = () => {
@@ -9,9 +24,18 @@ const FormInput = ({ label, id, type = "text", value, onChange, required = true 
     };
 
     return (
-        <div className="form-group">
-            <label htmlFor={id}>{label}</label>
-            <div className={isPassword ? "password-input-wrapper" : "input-wrapper"}>
+        <div className={`form-group ${error ? "has-error" : ""} ${isFocused ? "is-focused" : ""}`}>
+            {label && (
+                <div className="form-label-row">
+                    <label htmlFor={id} className="form-label">
+                        {label}
+                        {required && <span className="required-star">*</span>}
+                    </label>
+                    {hint && <span className="form-hint">{hint}</span>}
+                </div>
+            )}
+            <div className={`input-field-wrapper ${icon ? "has-leading-icon" : ""} ${isPassword ? "has-trailing-icon" : ""}`}>
+                {icon && <span className="input-leading-icon">{icon}</span>}
                 <input
                     id={id}
                     name={id}
@@ -19,7 +43,13 @@ const FormInput = ({ label, id, type = "text", value, onChange, required = true 
                     value={value}
                     onChange={onChange}
                     required={required}
-                    autoComplete={type === "password" ? "current-password" : undefined}
+                    placeholder={placeholder}
+                    autoFocus={autoFocus}
+                    autoComplete={autoComplete || (isPassword ? "current-password" : undefined)}
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
+                    className="form-input-control"
+                    {...props}
                 />
                 {isPassword && (
                     <button
@@ -27,12 +57,13 @@ const FormInput = ({ label, id, type = "text", value, onChange, required = true 
                         className="password-toggle-btn"
                         onClick={togglePasswordVisibility}
                         aria-label={showPassword ? "Hide password" : "Show password"}
+                        tabIndex={-1}
                     >
                         {showPassword ? (
                             <svg
                                 viewBox="0 0 24 24"
-                                width="20"
-                                height="20"
+                                width="18"
+                                height="18"
                                 fill="none"
                                 stroke="currentColor"
                                 strokeWidth="2"
@@ -45,8 +76,8 @@ const FormInput = ({ label, id, type = "text", value, onChange, required = true 
                         ) : (
                             <svg
                                 viewBox="0 0 24 24"
-                                width="20"
-                                height="20"
+                                width="18"
+                                height="18"
                                 fill="none"
                                 stroke="currentColor"
                                 strokeWidth="2"
@@ -60,6 +91,7 @@ const FormInput = ({ label, id, type = "text", value, onChange, required = true 
                     </button>
                 )}
             </div>
+            {error && <p className="form-field-error">{error}</p>}
         </div>
     );
 };
