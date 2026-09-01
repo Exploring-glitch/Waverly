@@ -6542,3 +6542,592 @@ a:hover {
   background-color: rgba(29, 155, 240, 0.08);
   color: #0f75bc;
 }
+
+/* ==========================================================================
+   My Network Page Styling
+   ========================================================================== */
+.network-page-wrapper {
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.network-grid-layout {
+  display: grid;
+  grid-template-columns: 290px 1fr;
+  gap: 1.5rem;
+  padding: 1.5rem 1rem;
+  width: 100%;
+  align-items: start;
+}
+
+.network-sidebar-col {
+  position: sticky;
+  top: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.network-sidebar-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  transition: border-color var(--transition-normal);
+}
+
+.network-sidebar-card:hover {
+  border-color: var(--border-strong);
+}
+
+.network-sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 1.25rem 1.25rem 0.9rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.network-sidebar-badge-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  background: rgba(56, 189, 248, 0.12);
+  color: var(--text-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.network-sidebar-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.network-sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem;
+}
+
+.network-sidebar-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.65rem 0.75rem;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  color: var(--text-secondary);
+}
+
+.network-sidebar-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+
+.network-item-label-group {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  min-width: 0;
+}
+
+.network-item-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
+}
+
+.network-item-badge {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-accent);
+  background: rgba(56, 189, 248, 0.12);
+  padding: 0.1rem 0.55rem;
+  border-radius: var(--radius-full);
+}
+
+.network-item-badge.alert {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+.network-tips-card {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-xl);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.tips-icon-badge {
+  font-size: 1.5rem;
+}
+
+.network-tips-card h4 {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.network-tips-card p {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.network-main-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-width: 0;
+}
+
+/* Network Section Cards */
+.network-section-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  transition: border-color var(--transition-normal);
+}
+
+.network-section-card:hover {
+  border-color: var(--border-strong);
+}
+
+.network-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.section-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.section-badge-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1.1rem;
+}
+
+.section-badge-icon.invitations {
+  background: rgba(239, 68, 68, 0.12);
+  color: #f87171;
+}
+
+.section-badge-icon.suggestions {
+  background: rgba(56, 189, 248, 0.12);
+  color: var(--text-accent);
+}
+
+.section-badge-icon.college {
+  background: rgba(168, 85, 247, 0.12);
+}
+
+.section-badge-icon.city {
+  background: rgba(34, 197, 94, 0.12);
+}
+
+.network-section-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.network-section-subtitle {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  display: block;
+  margin-top: 0.15rem;
+}
+
+/* Invitations List */
+.network-invitations-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.network-invitation-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.15rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  gap: 1rem;
+  transition: background-color var(--transition-fast);
+}
+
+.network-invitation-row:last-child {
+  border-bottom: none;
+}
+
+.network-invitation-row:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.invitation-user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.95rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.invitation-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.invitation-details {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.invitation-name {
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.invitation-name:hover {
+  color: var(--text-accent);
+}
+
+.invitation-handle {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  margin-top: 0.1rem;
+}
+
+.invitation-bio {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin: 0.25rem 0 0;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 400px;
+}
+
+.invitation-action-group {
+  display: flex;
+  gap: 0.65rem;
+  flex-shrink: 0;
+}
+
+.btn-invitation {
+  padding: 0.45rem 1.15rem;
+  border-radius: var(--radius-full);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-invitation.ignore {
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+}
+
+.btn-invitation.ignore:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+}
+
+.btn-invitation.accept {
+  background: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  color: #ffffff;
+}
+
+.btn-invitation.accept:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+/* Tabs Bar */
+.network-tabs-bar {
+  display: flex;
+  gap: 0.65rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+}
+
+.network-filter-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.15rem;
+  border-radius: var(--radius-full);
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.network-filter-tab:hover {
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+}
+
+.network-filter-tab.active {
+  background: rgba(56, 189, 248, 0.12);
+  border-color: var(--border-focus);
+  color: var(--text-accent);
+}
+
+.tab-count-badge {
+  font-size: 0.74rem;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 0.1rem 0.45rem;
+  border-radius: var(--radius-full);
+}
+
+.network-filter-tab.active .tab-count-badge {
+  background: var(--color-primary);
+  color: #ffffff;
+}
+
+/* Grid of Recommendation Cards */
+.network-grid-body {
+  padding: 1.5rem;
+}
+
+.network-user-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.25rem;
+}
+
+.network-user-card {
+  background: #111726;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  transition: all var(--transition-normal);
+  position: relative;
+}
+
+.network-user-card:hover {
+  border-color: var(--border-focus);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-3px);
+}
+
+.network-card-banner {
+  height: 54px;
+  background: linear-gradient(135deg, #0284c7 0%, #1e3a8a 50%, #0b1120 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.network-card-banner-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.network-card-banner-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 20%, rgba(56, 189, 248, 0.35) 0%, transparent 70%);
+}
+
+.network-card-avatar-wrap {
+  margin-top: -34px;
+  align-self: center;
+  position: relative;
+}
+
+.network-card-avatar {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  border: 3px solid #111726;
+  object-fit: cover;
+  background: #080c14;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.network-card-body {
+  padding: 0.65rem 1rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.network-card-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  line-height: 1.3;
+}
+
+.network-card-name:hover {
+  color: var(--text-accent);
+}
+
+.network-card-handle {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  margin-top: 0.1rem;
+}
+
+.network-card-bio {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin: 0.45rem 0 0.65rem;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 32px;
+}
+
+.network-card-badge-row {
+  margin-top: auto;
+  padding-bottom: 0.25rem;
+}
+
+.network-card-chip {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-accent);
+  background: rgba(56, 189, 248, 0.1);
+  padding: 0.15rem 0.55rem;
+  border-radius: var(--radius-full);
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+}
+
+.network-card-action {
+  padding: 0 1rem 1rem;
+  width: 100%;
+}
+
+.btn-network-status {
+  width: 100%;
+  padding: 0.45rem 0;
+  border-radius: var(--radius-full);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-network-status.connect {
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: var(--text-accent);
+}
+
+.btn-network-status.connect:hover {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #ffffff;
+}
+
+.btn-network-status.pending {
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+}
+
+.btn-network-status.pending:hover {
+  border-color: #f87171;
+  color: #f87171;
+}
+
+.btn-network-status.accept {
+  background: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  color: #ffffff;
+}
+
+.btn-network-status.connected {
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #4ade80;
+  cursor: default;
+}
+
+.network-empty-state {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 992px) {
+  .network-grid-layout {
+    grid-template-columns: 240px 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .network-grid-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .network-sidebar-col {
+    position: static;
+  }
+}
