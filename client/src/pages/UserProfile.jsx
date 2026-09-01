@@ -105,7 +105,19 @@ const UserProfile_Page = () => {
     return (
         <div className="page">
             <div className="profile-container">
-                <div className="profile-banner" />
+                <div className="profile-banner-container">
+                    {user?.coverPic ? (
+                        <img
+                            src={user.coverPic}
+                            alt={`${user.name}'s Banner`}
+                            className="profile-banner-image"
+                        />
+                    ) : (
+                        <div className="profile-banner-default">
+                            <div className="profile-banner-glow" />
+                        </div>
+                    )}
+                </div>
 
                 <div className="profile-info-section">
                     <div className="profile-meta">

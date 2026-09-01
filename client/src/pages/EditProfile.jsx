@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import ImageCropModal from "../components/ImageCropModal";
+import Button from "../components/Button";
 
 const Edit_Profile_Page = () => {
     const { user, updateProfile } = useAuth();
@@ -11,6 +13,7 @@ const Edit_Profile_Page = () => {
     const [additionalName, setAdditionalName] = useState("");
     const [bio, setBio] = useState("");
     const [profilePic, setProfilePic] = useState("");
+    const [coverPic, setCoverPic] = useState("");
     const [collegeName, setCollegeName] = useState("");
     const [companyName, setCompanyName] = useState("");
     const [startYear, setStartYear] = useState("");
@@ -18,6 +21,10 @@ const Edit_Profile_Page = () => {
     const [locationCountry, setLocationCountry] = useState("");
     const [locationPostalCode, setLocationPostalCode] = useState("");
     const [locationCity, setLocationCity] = useState("");
+
+    // Modal states
+    const [isCoverCropOpen, setIsCoverCropOpen] = useState(false);
+    const [isAvatarCropOpen, setIsAvatarCropOpen] = useState(false);
 
     // UI Feedback states
     const [error, setError] = useState("");
@@ -31,9 +38,9 @@ const Edit_Profile_Page = () => {
             setAdditionalName(user.additionalName || "");
             setBio(user.bio || "");
             setProfilePic(user.profilePic || "");
+            setCoverPic(user.coverPic || "");
             setCollegeName(user.collegeName || "");
             setCompanyName(user.companyName || "");
-            // If year is 0 or empty, prefill empty string for nicer UX
             setStartYear(user.startYear ? String(user.startYear) : "");
             setEndYear(user.endYear ? String(user.endYear) : "");
             setLocationCountry(user.locationCountry || "");
@@ -68,6 +75,7 @@ const Edit_Profile_Page = () => {
                 startYear: startYear.trim() === "" ? "" : Number(startYear),
                 endYear: endYear.trim() === "" ? "" : Number(endYear),
                 profilePic,
+                coverPic,
                 locationCountry,
                 locationPostalCode,
                 locationCity,
@@ -76,11 +84,10 @@ const Edit_Profile_Page = () => {
             setShowToast(true);
             setIsSaving(false);
 
-            // Wait briefly so the user sees the toaster notification, then redirect to profile page
             setTimeout(() => {
                 setShowToast(false);
                 navigate("/profile");
-            }, 1800);
+            }, 1500);
         } catch (err) {
             setIsSaving(false);
             setError(err.message || "Something went wrong while updating your profile.");
@@ -92,7 +99,7 @@ const Edit_Profile_Page = () => {
             {showToast && (
                 <div className="toast-notification">
                     <div className="toast-icon-success">✓</div>
-                    <span>Saved successfully!</span>
+                    <span>Saved successfully! Redirecting to profile...</span>
                 </div>
             )}
 
@@ -100,7 +107,7 @@ const Edit_Profile_Page = () => {
                 {/* Header */}
                 <div className="edit-profile-header">
                     <h1>Edit profile</h1>
-                    <p className="edit-profile-subtitle">Keep your basic info and academic credentials up to date.</p>
+                    <p className="edit-profile-subtitle">Keep your branding, basic info, and academic credentials up to date.</p>
                 </div>
 
                 {/* Feedback Alerts */}
@@ -108,25 +115,99 @@ const Edit_Profile_Page = () => {
 
                 <form onSubmit={handleSubmit} className="auth-form">
                     
-                    {/* SECTION 1: BASIC INFO */}
+                    {/* SECTION 1: PROFILE IMAGES (BANNER & AVATAR) */}
                     <div className="edit-profile-section">
-                        <h3 className="edit-section-title">Basic Info</h3>
-                        
-                        {/* Live Avatar Preview */}
-                        <div className="avatar-preview-section">
-                            <img 
-                                src={profilePic.trim() ? profilePic : "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"} 
-                                alt="Avatar Preview" 
-                                className="avatar-preview-frame"
-                                onError={(e) => {
-                                    e.target.src = "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
-                                }}
-                            />
-                            <div className="avatar-preview-info">
-                                <strong>Avatar Preview</strong>
-                                <span>Updates in real-time based on the URL below</span>
+                        <h3 className="edit-section-title">Profile Imagery</h3>
+
+                        {/* Cover Image Banner Box */}
+                        <div className="edit-cover-wrapper">
+                            <label className="form-label" style={{ marginBottom: "0.5rem", display: "block" }}>
+                                Cover Banner
+                            </label>
+                            <div className="edit-cover-preview-box">
+                                {coverPic ? (
+                                    <img src={coverPic} alt="Cover preview" className="edit-cover-img" />
+                                ) : (
+                                    <div className="edit-cover-placeholder">
+                                        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.8">
+                                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                                            <circle cx="8.5" cy="8.5" r="1.5" />
+                                            <polyline points="21 15 16 10 5 21" />
+                                        </svg>
+                                        <span>No custom cover image set (default gradient shown)</span>
+                                    </div>
+                                )}
+                                <div className="edit-cover-overlay-actions">
+                                    <Button
+                                        type="button"
+                                        variant="primary"
+                                        size="sm"
+                                        onClick={() => setIsCoverCropOpen(true)}
+                                    >
+                                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                                            <circle cx="12" cy="13" r="4" />
+                                        </svg>
+                                        {coverPic ? "Edit / Crop Cover" : "Upload & Crop Cover"}
+                                    </Button>
+                                    {coverPic && (
+                                        <button
+                                            type="button"
+                                            className="edit-cover-remove-btn"
+                                            onClick={() => setCoverPic("")}
+                                            title="Remove Cover Image"
+                                        >
+                                            Remove
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         </div>
+
+                        {/* Live Avatar Preview */}
+                        <div className="avatar-preview-section">
+                            <div className="avatar-preview-relative">
+                                <img 
+                                    src={profilePic.trim() ? profilePic : "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"} 
+                                    alt="Avatar Preview" 
+                                    className="avatar-preview-frame"
+                                    onError={(e) => {
+                                        e.target.src = "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
+                                    }}
+                                />
+                                <button
+                                    type="button"
+                                    className="avatar-crop-trigger-btn"
+                                    onClick={() => setIsAvatarCropOpen(true)}
+                                    title="Crop Profile Picture"
+                                >
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                                        <circle cx="12" cy="13" r="4" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <div className="avatar-preview-info">
+                                <strong>Profile Photo</strong>
+                                <span>Click the camera icon to upload and crop, or paste a URL below</span>
+                            </div>
+                        </div>
+
+                        <div className="form-group" style={{ marginBottom: "1.25rem" }}>
+                            <label htmlFor="profilePic">Profile Picture URL</label>
+                            <input
+                                id="profilePic"
+                                type="text"
+                                placeholder="Paste image address/URL"
+                                value={profilePic}
+                                onChange={(e) => setProfilePic(e.target.value)}
+                            />
+                        </div>
+                    </div>
+                    
+                    {/* SECTION 2: BASIC INFO */}
+                    <div className="edit-profile-section">
+                        <h3 className="edit-section-title">Basic Info</h3>
 
                         <div className="form-grid form-grid-2" style={{ marginBottom: "1.25rem" }}>
                             <div className="form-group">
@@ -153,17 +234,6 @@ const Edit_Profile_Page = () => {
                             </div>
                         </div>
 
-                        <div className="form-group" style={{ marginBottom: "1.25rem" }}>
-                            <label htmlFor="profilePic">Profile Picture URL</label>
-                            <input
-                                id="profilePic"
-                                type="text"
-                                placeholder="Paste image address/URL"
-                                value={profilePic}
-                                onChange={(e) => setProfilePic(e.target.value)}
-                            />
-                        </div>
-
                         <div className="form-group">
                             <label htmlFor="bio">Bio</label>
                             <textarea
@@ -175,7 +245,7 @@ const Edit_Profile_Page = () => {
                         </div>
                     </div>
 
-                    {/* SECTION 2: COLLEGE DETAILS */}
+                    {/* SECTION 3: COLLEGE DETAILS */}
                     <div className="edit-profile-section">
                         <h3 className="edit-section-title">College Details</h3>
                         
@@ -219,7 +289,7 @@ const Edit_Profile_Page = () => {
                         </div>
                     </div>
 
-                    {/* SECTION 3: COMPANY DETAILS */}
+                    {/* SECTION 4: COMPANY DETAILS */}
                     <div className="edit-profile-section">
                         <h3 className="edit-section-title">Company Details</h3>
 
@@ -235,7 +305,7 @@ const Edit_Profile_Page = () => {
                         </div>
                     </div>
 
-                    {/* SECTION 4: LOCATION */}
+                    {/* SECTION 5: LOCATION */}
                     <div className="edit-profile-section">
                         <h3 className="edit-section-title">Location</h3>
 
@@ -275,17 +345,47 @@ const Edit_Profile_Page = () => {
                         </div>
                     </div>
 
-                    {/* Action Buttons: Cancel on left/middle, Save on right */}
+                    {/* Action Buttons */}
                     <div className="edit-actions">
-                        <Link to="/profile" className="btn btn-secondary" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                        <Link to="/profile" className="btn btn-secondary">
                             Cancel
                         </Link>
-                        <button type="submit" className="btn btn-primary" disabled={isSaving}>
-                            {isSaving ? "Saving..." : "Save"}
-                        </button>
+                        <Button type="submit" variant="primary" isLoading={isSaving}>
+                            {isSaving ? "Saving changes..." : "Save profile"}
+                        </Button>
                     </div>
                 </form>
             </div>
+
+            {/* Modal for Cover Banner Cropping */}
+            <ImageCropModal
+                isOpen={isCoverCropOpen}
+                onClose={() => setIsCoverCropOpen(false)}
+                onSave={async (croppedUrl) => {
+                    setCoverPic(croppedUrl);
+                }}
+                currentImage={coverPic}
+                title="Edit Cover Banner"
+                aspectRatio={3.6}
+                outputWidth={1200}
+                outputHeight={350}
+                allowRemove={true}
+            />
+
+            {/* Modal for Avatar Cropping */}
+            <ImageCropModal
+                isOpen={isAvatarCropOpen}
+                onClose={() => setIsAvatarCropOpen(false)}
+                onSave={async (croppedUrl) => {
+                    setProfilePic(croppedUrl);
+                }}
+                currentImage={profilePic}
+                title="Edit Profile Photo"
+                aspectRatio={1}
+                outputWidth={400}
+                outputHeight={400}
+                allowRemove={false}
+            />
         </div>
     );
 };

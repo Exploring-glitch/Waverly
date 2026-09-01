@@ -42,6 +42,7 @@ export const updateUserProfile = async (req, res) => {
             startYear, 
             endYear, 
             profilePic,
+            coverPic,
             locationCountry,
             locationPostalCode,
             locationCity
@@ -82,6 +83,7 @@ export const updateUserProfile = async (req, res) => {
             user.endYear = endYear === "" ? 0 : Number(endYear);
         }
         if (profilePic !== undefined) user.profilePic = profilePic;
+        if (coverPic !== undefined) user.coverPic = coverPic;
         
         if (locationCountry !== undefined) user.locationCountry = locationCountry;
         if (locationPostalCode !== undefined) user.locationPostalCode = locationPostalCode;
