@@ -44,9 +44,6 @@ const renderReplyContent = (content) => {
     return content;
 };
 
-/* ==========================================================================
-   Reply Item Component
-   ========================================================================== */
 const ReplyItem = ({ reply, postId, commentId, currentUserId, onCommentsUpdate, onReplyClick }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [editText, setEditText] = useState(reply.content || "");
@@ -140,7 +137,6 @@ const ReplyItem = ({ reply, postId, commentId, currentUserId, onCommentsUpdate, 
                         )}
                     </div>
 
-                    {/* Reply Actions Bar */}
                     <div className="feed-reply-actions-row">
                         <button
                             type="button"
@@ -180,7 +176,6 @@ const ReplyItem = ({ reply, postId, commentId, currentUserId, onCommentsUpdate, 
                 </div>
             </div>
 
-            {/* Delete Modal Confirmation */}
             {showDeleteConfirm && (
                 <div className="mini-delete-confirm-popup">
                     <p>Delete this reply?</p>
@@ -198,9 +193,6 @@ const ReplyItem = ({ reply, postId, commentId, currentUserId, onCommentsUpdate, 
     );
 };
 
-/* ==========================================================================
-   Comment Item Component
-   ========================================================================== */
 const CommentItem = ({ comment, postId, currentUserId, currentUserProfilePic, onCommentsUpdate }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [editText, setEditText] = useState(comment.content || "");
@@ -329,7 +321,6 @@ const CommentItem = ({ comment, postId, currentUserId, currentUserProfilePic, on
                         )}
                     </div>
 
-                    {/* Actions Bar */}
                     <div className="feed-comment-actions-row">
                         <button
                             type="button"
@@ -374,7 +365,6 @@ const CommentItem = ({ comment, postId, currentUserId, currentUserProfilePic, on
                         )}
                     </div>
 
-                    {/* Reply Input Drawer */}
                     {showReplyForm && (
                         <div className="feed-replies-drawer">
                             <form onSubmit={handleReplySubmit} className="feed-reply-input-bar">
@@ -411,7 +401,6 @@ const CommentItem = ({ comment, postId, currentUserId, currentUserProfilePic, on
                         </div>
                     )}
 
-                    {/* Instagram-style View / Hide Replies toggle */}
                     {replies.length > 0 && (
                         <div className="feed-view-replies-wrap">
                             <button
@@ -447,7 +436,6 @@ const CommentItem = ({ comment, postId, currentUserId, currentUserProfilePic, on
                 </div>
             </div>
 
-            {/* Delete Modal Confirmation */}
             {showDeleteConfirm && (
                 <div className="mini-delete-confirm-popup">
                     <p>Delete this comment?</p>
@@ -465,9 +453,6 @@ const CommentItem = ({ comment, postId, currentUserId, currentUserProfilePic, on
     );
 };
 
-/* ==========================================================================
-   Main PostCard Component
-   ========================================================================== */
 const PostCard = ({ post, onDelete, onUpdate, onSaveToggle }) => {
     const { user } = useAuth();
     const [likes, setLikes] = useState(post.likes || []);
@@ -492,7 +477,6 @@ const PostCard = ({ post, onDelete, onUpdate, onSaveToggle }) => {
     const isOwner = user && user._id === author._id;
     const isLiked = user && likes.includes(user._id);
 
-    // Total comments count including nested replies
     const totalCommentsCount = comments.reduce(
         (total, c) => total + 1 + (c.replies ? c.replies.length : 0),
         0
@@ -641,7 +625,6 @@ const PostCard = ({ post, onDelete, onUpdate, onSaveToggle }) => {
 
     return (
         <article className="feed-post-card-container" id={`post-${post._id}`}>
-            {/* Header: Author + Meta + Options Menu */}
             <div className="feed-post-header-row">
                 <div className="feed-post-author-group">
                     <Link to={`/users/${author.username || ""}`}>
@@ -674,7 +657,6 @@ const PostCard = ({ post, onDelete, onUpdate, onSaveToggle }) => {
                     </div>
                 </div>
 
-                {/* Post Options Menu */}
                 {isOwner && (
                     <div className="feed-post-menu-wrap">
                         <button
@@ -733,7 +715,6 @@ const PostCard = ({ post, onDelete, onUpdate, onSaveToggle }) => {
                 )}
             </div>
 
-            {/* Post Content */}
             <div className="feed-post-content-area">
                 {renderContent()}
 
@@ -753,7 +734,6 @@ const PostCard = ({ post, onDelete, onUpdate, onSaveToggle }) => {
                 )}
             </div>
 
-            {/* Reactions & Engagement Summary Stats Bar */}
             <div className="feed-post-stats-row">
                 <div className="feed-post-stats-likes">
                     {likes.length > 0 && (
@@ -776,7 +756,6 @@ const PostCard = ({ post, onDelete, onUpdate, onSaveToggle }) => {
                 </div>
             </div>
 
-            {/* Action Buttons Bar: Instagram Style (Like & Comment left, Share & Save right, symbols only) */}
             <div className="feed-post-actions-panel">
                 <div className="feed-post-actions-left">
                     <button
@@ -837,10 +816,8 @@ const PostCard = ({ post, onDelete, onUpdate, onSaveToggle }) => {
                 </div>
             </div>
 
-            {/* Comments Drawer */}
             {showComments && (
                 <div className="feed-comments-container">
-                    {/* Add Comment Field */}
                     <form onSubmit={handleCommentSubmit} className="feed-comment-composer">
                         <img
                             src={user?.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
@@ -866,7 +843,6 @@ const PostCard = ({ post, onDelete, onUpdate, onSaveToggle }) => {
                         </div>
                     </form>
 
-                    {/* Comments List */}
                     {comments.length > 0 ? (
                         <div className="feed-comments-stream">
                             {[...comments].reverse().map((comment) => (
@@ -886,7 +862,6 @@ const PostCard = ({ post, onDelete, onUpdate, onSaveToggle }) => {
                 </div>
             )}
 
-            {/* Edit Post Modal */}
             {isEditing && (
                 <div className="modal-overlay" onClick={() => setIsEditing(false)} style={{ zIndex: 3200 }}>
                     <div className="modal-box feed-composer-modal" onClick={(e) => e.stopPropagation()}>
@@ -987,7 +962,6 @@ const PostCard = ({ post, onDelete, onUpdate, onSaveToggle }) => {
                 </div>
             )}
 
-            {/* Delete Post Modal Confirmation */}
             {showDeleteConfirm && (
                 <div className="modal-overlay" onClick={() => setShowDeleteConfirm(false)} style={{ zIndex: 3200 }}>
                     <div className="modal-box delete-confirm-modal-box" onClick={(e) => e.stopPropagation()}>
@@ -1019,7 +993,6 @@ const PostCard = ({ post, onDelete, onUpdate, onSaveToggle }) => {
                 </div>
             )}
 
-            {/* Lightbox Modal */}
             {showLightbox && image && (
                 <div className="lightbox-modal-overlay" onClick={() => setShowLightbox(false)} style={{ zIndex: 4000 }}>
                     <div className="lightbox-content-box" onClick={(e) => e.stopPropagation()}>

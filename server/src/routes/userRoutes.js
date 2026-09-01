@@ -18,7 +18,6 @@ import {
 } from "../controllers/userController.js";
 const userRouter = express.Router();
 
-
 userRouter.get("/profile", protect, getMe)
 userRouter.put("/profile", protect, updateUserProfile)
 userRouter.get("/college/:name/members", protect, getUsersByCollege)
@@ -34,6 +33,4 @@ userRouter.post("/connect/reject/:targetUserId", protect, rejectConnectionReques
 userRouter.get("/:username/connections", protect, getUserConnections)
 userRouter.get("/:username", protect, getUserByUsername)
 
-
 export default userRouter;
-

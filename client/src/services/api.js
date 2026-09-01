@@ -126,4 +126,3 @@ export const postApi = {
     deleteReply: (postId, commentId, replyId) =>
         request(`/api/posts/${postId}/comments/${commentId}/replies/${replyId}`, { method: "DELETE" }),
 };
-

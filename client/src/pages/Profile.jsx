@@ -104,7 +104,6 @@ const Profile_Page = () => {
         return <div className="page-center"><div className="spinner" /></div>;
     }
 
-    // Profile Completion Calculation
     const profileChecks = [
         { label: "Profile photo", done: Boolean(user.profilePic) },
         { label: "Cover banner", done: Boolean(user.coverPic) },
@@ -119,7 +118,7 @@ const Profile_Page = () => {
     return (
         <div className="profile-page-wrapper">
             <div className="profile-grid">
-                {/* Main Left Column */}
+
                 <div className="profile-main-content">
                     <ProfileHeader user={user} connectionCount={connectionCount} />
                     <ProfileAbout user={user} isOwnProfile={true} />
@@ -127,9 +126,8 @@ const Profile_Page = () => {
                     <ProfileActivity />
                 </div>
 
-                {/* Sidebar Right Column */}
                 <div className="profile-right-sidebar">
-                    {/* Profile Strength Widget (if not 100%) */}
+
                     {completionPercentage < 100 && (
                         <div className="sidebar-widget-card profile-strength-widget">
                             <div className="widget-header-row">
@@ -161,7 +159,6 @@ const Profile_Page = () => {
                         </div>
                     )}
 
-                    {/* University / College Peers */}
                     <div className="sidebar-widget-card">
                         <div className="widget-header-row">
                             <div className="widget-icon-pill university-pill">
@@ -265,7 +262,6 @@ const Profile_Page = () => {
                         )}
                     </div>
 
-                    {/* Recommended Connections */}
                     <div className="sidebar-widget-card">
                         <div className="widget-header-row">
                             <div className="widget-icon-pill suggest-pill">
@@ -364,7 +360,6 @@ const Profile_Page = () => {
                 </div>
             </div>
 
-            {/* University Peers Full Modal */}
             {isCollegeModalOpen && (
                 <div className="modal-overlay" onClick={() => setIsCollegeModalOpen(false)} style={{ zIndex: 3200 }}>
                     <div className="modal-box connections-modal-box" onClick={e => e.stopPropagation()}>
@@ -462,7 +457,6 @@ const Profile_Page = () => {
                 </div>
             )}
 
-            {/* General Recommendations Full Modal */}
             {isRecommendModalOpen && (
                 <div className="modal-overlay" onClick={() => setIsRecommendModalOpen(false)} style={{ zIndex: 3200 }}>
                     <div className="modal-box connections-modal-box" onClick={e => e.stopPropagation()}>

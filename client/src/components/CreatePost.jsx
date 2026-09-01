@@ -124,7 +124,7 @@ const CreatePost = ({ autoFocus, onClose }) => {
             )}
 
             <div className="create-post-layout">
-                {/* User avatar next to the form */}
+
                 <img
                     src={user?.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
                     alt={user?.name || "User"}

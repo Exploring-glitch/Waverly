@@ -19,7 +19,7 @@ const Register_Page = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        // Clean username to alphanumeric and underscore/hyphen if username
+
         if (name === "username") {
             const cleaned = value.toLowerCase().replace(/[^a-z0-9_.]/g, "");
             setForm((prev) => ({ ...prev, username: cleaned }));
@@ -29,7 +29,6 @@ const Register_Page = () => {
         if (error) setError("");
     };
 
-    // Calculate password strength score 0-3
     const getPasswordStrength = (pass) => {
         if (!pass) return 0;
         let score = 0;

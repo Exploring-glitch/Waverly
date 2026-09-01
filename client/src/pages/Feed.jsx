@@ -69,12 +69,10 @@ const Feed_Page = () => {
         const content = newPostContent.trim();
         const image = newPostImage.trim() || "";
 
-        // Optimistically set the pending post and close the modal
         setPendingPost({ content, image });
         setIsPosting(true);
         setIsModalOpen(false);
 
-        // Reset inputs
         setNewPostContent("");
         setNewPostImage("");
         setShowImageInput(false);
@@ -91,7 +89,7 @@ const Feed_Page = () => {
         } catch (err) {
             console.error("Failed to create post", err);
             alert("Failed to create post. Please try again.");
-            // Restore inputs and reopen modal
+
             setNewPostContent(content);
             setNewPostImage(image);
             if (image) setShowImageInput(true);
@@ -172,11 +170,9 @@ const Feed_Page = () => {
     return (
         <div className="feed-page-wrapper">
             <div className="feed-grid-layout">
-                {/* ============================================================
-                   LEFT COLUMN: User Profile Card & Navigation Shortcuts
-                   ============================================================ */}
+
                 <aside className="feed-left-col">
-                    {/* User Profile Mini Hero Card */}
+
                     <div className="feed-profile-mini-card">
                         <div className="feed-mini-banner">
                             {user?.coverPic ? (
@@ -218,7 +214,6 @@ const Feed_Page = () => {
                             )}
                         </div>
 
-                        {/* Interactive Stats */}
                         <div className="feed-mini-stats-section">
                             <div className="feed-stat-item hover-lift" onClick={handleOpenConnections}>
                                 <div className="feed-stat-label-group">
@@ -244,7 +239,6 @@ const Feed_Page = () => {
                         </div>
                     </div>
 
-                    {/* Quick Navigation Drawer Card */}
                     <div className="feed-nav-shortcuts-card">
                         <Link to="/saved" className="feed-nav-link-row">
                             <div className="feed-nav-link-icon saved">
@@ -273,11 +267,8 @@ const Feed_Page = () => {
                     </div>
                 </aside>
 
-                {/* ============================================================
-                   MIDDLE COLUMN: Post Composer & Main Posts Feed
-                   ============================================================ */}
                 <main className="feed-main-col">
-                    {/* Modern Create Post Box */}
+
                     <div className="feed-composer-card">
                         <div className="feed-composer-top">
                             <img
@@ -347,9 +338,8 @@ const Feed_Page = () => {
                         </div>
                     </div>
 
-                    {/* Posts Stream */}
                     <div className="feed-posts-stream">
-                        {/* Optimistic Pending Post */}
+
                         {pendingPost && (
                             <div className="pending-post-card">
                                 <div className="pending-post-progress-bar" />
@@ -399,11 +389,8 @@ const Feed_Page = () => {
                     </div>
                 </main>
 
-                {/* ============================================================
-                   RIGHT COLUMN: Campus Jobs & Trending Topics Widgets
-                   ============================================================ */}
                 <aside className="feed-right-col">
-                    {/* Recommended Campus Jobs */}
+
                     <div className="feed-sidebar-card">
                         <div className="feed-sidebar-header">
                             <div className="feed-sidebar-title-group">
@@ -449,7 +436,6 @@ const Feed_Page = () => {
                         </div>
                     </div>
 
-                    {/* Trending Campus Topics */}
                     <div className="feed-sidebar-card">
                         <div className="feed-sidebar-header">
                             <div className="feed-sidebar-title-group">
@@ -478,9 +464,6 @@ const Feed_Page = () => {
                 </aside>
             </div>
 
-            {/* ============================================================
-               MODAL: Create New Post
-               ============================================================ */}
             {isModalOpen && (
                 <div className="modal-overlay" onClick={() => setIsModalOpen(false)} style={{ zIndex: 3200 }}>
                     <div className="modal-box feed-composer-modal" onClick={(e) => e.stopPropagation()}>
@@ -589,7 +572,6 @@ const Feed_Page = () => {
                 </div>
             )}
 
-            {/* Connections Modal */}
             {showConnectionsModal && (
                 <div className="modal-overlay" onClick={() => setShowConnectionsModal(false)} style={{ zIndex: 3200 }}>
                     <div className="modal-box connections-modal-box" onClick={(e) => e.stopPropagation()}>
@@ -650,7 +632,6 @@ const Feed_Page = () => {
                 </div>
             )}
 
-            {/* Profile Viewers Modal */}
             {showViewersModal && (
                 <div className="modal-overlay" onClick={() => setShowViewersModal(false)} style={{ zIndex: 3200 }}>
                     <div className="modal-box connections-modal-box" onClick={(e) => e.stopPropagation()}>

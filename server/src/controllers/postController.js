@@ -169,7 +169,6 @@ export const commentPost = async (req, res) => {
         post.comments.push(newComment);
         await post.save();
 
-        // Populate the author of the comments
         const populatedPost = await Post.findById(post._id)
             .populate({
                 path: "comments.author",

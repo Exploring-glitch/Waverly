@@ -40,7 +40,7 @@ const ProfileHeader = ({ user, connectionCount = 0 }) => {
     return (
         <>
             <div className="profile-container profile-card-elevated">
-                {/* Profile Cover / Banner */}
+
                 <div className="profile-banner-container">
                     {user?.coverPic ? (
                         <img
@@ -55,7 +55,6 @@ const ProfileHeader = ({ user, connectionCount = 0 }) => {
                         </div>
                     )}
 
-                    {/* Quick Edit Cover Button */}
                     <button
                         type="button"
                         className="banner-edit-btn"
@@ -72,7 +71,7 @@ const ProfileHeader = ({ user, connectionCount = 0 }) => {
 
                 <div className="profile-info-section">
                     <div className="profile-meta">
-                        {/* Avatar with quick edit camera hover */}
+
                         <div className="profile-avatar-wrapper">
                             <img
                                 src={user.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
@@ -96,7 +95,6 @@ const ProfileHeader = ({ user, connectionCount = 0 }) => {
                             </button>
                         </div>
 
-                        {/* Profile Action Buttons (Edit + Share) */}
                         <div className="profile-action-buttons">
                             <button
                                 type="button"
@@ -122,7 +120,6 @@ const ProfileHeader = ({ user, connectionCount = 0 }) => {
                         </div>
                     </div>
 
-                    {/* Name & Handle */}
                     <div className="profile-names">
                         <div className="profile-name-row">
                             <h2 className="profile-display-name">
@@ -151,7 +148,6 @@ const ProfileHeader = ({ user, connectionCount = 0 }) => {
                 </div>
             </div>
 
-            {/* Banner Crop / Edit Modal */}
             <ImageCropModal
                 isOpen={isCropModalOpen}
                 onClose={() => setIsCropModalOpen(false)}
@@ -164,7 +160,6 @@ const ProfileHeader = ({ user, connectionCount = 0 }) => {
                 allowRemove={true}
             />
 
-            {/* Avatar Crop / Edit Modal */}
             <ImageCropModal
                 isOpen={isAvatarModalOpen}
                 onClose={() => setIsAvatarModalOpen(false)}

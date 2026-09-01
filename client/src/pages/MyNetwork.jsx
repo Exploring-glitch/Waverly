@@ -12,8 +12,8 @@ const MyNetwork_Page = () => {
     const [cityMembers, setCityMembers] = useState([]);
     const [collegeMembers, setCollegeMembers] = useState([]);
     const [totalConnectionsCount, setTotalConnectionsCount] = useState(0);
-    const [activeTab, setActiveTab] = useState("all"); // 'all' | 'received' | 'sent' | 'college' | 'city'
-    
+    const [activeTab, setActiveTab] = useState("all"); 
+
     const [isLoadingRequests, setIsLoadingRequests] = useState(true);
     const [isLoadingSent, setIsLoadingSent] = useState(true);
     const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(true);
@@ -25,7 +25,7 @@ const MyNetwork_Page = () => {
     const [isFetchingConnections, setIsFetchingConnections] = useState(false);
 
     const fetchData = async () => {
-        // Fetch received requests
+
         try {
             const reqs = await userApi.getReceivedConnections();
             setReceivedRequests(reqs || []);
@@ -35,7 +35,6 @@ const MyNetwork_Page = () => {
             setIsLoadingRequests(false);
         }
 
-        // Fetch sent requests
         try {
             const sent = await userApi.getSentConnections();
             setSentRequests(sent || []);
@@ -45,7 +44,6 @@ const MyNetwork_Page = () => {
             setIsLoadingSent(false);
         }
 
-        // Fetch general suggestions
         try {
             const recs = await userApi.getRecommendedUsers();
             const filtered = (recs || []).filter(u => u._id !== user?._id);
@@ -57,7 +55,6 @@ const MyNetwork_Page = () => {
             setIsLoadingSuggestions(false);
         }
 
-        // Fetch city peers
         if (user?.locationCity) {
             setIsLoadingCity(true);
             try {
@@ -74,7 +71,6 @@ const MyNetwork_Page = () => {
             }
         }
 
-        // Fetch college peers
         if (user?.collegeName) {
             setIsLoadingCollege(true);
             try {
@@ -91,7 +87,6 @@ const MyNetwork_Page = () => {
             }
         }
 
-        // Fetch connection stats
         try {
             const stats = await userApi.getConnectionStats();
             setTotalConnectionsCount(stats?.connectionCount || 0);
@@ -164,7 +159,6 @@ const MyNetwork_Page = () => {
             else if (listType === "city") setCityMembers(updater);
             else if (listType === "college") setCollegeMembers(updater);
 
-            // Refetch sent requests to keep list updated
             const updatedSent = await userApi.getSentConnections();
             setSentRequests(updatedSent || []);
         } catch (err) {
@@ -291,9 +285,7 @@ const MyNetwork_Page = () => {
     return (
         <div className="network-page-wrapper">
             <div className="network-grid-layout">
-                {/* ============================================================
-                   LEFT SIDEBAR: Manage My Network
-                   ============================================================ */}
+
                 <aside className="network-sidebar-col">
                     <div className="network-sidebar-card">
                         <div className="network-sidebar-header">
@@ -397,7 +389,6 @@ const MyNetwork_Page = () => {
                         </div>
                     </div>
 
-                    {/* Network Tips Card */}
                     <div className="network-tips-card">
                         <div className="tips-icon-badge">💡</div>
                         <h4>Expand your campus reach</h4>
@@ -405,11 +396,8 @@ const MyNetwork_Page = () => {
                     </div>
                 </aside>
 
-                {/* ============================================================
-                   MAIN CONTENT: Invitations & Recommendations
-                   ============================================================ */}
                 <main className="network-main-col">
-                    {/* Filter Tabs */}
+
                     <div className="network-tabs-bar">
                         <button
                             type="button"
@@ -463,7 +451,6 @@ const MyNetwork_Page = () => {
                         )}
                     </div>
 
-                    {/* Active View: Received Invitations */}
                     {activeTab === "received" && (
                         <div className="network-section-card" id="pending-invitations-section">
                             <div className="network-section-header">
@@ -641,7 +628,6 @@ const MyNetwork_Page = () => {
                         </div>
                     )}
 
-                    {/* Active View: All Recommendations */}
                     {activeTab === "all" && (
                         <div className="network-section-card">
                             <div className="network-section-header">
@@ -676,7 +662,6 @@ const MyNetwork_Page = () => {
                         </div>
                     )}
 
-                    {/* Active View: College */}
                     {activeTab === "college" && user?.collegeName && (
                         <div className="network-section-card">
                             <div className="network-section-header">
@@ -705,7 +690,6 @@ const MyNetwork_Page = () => {
                         </div>
                     )}
 
-                    {/* Active View: City */}
                     {activeTab === "city" && user?.locationCity && (
                         <div className="network-section-card">
                             <div className="network-section-header">
@@ -736,7 +720,6 @@ const MyNetwork_Page = () => {
                 </main>
             </div>
 
-            {/* Connections Modal */}
             {showConnectionsModal && (
                 <div className="modal-overlay" onClick={() => setShowConnectionsModal(false)} style={{ zIndex: 3200 }}>
                     <div className="modal-box connections-modal-box" onClick={(e) => e.stopPropagation()}>

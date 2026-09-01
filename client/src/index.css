@@ -77,7 +77,6 @@ a:hover {
   text-decoration: none;
 }
 
-/* Global Container Styles */
 .page {
   padding: 2rem 1.5rem;
   max-width: 720px;
@@ -95,7 +94,6 @@ a:hover {
   color: var(--text-muted);
 }
 
-/* NAVBAR */
 .navbar-container,
 .navbar {
   display: flex;
@@ -378,7 +376,6 @@ a:hover {
   font-size: 0.9rem !important;
 }
 
-/* BUTTONS */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -485,7 +482,6 @@ a:hover {
   }
 }
 
-/* FORM INPUT */
 .form-group {
   display: flex;
   flex-direction: column;
@@ -602,7 +598,6 @@ a:hover {
   background-color: rgba(255, 255, 255, 0.08);
 }
 
-/* AUTH LAYOUT AND AUTH PAGES */
 .auth-page-container {
   position: relative;
   min-height: calc(100vh - 68px);
@@ -613,7 +608,6 @@ a:hover {
   overflow: hidden;
 }
 
-/* Ambient Radial Glows */
 .auth-ambient-glow {
   position: absolute;
   width: 500px;
@@ -817,7 +811,6 @@ a:hover {
   color: var(--text-muted);
 }
 
-/* Password Strength Meter */
 .password-strength-container {
   display: flex;
   align-items: center;
@@ -872,7 +865,6 @@ a:hover {
   font-weight: 600;
 }
 
-/* HOME LANDING PAGE */
 .home-page-container {
   position: relative;
   min-height: calc(100vh - 68px);
@@ -1085,7 +1077,6 @@ a:hover {
   color: var(--color-success);
 }
 
-/* Logout Modal Polishing */
 .modal-logout-box {
   max-width: 420px;
   padding: 2rem;
@@ -1183,7 +1174,6 @@ a:hover {
   font-size: 0.8rem;
 }
 
-/* Profile Page Styles */
 .profile-container.profile-card-elevated {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
@@ -1346,7 +1336,6 @@ a:hover {
   color: var(--text-accent);
 }
 
-/* Names & Typography */
 .profile-names {
   margin-bottom: 1rem;
 }
@@ -1408,7 +1397,6 @@ a:hover {
   border-radius: var(--radius-full);
 }
 
-/* Bio */
 .profile-bio-box {
   margin: 0.75rem 0 1.25rem;
   padding: 0.75rem 1rem;
@@ -1432,7 +1420,6 @@ a:hover {
   font-style: italic;
 }
 
-/* Metadata Chips Grid */
 .profile-chips-grid {
   display: flex;
   flex-wrap: wrap;
@@ -1499,7 +1486,6 @@ a:hover {
   color: var(--text-accent);
 }
 
-/* Profile Section Cards (About, Skills, Activity) */
 .profile-section-card {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
@@ -1576,7 +1562,6 @@ a:hover {
   transform: scale(1.05);
 }
 
-/* About Text & Empty State */
 .about-text-content p {
   margin: 0;
   color: var(--text-secondary);
@@ -1607,7 +1592,6 @@ a:hover {
   gap: 0.4rem;
 }
 
-/* Skills Tags Modern */
 .skills-tags-wrap {
   display: flex;
   flex-wrap: wrap;
@@ -1643,7 +1627,6 @@ a:hover {
   box-shadow: 0 0 6px var(--text-accent);
 }
 
-/* Skills Modal Form */
 .skills-modal-form,
 .about-modal-form {
   display: flex;
@@ -1796,7 +1779,6 @@ a:hover {
   margin-top: 0.5rem;
 }
 
-/* Image Crop & Edit Modal */
 .crop-modal-overlay {
   display: flex;
   align-items: center;
@@ -1882,7 +1864,6 @@ a:hover {
   font-size: 0.85rem;
 }
 
-/* Tabs */
 .crop-tabs-bar {
   display: flex;
   gap: 0.5rem;
@@ -1919,7 +1900,6 @@ a:hover {
   box-shadow: var(--shadow-sm);
 }
 
-/* Subviews */
 .crop-url-section {
   width: 100%;
 }
@@ -1992,7 +1972,6 @@ a:hover {
   text-align: center;
 }
 
-/* Crop Viewport */
 .crop-viewport-outer {
   width: 100%;
   display: flex;
@@ -2040,7 +2019,6 @@ a:hover {
   object-fit: contain;
 }
 
-/* Circular Mask Overlay (Aperture) */
 .crop-round-mask-container {
   position: absolute;
   inset: 0;
@@ -2086,7 +2064,6 @@ a:hover {
   pointer-events: none;
 }
 
-/* Rectangular Guideline Overlay */
 .crop-guideline-overlay {
   position: absolute;
   inset: 0;
@@ -2182,7 +2159,6 @@ a:hover {
   font-size: 0.76rem;
 }
 
-/* Control Panel */
 .crop-controls-panel {
   display: flex;
   flex-direction: column;
@@ -2303,7 +2279,6 @@ a:hover {
   border-left: 1px solid var(--border-subtle);
 }
 
-/* Filters */
 .crop-filters-row {
   display: flex;
   align-items: center;
@@ -2340,7 +2315,6 @@ a:hover {
   border-color: transparent;
 }
 
-/* Modal Footer */
 .crop-modal-footer {
   display: flex;
   justify-content: space-between;
@@ -2373,7 +2347,6 @@ a:hover {
   margin-left: auto;
 }
 
-/* Edit Profile Cover Imagery Section */
 .edit-cover-wrapper {
   margin-bottom: 1.5rem;
 }
@@ -2482,7 +2455,6 @@ a:hover {
   color: #e7e9ea;
 }
 
-/* Profile Metadata Row */
 .profile-metadata {
   display: flex;
   flex-wrap: wrap;
@@ -2515,12 +2487,10 @@ a:hover {
   margin-right: 0.2rem;
 }
 
-
 .profile-detail-item strong {
   color: #e7e9ea;
 }
 
-/* Additional Name Display */
 .profile-additional-name {
   font-size: 1.15rem;
   font-weight: 500;
@@ -2528,7 +2498,6 @@ a:hover {
   margin-left: 0.5rem;
 }
 
-/* Edit Profile Form Styles */
 .edit-profile-card {
   width: 100%;
   background: #16181c;
@@ -2602,7 +2571,6 @@ a:hover {
   border-color: transparent;
 }
 
-/* Avatar Preview UI */
 .avatar-preview-section {
   display: flex;
   align-items: center;
@@ -2645,7 +2613,6 @@ a:hover {
   color: #e7e9ea;
 }
 
-/* Edit Profile Action Buttons (Bottom Right alignment) */
 .edit-actions {
   display: flex;
   align-items: center;
@@ -2677,7 +2644,6 @@ a:hover {
   border: 1px solid rgba(244, 33, 46, 0.2);
 }
 
-/* Custom Glassmorphic Toast Notification */
 .toast-notification {
   position: fixed;
   top: 24px;
@@ -2725,7 +2691,6 @@ a:hover {
   }
 }
 
-/* Spinner Loader */
 .spinner {
   width: 32px;
   height: 32px;
@@ -2742,7 +2707,6 @@ a:hover {
   }
 }
 
-/* Campus Feed Styles */
 .feed-container {
   max-width: 600px;
   margin: 0 auto;
@@ -2768,7 +2732,6 @@ a:hover {
   margin: 0;
 }
 
-/* Create Post Card */
 .create-post-card {
   background: #16181c;
   border: 1px solid #2f3336;
@@ -2844,7 +2807,6 @@ a:hover {
   font-size: 0.95rem;
 }
 
-/* Feed List & Post Cards */
 .feed-list {
   display: flex;
   flex-direction: column;
@@ -2990,7 +2952,6 @@ a:hover {
   transform: scale(1.02);
 }
 
-/* Empty State */
 .feed-empty-state {
   text-align: center;
   padding: 3rem 1.5rem;
@@ -3008,7 +2969,6 @@ a:hover {
   margin-bottom: 1rem;
 }
 
-/* Micro-animations */
 .show-all-btn {
   transition: all 0.2s ease;
 }
@@ -3027,7 +2987,6 @@ a:hover {
   transform: translateX(4px);
 }
 
-/* Search Page */
 .search-page {
   max-width: 720px;
 }
@@ -3332,7 +3291,6 @@ a:hover {
   }
 }
 
-/* Modal styles */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -3424,7 +3382,6 @@ a:hover {
   }
 }
 
-/* Skill Badges styling */
 .skill-badge {
   display: inline-block;
   padding: 0.5rem 1rem;
@@ -3445,7 +3402,6 @@ a:hover {
   box-shadow: 0 4px 12px rgba(29, 155, 240, 0.15);
 }
 
-/* Post Actions Bar (LinkedIn style) */
 .post-actions-bar {
   display: flex;
   justify-content: space-between;
@@ -3488,7 +3444,7 @@ a:hover {
 
 .post-action-btn.active {
   color: #1d9bf0;
-  /* Active blue color like LinkedIn */
+
 }
 
 .post-action-btn svg {
@@ -3502,7 +3458,6 @@ a:hover {
   fill: #1d9bf0;
 }
 
-/* Post Comments Section */
 .post-comments-section {
   padding-top: 1rem;
   margin-top: 0.5rem;
@@ -3511,7 +3466,6 @@ a:hover {
   gap: 1rem;
 }
 
-/* Comment Input Area */
 .comment-input-wrapper {
   display: flex;
   gap: 0.75rem;
@@ -3570,7 +3524,6 @@ a:hover {
   cursor: not-allowed;
 }
 
-/* Comments List */
 .comments-list {
   display: flex;
   flex-direction: column;
@@ -3637,7 +3590,6 @@ a:hover {
   margin-top: 0.25rem;
 }
 
-/* Temporary Alert/Tooltip for share copy success */
 .share-alert {
   position: absolute;
   bottom: 100%;
@@ -3676,7 +3628,6 @@ a:hover {
   }
 }
 
-/* Comment Row layout (LinkedIn style - bubble left, like right) */
 .comment-row {
   display: flex;
   gap: 0.5rem;
@@ -3724,13 +3675,12 @@ a:hover {
   margin-left: 0.15rem;
 }
 
-/* Comment Action Options Bar (below bubble on left) */
 .comment-options-bar {
   display: flex;
   gap: 0.75rem;
   align-items: center;
   margin-left: 3.25rem;
-  /* indents to align under the bubble */
+
   margin-top: -0.25rem;
   margin-bottom: 0.5rem;
 }
@@ -3757,7 +3707,6 @@ a:hover {
   background-color: rgba(244, 33, 46, 0.08);
 }
 
-/* Comment Edit Mode styling */
 .comment-edit-wrapper {
   display: flex;
   flex-direction: column;
@@ -3816,10 +3765,9 @@ a:hover {
   background: rgba(231, 233, 234, 0.08);
 }
 
-/* Nested Replies styling */
 .comment-replies-section {
   margin-left: 3.25rem;
-  /* indents all replies */
+
   border-left: 2px solid #2f3336;
   padding-left: 1rem;
   margin-bottom: 0.75rem;
@@ -3911,7 +3859,7 @@ a:hover {
 
 .reply-bubble {
   background: #16181c;
-  /* slightly darker than comment bubble */
+
   border-radius: 10px;
   padding: 0.45rem 0.65rem;
   flex: 1;
@@ -3958,7 +3906,6 @@ a:hover {
   margin-top: 0.15rem;
 }
 
-/* Feed Page & Post Cards System */
 .feed-page-wrapper {
   width: 100%;
   max-width: 1180px;
@@ -3991,7 +3938,6 @@ a:hover {
   min-width: 0;
 }
 
-/* Left Sidebar Profile Mini Card */
 .feed-profile-mini-card {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
@@ -4106,7 +4052,6 @@ a:hover {
   max-width: 100%;
 }
 
-/* Left Mini Stats */
 .feed-mini-stats-section {
   border-top: 1px solid var(--border-subtle);
   padding: 0.5rem 0.75rem;
@@ -4149,7 +4094,6 @@ a:hover {
   color: var(--text-accent);
 }
 
-/* Left Nav Shortcuts Card */
 .feed-nav-shortcuts-card {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
@@ -4204,7 +4148,6 @@ a:hover {
   color: #c084fc;
 }
 
-/* Composer Card (Feed Middle) */
 .feed-composer-card {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
@@ -4316,7 +4259,6 @@ a:hover {
   color: #f43f5e;
 }
 
-/* Posts Stream */
 .feed-posts-stream {
   display: flex;
   flex-direction: column;
@@ -4399,7 +4341,6 @@ a:hover {
   object-fit: cover;
 }
 
-/* Empty Feed Card */
 .feed-empty-state-card {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
@@ -4437,9 +4378,6 @@ a:hover {
   line-height: 1.5;
 }
 
-/* ==========================================================================
-   PostCard Container Styles
-   ========================================================================== */
 .feed-post-card-container {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
@@ -4606,7 +4544,6 @@ a:hover {
   color: #fca5a5;
 }
 
-/* Post Content Area */
 .feed-post-content-area {
   display: flex;
   flex-direction: column;
@@ -4660,7 +4597,6 @@ a:hover {
   transform: scale(1.01);
 }
 
-/* Reactions & Stats Row */
 .feed-post-stats-row {
   display: flex;
   justify-content: space-between;
@@ -4696,8 +4632,6 @@ a:hover {
   text-decoration: underline;
 }
 
-/* Action Buttons Bar */
-/* Action Buttons Bar: Instagram Style */
 .feed-post-actions-panel {
   display: flex;
   justify-content: space-between;
@@ -4761,7 +4695,6 @@ a:hover {
   line-height: 1;
 }
 
-/* Instagram-style View Replies Toggle */
 .feed-view-replies-wrap {
   margin-top: 0.35rem;
   padding-left: 0.25rem;
@@ -4799,7 +4732,6 @@ a:hover {
   opacity: 1;
 }
 
-/* Comments Drawer */
 .feed-comments-container {
   border-top: 1px solid rgba(255, 255, 255, 0.06);
   padding-top: 1rem;
@@ -4879,7 +4811,6 @@ a:hover {
   font-style: italic;
 }
 
-/* Comment Item Structure */
 .feed-comment-item-wrapper {
   display: flex;
   flex-direction: column;
@@ -4991,7 +4922,6 @@ a:hover {
   color: #f87171;
 }
 
-/* Replies Drawer */
 .feed-replies-drawer {
   margin-top: 0.45rem;
   display: flex;
@@ -5130,7 +5060,6 @@ a:hover {
   text-decoration: none;
 }
 
-/* Modal and Popup Details */
 .mini-delete-confirm-popup {
   position: absolute;
   top: 50%;
@@ -5215,7 +5144,6 @@ a:hover {
   justify-content: center;
 }
 
-/* Feed Right Sidebar (Jobs & Trending) */
 .feed-sidebar-card {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
@@ -5376,7 +5304,6 @@ a:hover {
   color: #4ade80;
 }
 
-/* Trending Topics */
 .feed-trending-list {
   display: flex;
   flex-direction: column;
@@ -5408,7 +5335,6 @@ a:hover {
   color: var(--text-muted);
 }
 
-/* Composer Modal Styles */
 .feed-composer-modal {
   width: 100%;
   max-width: 580px;
@@ -5560,7 +5486,6 @@ a:hover {
   gap: 0.65rem;
 }
 
-/* Lightbox Modal */
 .lightbox-modal-overlay {
   position: fixed;
   inset: 0;
@@ -5635,7 +5560,6 @@ a:hover {
   background-color: rgba(231, 233, 234, 0.04);
 }
 
-/* Create Post Card (Start a post) */
 .create-post-card {
   background: #1d2226;
   border: 1px solid #2f3336;
@@ -5722,7 +5646,6 @@ a:hover {
   color: #f5987e;
 }
 
-/* Sort Divider */
 .feed-sort-divider {
   display: flex;
   align-items: center;
@@ -5751,7 +5674,6 @@ a:hover {
   outline: none;
 }
 
-/* Right Sidebar News Widget */
 .widget-card {
   background: #16181c;
   border: 1px solid #2f3336;
@@ -5798,7 +5720,6 @@ a:hover {
   color: #71767b;
 }
 
-/* Modal Overlay & Modal */
 .post-modal-overlay {
   position: fixed;
   top: 0;
@@ -6042,7 +5963,6 @@ a:hover {
   }
 }
 
-/* LinkedIn Post Card Styles */
 .linkedin-post-card {
   background: #1d2226;
   border: 1px solid #2f3336;
@@ -6107,7 +6027,6 @@ a:hover {
   margin-right: 0.25rem;
 }
 
-/* Profile Layout with Right Sidebar */
 .profile-page-wrapper {
   width: 100%;
   max-width: 1140px;
@@ -6154,7 +6073,6 @@ a:hover {
   background: transparent;
 }
 
-/* Sidebar Widget Cards */
 .sidebar-widget-card {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
@@ -6221,7 +6139,6 @@ a:hover {
   text-overflow: ellipsis;
 }
 
-/* Profile Strength Meter */
 .profile-strength-widget {
   background: linear-gradient(135deg, rgba(56, 189, 248, 0.06) 0%, rgba(30, 58, 138, 0.1) 100%), var(--bg-card);
   border-color: rgba(56, 189, 248, 0.2);
@@ -6256,7 +6173,6 @@ a:hover {
   margin-top: 0.2rem;
 }
 
-/* Widget Users List */
 .widget-users-list {
   display: flex;
   flex-direction: column;
@@ -6407,7 +6323,6 @@ a:hover {
   font-size: 0.82rem;
 }
 
-/* Connections Full Modal */
 .connections-modal-box {
   width: 100%;
   max-width: 520px;
@@ -6545,7 +6460,6 @@ a:hover {
   }
 }
 
-/* Modal backdrop and blur */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -6672,7 +6586,6 @@ a:hover {
   color: #0f75bc;
 }
 
-/* My Network Page Styling */
 .network-page-wrapper {
   width: 100%;
   max-width: 1180px;
@@ -6825,7 +6738,6 @@ a:hover {
   min-width: 0;
 }
 
-/* Network Section Cards */
 .network-section-card {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
@@ -6898,7 +6810,6 @@ a:hover {
   margin-top: 0.15rem;
 }
 
-/* Invitations List */
 .network-invitations-list {
   display: flex;
   flex-direction: column;
@@ -7025,7 +6936,6 @@ a:hover {
   align-items: center;
 }
 
-/* Tabs Bar */
 .network-tabs-bar {
   display: flex;
   gap: 0.65rem;
@@ -7072,7 +6982,6 @@ a:hover {
   color: #ffffff;
 }
 
-/* Grid of Recommendation Cards */
 .network-grid-body {
   padding: 1.5rem;
 }

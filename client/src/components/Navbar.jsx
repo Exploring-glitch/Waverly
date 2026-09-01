@@ -11,7 +11,6 @@ const Navbar = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-    // Notification badges state
     const [hasNetworkNotification, setHasNetworkNotification] = useState(false);
     const [hasFeedNotification, setHasFeedNotification] = useState(false);
 
@@ -19,7 +18,7 @@ const Navbar = () => {
         if (!user) return;
 
         try {
-            // 1. Check Network notifications (received invitations or newly accepted connections)
+
             const [receivedReqs, statsData] = await Promise.allSettled([
                 userApi.getReceivedConnections(),
                 userApi.getConnectionStats()
@@ -33,7 +32,6 @@ const Navbar = () => {
                 10
             );
 
-            // If on /network page right now, update stored metrics and clear if no pending requests
             if (location.pathname === "/network") {
                 if (stats && stats.connectionCount !== undefined) {
                     localStorage.setItem("waverly_last_seen_connections_count", String(stats.connectionCount));
@@ -54,7 +52,7 @@ const Navbar = () => {
         }
 
         try {
-            // 2. Check Feed notifications (new post by other users since last feed visit)
+
             if (location.pathname === "/feed") {
                 localStorage.setItem("waverly_last_feed_visit", new Date().toISOString());
                 setHasFeedNotification(false);
@@ -95,7 +93,6 @@ const Navbar = () => {
 
         checkNotifications();
 
-        // Check on window focus and every 25 seconds
         const handleFocus = () => checkNotifications();
         window.addEventListener("focus", handleFocus);
         const intervalId = setInterval(checkNotifications, 25000);
@@ -123,7 +120,7 @@ const Navbar = () => {
         <>
             <header className="navbar-container">
                 <div className="navbar-inner">
-                    {/* Left: Brand */}
+
                     <div className="navbar-left">
                         <Link to="/" className="navbar-brand-group">
                             <div className="navbar-logo-badge">
@@ -137,7 +134,6 @@ const Navbar = () => {
                         </Link>
                     </div>
 
-                    {/* Center: Search */}
                     {user && (
                         <div className="navbar-center">
                             <form className="navbar-search-form" onSubmit={handleSearchSubmit}>
@@ -159,7 +155,6 @@ const Navbar = () => {
                         </div>
                     )}
 
-                    {/* Right: Actions */}
                     <nav className="navbar-actions">
                         {user ? (
                             <>
@@ -246,7 +241,6 @@ const Navbar = () => {
                 </div>
             </header>
 
-            {/* Logout Confirmation Modal */}
             {showLogoutModal && (
                 <div className="modal-overlay" onClick={() => setShowLogoutModal(false)} style={{ zIndex: 3500 }}>
                     <div className="modal-box delete-confirm-modal-box" onClick={(e) => e.stopPropagation()}>

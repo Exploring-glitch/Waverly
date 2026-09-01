@@ -7,11 +7,11 @@ const Home_Page = () => {
 
     return (
         <div className="home-page-container">
-            {/* Ambient Lighting */}
+
             <div className="home-ambient-glow" />
 
             <div className="home-content">
-                {/* Hero Section */}
+
                 <div className="home-hero-section">
                     <div className="home-hero-badge">
                         <span className="badge-dot" />
@@ -58,7 +58,6 @@ const Home_Page = () => {
                     </div>
                 </div>
 
-                {/* Feature Highlights Grid */}
                 <div className="home-features-grid">
                     <div className="home-feature-card">
                         <div className="feature-icon-badge">
@@ -94,7 +93,6 @@ const Home_Page = () => {
                     </div>
                 </div>
 
-                {/* User quick status if authenticated */}
                 {user && (
                     <div className="home-authenticated-status-card">
                         <div className="status-avatar-col">

@@ -43,8 +43,8 @@ const ImageCropModal = ({
     onSave,
     currentImage = "",
     title = "Edit Cover Image",
-    aspectRatio = 3.6, // width / height ratio
-    cropShape, // 'rect' | 'round' (defaults to 'round' when aspectRatio === 1)
+    aspectRatio = 3.6, 
+    cropShape, 
     outputWidth = 1200,
     allowRemove = true,
 }) => {
@@ -53,13 +53,13 @@ const ImageCropModal = ({
     const [naturalSize, setNaturalSize] = useState({ width: 0, height: 0 });
     const [viewportSize, setViewportSize] = useState({ width: 600, height: 320 });
     const [zoom, setZoom] = useState(1);
-    const [rotation, setRotation] = useState(0); // 0, 90, 180, 270
+    const [rotation, setRotation] = useState(0); 
     const [flipH, setFlipH] = useState(false);
     const [selectedFilter, setSelectedFilter] = useState("none");
     const [pan, setPan] = useState({ x: 0, y: 0 });
     const [isDragging, setIsDragging] = useState(false);
     const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-    const [activeTab, setActiveTab] = useState("crop"); // 'crop' | 'presets' | 'url'
+    const [activeTab, setActiveTab] = useState("crop"); 
     const [urlInput, setUrlInput] = useState("");
     const [isProcessing, setIsProcessing] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
@@ -67,7 +67,6 @@ const ImageCropModal = ({
     const fileInputRef = useRef(null);
     const viewportRef = useRef(null);
 
-    // Measure viewport on render & resize
     const updateViewportDimensions = useCallback(() => {
         if (viewportRef.current) {
             const w = viewportRef.current.clientWidth;
@@ -76,7 +75,6 @@ const ImageCropModal = ({
         }
     }, [aspectRatio, isRound]);
 
-    // Load image natural dimensions whenever imageSrc changes
     useEffect(() => {
         if (!imageSrc) {
             setNaturalSize({ width: 0, height: 0 });
@@ -90,7 +88,6 @@ const ImageCropModal = ({
         img.src = imageSrc;
     }, [imageSrc]);
 
-    // Sync currentImage when modal opens
     useEffect(() => {
         if (isOpen) {
             setImageSrc(currentImage || "");
@@ -108,14 +105,12 @@ const ImageCropModal = ({
         }
     }, [isOpen, currentImage, updateViewportDimensions]);
 
-    // Handle Window Resize
     useEffect(() => {
         if (!isOpen) return;
         window.addEventListener("resize", updateViewportDimensions);
         return () => window.removeEventListener("resize", updateViewportDimensions);
     }, [isOpen, updateViewportDimensions]);
 
-    // Handle Local File Selection
     const handleFileChange = (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -143,7 +138,6 @@ const ImageCropModal = ({
         reader.readAsDataURL(file);
     };
 
-    // Handle Direct URL Submission
     const handleApplyUrl = (e) => {
         e?.preventDefault();
         const trimmed = urlInput.trim();
@@ -156,7 +150,6 @@ const ImageCropModal = ({
         setActiveTab("crop");
     };
 
-    // Drag / Pan mouse handlers
     const handleMouseDown = (e) => {
         if (!imageSrc) return;
         e.preventDefault();
@@ -176,7 +169,6 @@ const ImageCropModal = ({
         setIsDragging(false);
     };
 
-    // Touch handlers for mobile
     const handleTouchStart = (e) => {
         if (!imageSrc || !e.touches[0]) return;
         const touch = e.touches[0];
@@ -193,19 +185,16 @@ const ImageCropModal = ({
         });
     };
 
-    // Position Quick Shortcuts
     const handleAlignPosition = (pos) => {
         if (pos === "top") setPan(prev => ({ ...prev, y: 40 }));
         else if (pos === "center") setPan({ x: 0, y: 0 });
         else if (pos === "bottom") setPan(prev => ({ ...prev, y: -40 }));
     };
 
-    // Circle Diameter for round mode
     const vpW = viewportSize.width || 600;
     const vpH = isRound ? 320 : (viewportSize.height || 600 / aspectRatio);
     const circleDiameter = isRound ? Math.min(250, vpW - 40, vpH - 40) : 0;
 
-    // Exact Base Scale calculation
     let baseScale = 1;
     let baseW = vpW;
     let baseH = vpH;
@@ -220,7 +209,6 @@ const ImageCropModal = ({
         baseH = naturalSize.height * baseScale;
     }
 
-    // Generate Final Cropped Image with WYSIWYG Canvas
     const handleSaveCrop = async () => {
         if (!imageSrc) {
             await onSave("");
@@ -253,48 +241,40 @@ const ImageCropModal = ({
                 img.src = imageSrc;
             });
 
-            // Fill canvas background
             ctx.fillStyle = "#0f1624";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Apply selected filter to canvas
             const activeFilterObj = FILTERS.find(f => f.id === selectedFilter);
             if (activeFilterObj && activeFilterObj.filter !== "none") {
                 ctx.filter = activeFilterObj.filter;
             }
 
-            // Exact scale ratio between canvas and DOM target frame
             const referenceFrameSize = isRound ? circleDiameter : vpW;
             const canvasScaleRatio = outW / referenceFrameSize;
 
             ctx.save();
-            // 1. Move to canvas center
+
             ctx.translate(canvas.width / 2, canvas.height / 2);
 
-            // 2. Apply scaled pan (exact WYSIWYG)
             ctx.translate(pan.x * canvasScaleRatio, pan.y * canvasScaleRatio);
 
-            // 3. Apply rotation
             ctx.rotate((rotation * Math.PI) / 180);
 
-            // 4. Apply flip
             ctx.scale(flipH ? -1 : 1, 1);
 
-            // 5. Draw image matching exact DOM dimensions
             const targetDrawW = baseW * zoom * canvasScaleRatio;
             const targetDrawH = baseH * zoom * canvasScaleRatio;
 
             ctx.drawImage(img, -targetDrawW / 2, -targetDrawH / 2, targetDrawW, targetDrawH);
             ctx.restore();
 
-            // Export high-quality image URL (JPEG quality 0.9)
             const croppedDataUrl = canvas.toDataURL("image/jpeg", 0.9);
             await onSave(croppedDataUrl);
             setIsProcessing(false);
             onClose();
         } catch (err) {
             console.error("Cropping error:", err);
-            // Fallback for CORS restricted images
+
             if (imageSrc.startsWith("http")) {
                 await onSave(imageSrc);
                 setIsProcessing(false);
@@ -328,7 +308,7 @@ const ImageCropModal = ({
                 className="modal-box crop-modal-container"
                 onClick={(e) => e.stopPropagation()}
             >
-                {/* Header */}
+
                 <div className="crop-modal-header">
                     <div className="crop-modal-title-group">
                         <div className="crop-modal-icon">
@@ -372,7 +352,6 @@ const ImageCropModal = ({
                     </div>
                 )}
 
-                {/* Tabs */}
                 <div className="crop-tabs-bar">
                     <button
                         type="button"
@@ -420,7 +399,6 @@ const ImageCropModal = ({
                     />
                 </div>
 
-                {/* Subview: URL Input */}
                 {activeTab === "url" && (
                     <form onSubmit={handleApplyUrl} className="crop-url-section">
                         <div className="crop-url-input-group">
@@ -438,7 +416,6 @@ const ImageCropModal = ({
                     </form>
                 )}
 
-                {/* Subview: Presets */}
                 {!isRound && activeTab === "presets" && (
                     <div className="crop-presets-grid">
                         {PRESET_BANNERS.map((preset) => (
@@ -459,7 +436,6 @@ const ImageCropModal = ({
                     </div>
                 )}
 
-                {/* Interactive Crop Viewport */}
                 <div className={`crop-viewport-outer ${isRound ? "is-round-outer" : ""}`}>
                     <div
                         className={`crop-viewport-wrapper ${isRound ? "is-round-mode" : ""}`}
@@ -478,7 +454,7 @@ const ImageCropModal = ({
                     >
                         {imageSrc ? (
                             <>
-                                {/* Draggable Image Layer */}
+
                                 <div
                                     className="crop-image-layer"
                                     style={{
@@ -502,9 +478,8 @@ const ImageCropModal = ({
                                     />
                                 </div>
 
-                                {/* Mask & Guideline Overlays */}
                                 {isRound ? (
-                                    /* Circular Cutout Mask & Guides */
+
                                     <div className="crop-round-mask-container">
                                         <div
                                             className="crop-round-aperture"
@@ -519,7 +494,7 @@ const ImageCropModal = ({
                                         </div>
                                     </div>
                                 ) : (
-                                    /* Rectangular Banner Guidelines */
+
                                     <div className="crop-guideline-overlay">
                                         <div className="grid-line grid-line-h1" />
                                         <div className="grid-line grid-line-h2" />
@@ -558,10 +533,9 @@ const ImageCropModal = ({
                     </div>
                 </div>
 
-                {/* Control Panel: Zoom, Rotate, Alignment, Filters */}
                 {imageSrc && (
                     <div className="crop-controls-panel">
-                        {/* Row 1: Zoom Slider + Transform Buttons */}
+
                         <div className="crop-control-row">
                             <div className="crop-zoom-group">
                                 <span className="crop-control-label">Zoom</span>
@@ -633,7 +607,6 @@ const ImageCropModal = ({
                             </div>
                         </div>
 
-                        {/* Row 2: Filter Selection Pills */}
                         <div className="crop-filters-row">
                             <span className="crop-control-label">Filter</span>
                             <div className="crop-filter-pills">
@@ -652,7 +625,6 @@ const ImageCropModal = ({
                     </div>
                 )}
 
-                {/* Footer Action Buttons */}
                 <div className="crop-modal-footer">
                     {allowRemove && currentImage && (
                         <button

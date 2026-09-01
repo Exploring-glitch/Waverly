@@ -11,12 +11,12 @@ const AuthLayout = ({
 }) => {
     return (
         <div className="auth-page-container">
-            {/* Ambient Background Glows */}
+
             <div className="auth-ambient-glow auth-ambient-top" />
             <div className="auth-ambient-glow auth-ambient-bottom" />
 
             <div className="auth-card-wrapper">
-                {/* Brand Header */}
+
                 <div className="auth-brand-header">
                     <Link to="/" className="auth-brand-link">
                         <div className="auth-logo-icon">
@@ -31,7 +31,6 @@ const AuthLayout = ({
                     {badgeText && <span className="auth-badge-pill">{badgeText}</span>}
                 </div>
 
-                {/* Main Card */}
                 <div className="auth-glass-card">
                     <div className="auth-header-text">
                         <h1 className="auth-title">{title}</h1>
@@ -52,7 +51,6 @@ const AuthLayout = ({
                     </div>
                 </div>
 
-                {/* Subtle trust / encryption indicator */}
                 <div className="auth-security-footer">
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />

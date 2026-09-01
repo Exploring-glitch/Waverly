@@ -15,7 +15,6 @@ if (!process.env.JWT_SECRET) {
 
 const app = express();
 
-
 app.use(cors({
     origin: [process.env.CLIENT_URL],
     credentials: true
@@ -24,13 +23,10 @@ app.use(cors({
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
-
-
 app.use("/api/auth", authRouter)
 app.use("/api/users", userRouter)
 app.use("/api/posts", postRouter)
 app.use("/api/search", searchRouter)
-
 
 const PORT = process.env.PORT;
 connectDB().then(() => {

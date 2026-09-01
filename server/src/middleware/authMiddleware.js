@@ -1,9 +1,6 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
-/**
- * Protects routes: reads Bearer token, verifies JWT, attaches user to req.
- */
 export const protect = async (req, res, next) => {
     let token;
 

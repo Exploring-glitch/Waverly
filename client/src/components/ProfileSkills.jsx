@@ -28,7 +28,6 @@ const ProfileSkills = ({ user, isOwnProfile }) => {
         const text = (skillToAdd || newSkillInput).trim();
         if (!text) return;
 
-        // Prevent duplicate tags (case-insensitive)
         if (editedSkills.some(s => s.toLowerCase() === text.toLowerCase())) {
             setError(`"${text}" is already in your skills list.`);
             return;
@@ -132,7 +131,6 @@ const ProfileSkills = ({ user, isOwnProfile }) => {
                 )}
             </div>
 
-            {/* Edit Modal */}
             {isEditing && (
                 <div className="modal-overlay" onClick={handleDiscard} style={{ zIndex: 3200 }}>
                     <div className="modal-box skills-edit-modal" onClick={(e) => e.stopPropagation()}>
@@ -160,7 +158,7 @@ const ProfileSkills = ({ user, isOwnProfile }) => {
                         {error && <div className="crop-error-banner" style={{ marginBottom: "1rem" }}>{error}</div>}
 
                         <form onSubmit={handleSave} className="skills-modal-form">
-                            {/* Input to add new skills */}
+
                             <div className="skills-input-row">
                                 <input
                                     type="text"
@@ -186,7 +184,6 @@ const ProfileSkills = ({ user, isOwnProfile }) => {
                                 </Button>
                             </div>
 
-                            {/* Suggestions */}
                             <div className="skills-suggestions-section">
                                 <span className="skills-section-label">Suggested skills:</span>
                                 <div className="skills-suggestions-chips">
@@ -205,7 +202,6 @@ const ProfileSkills = ({ user, isOwnProfile }) => {
                                 </div>
                             </div>
 
-                            {/* Current Skills list/chips */}
                             <div className="skills-selected-section">
                                 <div className="skills-section-header">
                                     <span className="skills-section-label">Your skills ({editedSkills.length})</span>

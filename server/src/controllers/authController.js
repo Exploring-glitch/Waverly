@@ -49,7 +49,6 @@ export const loginUser = async (req, res) => {
             return res.status(400).json({ message: "Email and password are required" });
         }
 
-        // select: false on password — must explicitly include it for login
         const user = await User.findOne({ email }).select("+password");
 
         if (!user) {
@@ -73,7 +72,6 @@ export const loginUser = async (req, res) => {
     }
 };
 
-/** Protected route — returns the logged-in user (no password in JSON). */
 export const getMe = async (req, res) => {
     res.status(200).json({ user: req.user });
 };

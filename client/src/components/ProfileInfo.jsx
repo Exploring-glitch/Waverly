@@ -31,7 +31,7 @@ const ProfileInfo = ({ user, showEmail = true, connectionCount = 0, showConnecti
 
     return (
         <div className="profile-info-body">
-            {/* Bio */}
+
             {user.bio ? (
                 <div className="profile-bio-box">
                     <p className="profile-bio-text">{user.bio}</p>
@@ -42,9 +42,8 @@ const ProfileInfo = ({ user, showEmail = true, connectionCount = 0, showConnecti
                 </div>
             )}
 
-            {/* Metadata Badges / Tags Row */}
             <div className="profile-chips-grid">
-                {/* College / Education Tag */}
+
                 {user.collegeName && (
                     <div className="profile-meta-chip education-chip" title="University / College">
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -58,7 +57,6 @@ const ProfileInfo = ({ user, showEmail = true, connectionCount = 0, showConnecti
                     </div>
                 )}
 
-                {/* Company Tag */}
                 {user.companyName && (
                     <div className="profile-meta-chip company-chip" title="Company / Organization">
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -69,7 +67,6 @@ const ProfileInfo = ({ user, showEmail = true, connectionCount = 0, showConnecti
                     </div>
                 )}
 
-                {/* Location */}
                 {(user.locationCity || user.locationCountry) && (
                     <div className="profile-meta-chip location-chip" title="Location">
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -82,7 +79,6 @@ const ProfileInfo = ({ user, showEmail = true, connectionCount = 0, showConnecti
                     </div>
                 )}
 
-                {/* Connections Pill */}
                 {showConnections && (
                     <button
                         type="button"
@@ -100,7 +96,6 @@ const ProfileInfo = ({ user, showEmail = true, connectionCount = 0, showConnecti
                     </button>
                 )}
 
-                {/* Email Tag if own profile */}
                 {showEmail && user.email && (
                     <div className="profile-meta-chip email-chip" title="Contact email">
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -112,7 +107,6 @@ const ProfileInfo = ({ user, showEmail = true, connectionCount = 0, showConnecti
                 )}
             </div>
 
-            {/* Connections Modal Overlay */}
             {showConnectionsModal && (
                 <div className="modal-overlay" onClick={() => setShowConnectionsModal(false)} style={{ zIndex: 3200 }}>
                     <div className="modal-box connections-modal-box" onClick={(e) => e.stopPropagation()}>

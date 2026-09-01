@@ -1,7 +1,6 @@
 import mongoose from "mongoose"
 import bcrypt from "bcrypt"
 
-
 const userSchema = new mongoose.Schema(
     {
         name: {
@@ -75,7 +74,7 @@ const userSchema = new mongoose.Schema(
             type: String,
             default: "",
         },
-        // Future: college verification via student ID upload
+
         isCollegeVerified: {
             type: Boolean,
             default: false,
@@ -86,16 +85,10 @@ const userSchema = new mongoose.Schema(
     }
 )
 
-
-
-//we are defining a method named comparePassword that compares pass with the og pass stored in user schema.
-//We are attaching this method in the user doc (in mongoose) itself.
 userSchema.methods.comparePassword = async function (password) {
     return await bcrypt.compare(password, this.password);
 }
 
-
-//this removes the password from json so that its not visible to anyone
 userSchema.set('toJSON', {
     transform: function (doc, ret) {
         delete ret.password;
@@ -104,13 +97,10 @@ userSchema.set('toJSON', {
     }
 });
 
-
-//hasing password
-userSchema.pre("save", async function () { //this function always runs before saving the original schema 
+userSchema.pre("save", async function () { 
     if (!this.isModified("password")) return;
-    this.password = await bcrypt.hash(this.password, 10); //hashing the raw password //runs only if the pass is modified
+    this.password = await bcrypt.hash(this.password, 10); 
 });
-
 
 const userModel = mongoose.model("User", userSchema);
 export default userModel;

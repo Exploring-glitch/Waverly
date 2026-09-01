@@ -58,7 +58,6 @@ export const updateUserProfile = async (req, res) => {
             return res.status(400).json({ message: "End year must be a valid number" })
         }
 
-
         const user = await User.findById(req.user.id);
         if (!user) {
             return res.status(404).json({ message: "User not found" })
@@ -84,7 +83,7 @@ export const updateUserProfile = async (req, res) => {
         }
         if (profilePic !== undefined) user.profilePic = profilePic;
         if (coverPic !== undefined) user.coverPic = coverPic;
-        
+
         if (locationCountry !== undefined) user.locationCountry = locationCountry;
         if (locationPostalCode !== undefined) user.locationPostalCode = locationPostalCode;
         if (locationCity !== undefined) user.locationCity = locationCity;

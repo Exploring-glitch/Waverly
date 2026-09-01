@@ -8,7 +8,6 @@ const Edit_Profile_Page = () => {
     const { user, updateProfile } = useAuth();
     const navigate = useNavigate();
 
-    // Form states
     const [name, setName] = useState("");
     const [additionalName, setAdditionalName] = useState("");
     const [bio, setBio] = useState("");
@@ -22,16 +21,13 @@ const Edit_Profile_Page = () => {
     const [locationPostalCode, setLocationPostalCode] = useState("");
     const [locationCity, setLocationCity] = useState("");
 
-    // Modal states
     const [isCoverCropOpen, setIsCoverCropOpen] = useState(false);
     const [isAvatarCropOpen, setIsAvatarCropOpen] = useState(false);
 
-    // UI Feedback states
     const [error, setError] = useState("");
     const [showToast, setShowToast] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
 
-    // Prefill form states when user context is loaded
     useEffect(() => {
         if (user) {
             setName(user.name || "");
@@ -104,22 +100,19 @@ const Edit_Profile_Page = () => {
             )}
 
             <div className="edit-profile-card">
-                {/* Header */}
+
                 <div className="edit-profile-header">
                     <h1>Edit profile</h1>
                     <p className="edit-profile-subtitle">Keep your branding, basic info, and academic credentials up to date.</p>
                 </div>
 
-                {/* Feedback Alerts */}
                 {error && <div className="alert-box alert-danger">{error}</div>}
 
                 <form onSubmit={handleSubmit} className="auth-form">
-                    
-                    {/* SECTION 1: PROFILE IMAGES (BANNER & AVATAR) */}
+
                     <div className="edit-profile-section">
                         <h3 className="edit-section-title">Profile Imagery</h3>
 
-                        {/* Cover Image Banner Box */}
                         <div className="edit-cover-wrapper">
                             <label className="form-label" style={{ marginBottom: "0.5rem", display: "block" }}>
                                 Cover Banner
@@ -164,7 +157,6 @@ const Edit_Profile_Page = () => {
                             </div>
                         </div>
 
-                        {/* Live Avatar Preview */}
                         <div className="avatar-preview-section">
                             <div className="avatar-preview-relative">
                                 <img 
@@ -204,8 +196,7 @@ const Edit_Profile_Page = () => {
                             />
                         </div>
                     </div>
-                    
-                    {/* SECTION 2: BASIC INFO */}
+
                     <div className="edit-profile-section">
                         <h3 className="edit-section-title">Basic Info</h3>
 
@@ -245,10 +236,9 @@ const Edit_Profile_Page = () => {
                         </div>
                     </div>
 
-                    {/* SECTION 3: COLLEGE DETAILS */}
                     <div className="edit-profile-section">
                         <h3 className="edit-section-title">College Details</h3>
-                        
+
                         <div className="form-group" style={{ marginBottom: "1.25rem" }}>
                             <label htmlFor="collegeName">College Name</label>
                             <input
@@ -289,7 +279,6 @@ const Edit_Profile_Page = () => {
                         </div>
                     </div>
 
-                    {/* SECTION 4: COMPANY DETAILS */}
                     <div className="edit-profile-section">
                         <h3 className="edit-section-title">Company Details</h3>
 
@@ -305,7 +294,6 @@ const Edit_Profile_Page = () => {
                         </div>
                     </div>
 
-                    {/* SECTION 5: LOCATION */}
                     <div className="edit-profile-section">
                         <h3 className="edit-section-title">Location</h3>
 
@@ -345,7 +333,6 @@ const Edit_Profile_Page = () => {
                         </div>
                     </div>
 
-                    {/* Action Buttons */}
                     <div className="edit-actions">
                         <Link to="/profile" className="btn btn-secondary">
                             Cancel
@@ -357,7 +344,6 @@ const Edit_Profile_Page = () => {
                 </form>
             </div>
 
-            {/* Modal for Cover Banner Cropping */}
             <ImageCropModal
                 isOpen={isCoverCropOpen}
                 onClose={() => setIsCoverCropOpen(false)}
@@ -372,7 +358,6 @@ const Edit_Profile_Page = () => {
                 allowRemove={true}
             />
 
-            {/* Modal for Avatar Cropping */}
             <ImageCropModal
                 isOpen={isAvatarCropOpen}
                 onClose={() => setIsAvatarCropOpen(false)}

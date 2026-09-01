@@ -53,7 +53,7 @@ const CommentedPosts_Page = () => {
                     });
                 }
             });
-            // Sort comments by creation date (newest first)
+
             userCommentsList.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             setComments(userCommentsList);
         } catch (err) {
@@ -102,7 +102,7 @@ const CommentedPosts_Page = () => {
     return (
         <div className="page">
             <div style={{ maxWidth: '800px', margin: '0 auto', width: '100%', padding: '1rem 0' }}>
-                {/* Header Section */}
+
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem', padding: '0 1rem' }}>
                     <button 
                         onClick={() => navigate('/feed')}
@@ -118,7 +118,6 @@ const CommentedPosts_Page = () => {
                     </div>
                 </div>
 
-                {/* Comments List */}
                 {comments.length > 0 ? (
                     <div style={{ padding: '0 1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                         {comments.map((comment) => {
@@ -136,7 +135,7 @@ const CommentedPosts_Page = () => {
                                         gap: '0.75rem'
                                     }}
                                 >
-                                    {/* Author row */}
+
                                     <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                                         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
                                             <img
@@ -154,7 +153,6 @@ const CommentedPosts_Page = () => {
                                             </div>
                                         </div>
 
-                                        {/* Actions: Edit / Delete */}
                                         {!isEditing && (
                                             <div style={{ display: 'flex', gap: '0.5rem' }}>
                                                 <button
@@ -187,7 +185,6 @@ const CommentedPosts_Page = () => {
                                         )}
                                     </div>
 
-                                    {/* Comment text / Edit Form */}
                                     {isEditing ? (
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', width: '100%' }}>
                                             <textarea
@@ -244,7 +241,6 @@ const CommentedPosts_Page = () => {
                                         </p>
                                     )}
 
-                                    {/* Reference Post Link Card */}
                                     <div 
                                         onClick={() => navigate(`/feed#post-${comment.post._id}`)}
                                         style={{ 

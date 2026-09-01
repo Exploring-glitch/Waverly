@@ -35,7 +35,6 @@ export const AuthProvider = ({ children }) => {
         return data;
     };
 
-    // On refresh: if token exists, fetch current user from /me
     useEffect(() => {
         const token = localStorage.getItem("token");
         if (!token) {

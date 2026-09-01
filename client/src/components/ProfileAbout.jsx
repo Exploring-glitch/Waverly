@@ -98,7 +98,6 @@ const ProfileAbout = ({ user, isOwnProfile }) => {
                 )}
             </div>
 
-            {/* Edit Modal */}
             {isEditing && (
                 <div className="modal-overlay" onClick={handleDiscard} style={{ zIndex: 3200 }}>
                     <div className="modal-box about-edit-modal" onClick={(e) => e.stopPropagation()}>
