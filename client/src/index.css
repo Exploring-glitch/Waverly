@@ -4697,33 +4697,45 @@ a:hover {
 }
 
 /* Action Buttons Bar */
+/* Action Buttons Bar: Instagram Style */
 .feed-post-actions-panel {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.2rem 0;
+  padding: 0.35rem 0.15rem;
+}
+
+.feed-post-actions-left,
+.feed-post-actions-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .feed-action-button {
-  flex: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.45rem;
-  padding: 0.55rem;
+  gap: 0.4rem;
+  padding: 0.45rem 0.55rem;
   background: transparent;
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-full);
   color: var(--text-muted);
-  font-size: 0.86rem;
+  font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
   transition: all var(--transition-fast);
 }
 
 .feed-action-button:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.08);
   color: var(--text-primary);
+  transform: scale(1.08);
+}
+
+.feed-action-button:active {
+  transform: scale(0.92);
 }
 
 .feed-action-button.like.active {
@@ -4735,11 +4747,56 @@ a:hover {
 }
 
 .feed-action-button.save.active {
-  color: #facc15;
+  color: #f3f4f6;
 }
 
 .feed-action-button.share:hover {
   color: var(--text-accent);
+}
+
+.feed-action-count {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  line-height: 1;
+}
+
+/* Instagram-style View Replies Toggle */
+.feed-view-replies-wrap {
+  margin-top: 0.35rem;
+  padding-left: 0.25rem;
+}
+
+.feed-view-replies-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.25rem 0;
+  transition: color var(--transition-fast);
+}
+
+.feed-view-replies-btn:hover {
+  color: var(--text-primary);
+}
+
+.feed-replies-line {
+  display: inline-block;
+  width: 24px;
+  height: 1px;
+  background: var(--text-muted);
+  opacity: 0.6;
+  vertical-align: middle;
+}
+
+.feed-view-replies-btn:hover .feed-replies-line {
+  background: var(--text-primary);
+  opacity: 1;
 }
 
 /* Comments Drawer */

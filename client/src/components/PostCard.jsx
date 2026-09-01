@@ -205,6 +205,7 @@ const CommentItem = ({ comment, postId, currentUserId, currentUserProfilePic, on
     const [isEditing, setIsEditing] = useState(false);
     const [editText, setEditText] = useState(comment.content || "");
     const [showReplyForm, setShowReplyForm] = useState(false);
+    const [showRepliesList, setShowRepliesList] = useState(false);
     const [replyText, setReplyText] = useState("");
     const [isSubmittingReply, setIsSubmittingReply] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -229,7 +230,7 @@ const CommentItem = ({ comment, postId, currentUserId, currentUserProfilePic, on
         e?.preventDefault();
         if (!editText.trim()) return;
         try {
-            const data = await postApi.editComment(postId, comment._id, editText);
+            const data = await postApi.editComment(postId, comment._id, editText.trim());
             onCommentsUpdate(data.comments || []);
             setIsEditing(false);
         } catch (err) {
@@ -249,12 +250,17 @@ const CommentItem = ({ comment, postId, currentUserId, currentUserProfilePic, on
 
     const handleReplySubmit = async (e) => {
         e?.preventDefault();
-        if (!replyText.trim() || isSubmittingReply) return;
+        const trimmed = replyText.trim();
+        if (!trimmed || isSubmittingReply) return;
         setIsSubmittingReply(true);
         try {
-            const data = await postApi.createReply(postId, comment._id, replyText);
-            onCommentsUpdate(data.comments || []);
-            setReplyText("");
+            const data = await postApi.replyComment(postId, comment._id, trimmed);
+            if (data && data.comments) {
+                onCommentsUpdate(data.comments);
+                setReplyText("");
+                setShowReplyForm(false);
+                setShowRepliesList(true);
+            }
         } catch (err) {
             console.error("Failed to post reply", err);
         } finally {
@@ -264,6 +270,7 @@ const CommentItem = ({ comment, postId, currentUserId, currentUserProfilePic, on
 
     const handleNestedReplyClick = (targetUsername) => {
         setShowReplyForm(true);
+        setShowRepliesList(true);
         if (targetUsername) {
             setReplyText(`@${targetUsername} `);
         }
@@ -335,12 +342,16 @@ const CommentItem = ({ comment, postId, currentUserId, currentUserProfilePic, on
                         <button
                             type="button"
                             onClick={() => {
-                                setShowReplyForm(!showReplyForm);
+                                const willShow = !showReplyForm;
+                                setShowReplyForm(willShow);
+                                if (willShow && commentAuthor.username) {
+                                    setReplyText(`@${commentAuthor.username} `);
+                                }
                                 setTimeout(() => replyInputRef.current?.focus(), 50);
                             }}
                             className="feed-mini-action-btn"
                         >
-                            Reply {replies.length > 0 && `(${replies.length})`}
+                            Reply
                         </button>
 
                         {isCommentOwner && (
@@ -363,10 +374,9 @@ const CommentItem = ({ comment, postId, currentUserId, currentUserProfilePic, on
                         )}
                     </div>
 
-                    {/* Replies Form & List */}
+                    {/* Reply Input Drawer */}
                     {showReplyForm && (
                         <div className="feed-replies-drawer">
-                            {/* Reply Input Form */}
                             <form onSubmit={handleReplySubmit} className="feed-reply-input-bar">
                                 <img
                                     src={currentUserProfilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
@@ -389,10 +399,35 @@ const CommentItem = ({ comment, postId, currentUserId, currentUserProfilePic, on
                                 >
                                     Reply
                                 </button>
+                                <button
+                                    type="button"
+                                    onClick={() => { setShowReplyForm(false); setReplyText(""); }}
+                                    className="feed-mini-action-btn"
+                                    title="Cancel reply"
+                                >
+                                    ✕
+                                </button>
                             </form>
+                        </div>
+                    )}
 
-                            {/* Replies List */}
-                            {replies.length > 0 && (
+                    {/* Instagram-style View / Hide Replies toggle */}
+                    {replies.length > 0 && (
+                        <div className="feed-view-replies-wrap">
+                            <button
+                                type="button"
+                                onClick={() => setShowRepliesList(!showRepliesList)}
+                                className="feed-view-replies-btn"
+                            >
+                                <span className="feed-replies-line" />
+                                <span>
+                                    {showRepliesList
+                                        ? "Hide replies"
+                                        : `View replies (${replies.length})`}
+                                </span>
+                            </button>
+
+                            {showRepliesList && (
                                 <div className="feed-replies-tree">
                                     {replies.map((reply) => (
                                         <ReplyItem
@@ -457,6 +492,12 @@ const PostCard = ({ post, onDelete, onUpdate, onSaveToggle }) => {
     const isOwner = user && user._id === author._id;
     const isLiked = user && likes.includes(user._id);
 
+    // Total comments count including nested replies
+    const totalCommentsCount = comments.reduce(
+        (total, c) => total + 1 + (c.replies ? c.replies.length : 0),
+        0
+    );
+
     useEffect(() => {
         try {
             const saved = localStorage.getItem("savedPosts");
@@ -469,12 +510,33 @@ const PostCard = ({ post, onDelete, onUpdate, onSaveToggle }) => {
         }
     }, [post._id]);
 
+    useEffect(() => {
+        if (post.comments) {
+            setComments(post.comments);
+        }
+    }, [post.comments]);
+
+    useEffect(() => {
+        if (post.likes) {
+            setLikes(post.likes);
+        }
+    }, [post.likes]);
+
+    const handleCommentsUpdate = (newComments) => {
+        setComments(newComments);
+        if (onUpdate) {
+            onUpdate({ ...post, comments: newComments });
+        }
+    };
+
     const handleLike = async () => {
         try {
-            const updated = await postApi.likePost(post._id);
-            if (updated && updated.likes) {
-                setLikes(updated.likes);
-                if (onUpdate) onUpdate(updated);
+            const data = await postApi.likePost(post._id);
+            if (data && data.likes) {
+                setLikes(data.likes);
+                if (onUpdate) {
+                    onUpdate({ ...post, likes: data.likes });
+                }
             }
         } catch (err) {
             console.error("Failed to like post", err);
@@ -483,14 +545,14 @@ const PostCard = ({ post, onDelete, onUpdate, onSaveToggle }) => {
 
     const handleCommentSubmit = async (e) => {
         e?.preventDefault();
-        if (!newCommentText.trim() || isSubmittingComment) return;
+        const trimmed = newCommentText.trim();
+        if (!trimmed || isSubmittingComment) return;
         setIsSubmittingComment(true);
         try {
-            const updated = await postApi.createComment(post._id, newCommentText);
-            if (updated && updated.comments) {
-                setComments(updated.comments);
+            const data = await postApi.commentPost(post._id, trimmed);
+            if (data && data.comments) {
+                handleCommentsUpdate(data.comments);
                 setNewCommentText("");
-                if (onUpdate) onUpdate(updated);
             }
         } catch (err) {
             console.error("Failed to create comment", err);
@@ -505,11 +567,10 @@ const PostCard = ({ post, onDelete, onUpdate, onSaveToggle }) => {
         setIsSaving(true);
         try {
             const payload = { content: editContent.trim(), image: editImage.trim() };
-            const updated = await postApi.editPost(post._id, payload);
-            if (updated) {
-                if (onUpdate) onUpdate(updated);
-                setIsEditing(false);
-            }
+            const data = await postApi.updatePost(post._id, payload);
+            const updatedPost = data?.post || { ...post, ...payload };
+            if (onUpdate) onUpdate(updatedPost);
+            setIsEditing(false);
         } catch (err) {
             console.error("Failed to edit post", err);
         } finally {
@@ -599,50 +660,40 @@ const PostCard = ({ post, onDelete, onUpdate, onSaveToggle }) => {
                             <Link to={`/users/${author.username || ""}`} className="feed-post-author-name">
                                 {author.name}
                             </Link>
-                            <span className="profile-verified-badge" style={{ padding: "2px" }}>
-                                <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor">
-                                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
-                                </svg>
-                            </span>
-                            {author.additionalName && (
-                                <span className="feed-post-author-additional">({author.additionalName})</span>
+                            {author.username && (
+                                <span className="feed-post-author-handle">@{author.username}</span>
                             )}
                         </div>
 
-                        <div className="feed-post-meta-sub">
-                            <span className="feed-post-handle">@{author.username}</span>
-                            <span className="feed-post-dot">•</span>
-                            <span className="feed-post-time">{timeAgo(createdAt)}</span>
-                            <span className="feed-post-dot">•</span>
-                            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" title="Public">
-                                <circle cx="12" cy="12" r="10" />
-                                <line x1="2" y1="12" x2="22" y2="12" />
-                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-                            </svg>
+                        <div className="feed-post-meta-row">
+                            {author.additionalName && (
+                                <span className="feed-post-author-title">{author.additionalName} • </span>
+                            )}
+                            <time className="feed-post-timestamp">{timeAgo(createdAt)}</time>
                         </div>
                     </div>
                 </div>
 
                 {/* Post Options Menu */}
                 {isOwner && (
-                    <div className="feed-post-menu-wrapper">
+                    <div className="feed-post-menu-wrap">
                         <button
                             type="button"
                             className="feed-post-menu-btn"
                             onClick={() => setShowMenu(!showMenu)}
-                            title="Post options"
+                            aria-label="Post options"
                         >
-                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                <circle cx="12" cy="12" r="1" />
-                                <circle cx="19" cy="12" r="1" />
-                                <circle cx="5" cy="12" r="1" />
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                                <circle cx="5" cy="12" r="2" />
+                                <circle cx="12" cy="12" r="2" />
+                                <circle cx="19" cy="12" r="2" />
                             </svg>
                         </button>
 
                         {showMenu && (
                             <>
                                 <div className="feed-menu-backdrop" onClick={() => setShowMenu(false)} />
-                                <div className="feed-post-dropdown-menu">
+                                <div className="feed-dropdown-menu">
                                     <button
                                         type="button"
                                         className="feed-dropdown-item"
@@ -714,68 +765,76 @@ const PostCard = ({ post, onDelete, onUpdate, onSaveToggle }) => {
                 </div>
 
                 <div className="feed-post-stats-meta">
-                    {comments.length > 0 && (
+                    {totalCommentsCount > 0 && (
                         <span
                             className="feed-post-stats-comments-trigger"
                             onClick={() => setShowComments(!showComments)}
                         >
-                            {comments.length} {comments.length === 1 ? "comment" : "comments"}
+                            {totalCommentsCount} {totalCommentsCount === 1 ? "comment" : "comments"}
                         </span>
                     )}
                 </div>
             </div>
 
-            {/* Action Buttons Bar */}
+            {/* Action Buttons Bar: Instagram Style (Like & Comment left, Share & Save right, symbols only) */}
             <div className="feed-post-actions-panel">
-                <button
-                    type="button"
-                    onClick={handleLike}
-                    className={`feed-action-button like ${isLiked ? "active" : ""}`}
-                >
-                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill={isLiked ? "currentColor" : "none"} strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
-                    </svg>
-                    <span>Like</span>
-                </button>
+                <div className="feed-post-actions-left">
+                    <button
+                        type="button"
+                        onClick={handleLike}
+                        className={`feed-action-button like ${isLiked ? "active" : ""}`}
+                        title={isLiked ? "Unlike" : "Like"}
+                        aria-label="Like post"
+                    >
+                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill={isLiked ? "currentColor" : "none"} strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+                        </svg>
+                        {likes.length > 0 && <span className="feed-action-count">{likes.length}</span>}
+                    </button>
 
-                <button
-                    type="button"
-                    onClick={() => setShowComments(!showComments)}
-                    className={`feed-action-button comment ${showComments ? "active" : ""}`}
-                >
-                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-                    </svg>
-                    <span>Comment</span>
-                </button>
+                    <button
+                        type="button"
+                        onClick={() => setShowComments(!showComments)}
+                        className={`feed-action-button comment ${showComments ? "active" : ""}`}
+                        title="Comment"
+                        aria-label="Comment on post"
+                    >
+                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                        </svg>
+                        {totalCommentsCount > 0 && <span className="feed-action-count">{totalCommentsCount}</span>}
+                    </button>
+                </div>
 
-                <button
-                    type="button"
-                    onClick={handleSave}
-                    className={`feed-action-button save ${isSaved ? "active" : ""}`}
-                    title={isSaved ? "Remove from saved" : "Save post"}
-                >
-                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill={isSaved ? "currentColor" : "none"} strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-                    </svg>
-                    <span>{isSaved ? "Saved" : "Save"}</span>
-                </button>
+                <div className="feed-post-actions-right">
+                    <button
+                        type="button"
+                        onClick={handleShare}
+                        className="feed-action-button share"
+                        title={copied ? "Link copied!" : "Share post"}
+                        aria-label="Share post"
+                    >
+                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="18" cy="5" r="3" />
+                            <circle cx="6" cy="12" r="3" />
+                            <circle cx="18" cy="19" r="3" />
+                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                        </svg>
+                    </button>
 
-                <button
-                    type="button"
-                    onClick={handleShare}
-                    className="feed-action-button share"
-                    title="Copy share link"
-                >
-                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="18" cy="5" r="3" />
-                        <circle cx="6" cy="12" r="3" />
-                        <circle cx="18" cy="19" r="3" />
-                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-                    </svg>
-                    <span>{copied ? "Copied!" : "Share"}</span>
-                </button>
+                    <button
+                        type="button"
+                        onClick={handleSave}
+                        className={`feed-action-button save ${isSaved ? "active" : ""}`}
+                        title={isSaved ? "Remove from saved" : "Save post"}
+                        aria-label="Save post"
+                    >
+                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill={isSaved ? "currentColor" : "none"} strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             {/* Comments Drawer */}
@@ -817,7 +876,7 @@ const PostCard = ({ post, onDelete, onUpdate, onSaveToggle }) => {
                                     postId={post._id}
                                     currentUserId={user?._id}
                                     currentUserProfilePic={user?.profilePic}
-                                    onCommentsUpdate={setComments}
+                                    onCommentsUpdate={handleCommentsUpdate}
                                 />
                             ))}
                         </div>

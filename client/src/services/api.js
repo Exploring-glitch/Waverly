@@ -79,6 +79,8 @@ export const postApi = {
         request("/api/posts", { method: "POST", body: JSON.stringify(body) }),
     updatePost: (id, body) =>
         request(`/api/posts/${id}`, { method: "PUT", body: JSON.stringify(body) }),
+    editPost: (id, body) =>
+        request(`/api/posts/${id}`, { method: "PUT", body: JSON.stringify(body) }),
     getPosts: () => request("/api/posts"),
     getMyPosts: () => request("/api/posts/me"),
     getPostsByUsername: (username) =>
@@ -90,9 +92,19 @@ export const postApi = {
             method: "POST",
             body: JSON.stringify({ content }),
         }),
+    createComment: (id, content) =>
+        request(`/api/posts/${id}/comment`, {
+            method: "POST",
+            body: JSON.stringify({ content }),
+        }),
     likeComment: (postId, commentId) =>
         request(`/api/posts/${postId}/comments/${commentId}/like`, { method: "POST" }),
     replyComment: (postId, commentId, content) =>
+        request(`/api/posts/${postId}/comments/${commentId}/reply`, {
+            method: "POST",
+            body: JSON.stringify({ content }),
+        }),
+    createReply: (postId, commentId, content) =>
         request(`/api/posts/${postId}/comments/${commentId}/reply`, {
             method: "POST",
             body: JSON.stringify({ content }),
@@ -114,3 +126,4 @@ export const postApi = {
     deleteReply: (postId, commentId, replyId) =>
         request(`/api/posts/${postId}/comments/${commentId}/replies/${replyId}`, { method: "DELETE" }),
 };
+
