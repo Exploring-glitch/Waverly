@@ -7158,6 +7158,30 @@ a:hover {
   font-size: 0.9rem;
 }
 
+.network-empty-state-card {
+  padding: 3.5rem 1.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+
+.network-empty-state-card h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--text-primary);
+}
+
+.network-empty-state-card p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  max-width: 440px;
+  line-height: 1.55;
+}
+
 @media (max-width: 992px) {
   .network-grid-layout {
     grid-template-columns: 240px 1fr;

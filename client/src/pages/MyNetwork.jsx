@@ -12,7 +12,7 @@ const MyNetwork_Page = () => {
     const [cityMembers, setCityMembers] = useState([]);
     const [collegeMembers, setCollegeMembers] = useState([]);
     const [totalConnectionsCount, setTotalConnectionsCount] = useState(0);
-    const [activeTab, setActiveTab] = useState("all"); // 'all' | 'college' | 'city' | 'sent'
+    const [activeTab, setActiveTab] = useState("all"); // 'all' | 'received' | 'sent' | 'college' | 'city'
     
     const [isLoadingRequests, setIsLoadingRequests] = useState(true);
     const [isLoadingSent, setIsLoadingSent] = useState(true);
@@ -109,7 +109,7 @@ const MyNetwork_Page = () => {
     const handleAcceptRequest = async (senderId) => {
         try {
             await userApi.acceptConnectionRequest(senderId);
-            setReceivedRequests(prev => prev.filter(req => req.sender._id !== senderId));
+            setReceivedRequests(prev => prev.filter(req => req.sender?._id !== senderId));
             setTotalConnectionsCount(prev => prev + 1);
 
             const updater = prev =>
@@ -128,7 +128,7 @@ const MyNetwork_Page = () => {
     const handleIgnoreRequest = async (senderId) => {
         try {
             await userApi.rejectConnectionRequest(senderId);
-            setReceivedRequests(prev => prev.filter(req => req.sender._id !== senderId));
+            setReceivedRequests(prev => prev.filter(req => req.sender?._id !== senderId));
         } catch (err) {
             console.error("Failed to ignore connection request", err);
             alert("Error ignoring connection request");
@@ -336,13 +336,9 @@ const MyNetwork_Page = () => {
                             </div>
 
                             <div 
-                                className={`network-sidebar-item hover-lift ${receivedRequests.length > 0 ? "highlight-invitation" : ""}`}
-                                onClick={() => {
-                                    const invElem = document.getElementById("pending-invitations-section");
-                                    if (invElem) {
-                                        invElem.scrollIntoView({ behavior: "smooth" });
-                                    }
-                                }}
+                                className={`network-sidebar-item hover-lift ${activeTab === "received" ? "active" : ""} ${receivedRequests.length > 0 ? "highlight-invitation" : ""}`}
+                                onClick={() => setActiveTab("received")}
+                                title="View connection requests you have received"
                             >
                                 <div className="network-item-label-group">
                                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
@@ -413,8 +409,62 @@ const MyNetwork_Page = () => {
                    MAIN CONTENT: Invitations & Recommendations
                    ============================================================ */}
                 <main className="network-main-col">
-                    {/* Received Invitations Section */}
-                    {receivedRequests.length > 0 && (
+                    {/* Filter Tabs */}
+                    <div className="network-tabs-bar">
+                        <button
+                            type="button"
+                            className={`network-filter-tab ${activeTab === "all" ? "active" : ""}`}
+                            onClick={() => setActiveTab("all")}
+                        >
+                            <span>All Recommendations</span>
+                            <span className="tab-count-badge">{suggestions.length}</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            className={`network-filter-tab ${activeTab === "received" ? "active" : ""}`}
+                            onClick={() => setActiveTab("received")}
+                        >
+                            <span>📥 Received Invitations</span>
+                            <span className={`tab-count-badge ${receivedRequests.length > 0 ? "alert" : ""}`}>
+                                {receivedRequests.length}
+                            </span>
+                        </button>
+
+                        <button
+                            type="button"
+                            className={`network-filter-tab ${activeTab === "sent" ? "active" : ""}`}
+                            onClick={() => setActiveTab("sent")}
+                        >
+                            <span>📤 Sent Requests</span>
+                            <span className="tab-count-badge">{sentRequests.length}</span>
+                        </button>
+
+                        {user?.collegeName && (
+                            <button
+                                type="button"
+                                className={`network-filter-tab ${activeTab === "college" ? "active" : ""}`}
+                                onClick={() => setActiveTab("college")}
+                            >
+                                <span>🎓 From {user.collegeName}</span>
+                                <span className="tab-count-badge">{collegeMembers.length}</span>
+                            </button>
+                        )}
+
+                        {user?.locationCity && (
+                            <button
+                                type="button"
+                                className={`network-filter-tab ${activeTab === "city" ? "active" : ""}`}
+                                onClick={() => setActiveTab("city")}
+                            >
+                                <span>📍 In {user.locationCity}</span>
+                                <span className="tab-count-badge">{cityMembers.length}</span>
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Active View: Received Invitations */}
+                    {activeTab === "received" && (
                         <div className="network-section-card" id="pending-invitations-section">
                             <div className="network-section-header">
                                 <div className="section-title-group">
@@ -426,7 +476,11 @@ const MyNetwork_Page = () => {
                                     </div>
                                     <div>
                                         <h3 className="network-section-title">Received Invitations</h3>
-                                        <span className="network-section-subtitle">{receivedRequests.length} people want to connect with you</span>
+                                        <span className="network-section-subtitle">
+                                            {receivedRequests.length > 0 
+                                                ? `${receivedRequests.length} people want to connect with you`
+                                                : "Manage incoming requests from peers and classmates"}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -434,6 +488,20 @@ const MyNetwork_Page = () => {
                             <div className="network-invitations-list">
                                 {isLoadingRequests ? (
                                     <div className="page-center" style={{ padding: "2rem 0" }}><div className="spinner" /></div>
+                                ) : receivedRequests.length === 0 ? (
+                                    <div className="network-empty-state-card">
+                                        <div className="empty-state-icon-circle">
+                                            <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" strokeWidth="1.8">
+                                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                                                <polyline points="22,6 12,13 2,6" />
+                                            </svg>
+                                        </div>
+                                        <h3>No Pending Invitations</h3>
+                                        <p>You don't have any incoming connection requests right now. When peers or classmates send you an invitation, it will appear here!</p>
+                                        <Button variant="primary" onClick={() => setActiveTab("all")}>
+                                            Explore Recommendations
+                                        </Button>
+                                    </div>
                                 ) : (
                                     receivedRequests.map(req => (
                                         <div key={req._id} className="network-invitation-row">
@@ -487,50 +555,7 @@ const MyNetwork_Page = () => {
                         </div>
                     )}
 
-                    {/* Filter Tabs & Recommendations */}
-                    <div className="network-tabs-bar">
-                        <button
-                            type="button"
-                            className={`network-filter-tab ${activeTab === "all" ? "active" : ""}`}
-                            onClick={() => setActiveTab("all")}
-                        >
-                            <span>All Recommendations</span>
-                            <span className="tab-count-badge">{suggestions.length}</span>
-                        </button>
-
-                        <button
-                            type="button"
-                            className={`network-filter-tab ${activeTab === "sent" ? "active" : ""}`}
-                            onClick={() => setActiveTab("sent")}
-                        >
-                            <span>📤 Sent Requests</span>
-                            <span className="tab-count-badge">{sentRequests.length}</span>
-                        </button>
-
-                        {user?.collegeName && (
-                            <button
-                                type="button"
-                                className={`network-filter-tab ${activeTab === "college" ? "active" : ""}`}
-                                onClick={() => setActiveTab("college")}
-                            >
-                                <span>🎓 From {user.collegeName}</span>
-                                <span className="tab-count-badge">{collegeMembers.length}</span>
-                            </button>
-                        )}
-
-                        {user?.locationCity && (
-                            <button
-                                type="button"
-                                className={`network-filter-tab ${activeTab === "city" ? "active" : ""}`}
-                                onClick={() => setActiveTab("city")}
-                            >
-                                <span>📍 In {user.locationCity}</span>
-                                <span className="tab-count-badge">{cityMembers.length}</span>
-                            </button>
-                        )}
-                    </div>
-
-                    {/* Active Grid View: Sent Requests */}
+                    {/* Active View: Sent Requests */}
                     {activeTab === "sent" && (
                         <div className="network-section-card">
                             <div className="network-section-header">
@@ -552,8 +577,18 @@ const MyNetwork_Page = () => {
                                 {isLoadingSent ? (
                                     <div className="page-center" style={{ padding: "2rem 0" }}><div className="spinner" /></div>
                                 ) : sentRequests.length === 0 ? (
-                                    <div className="network-empty-state">
-                                        <p>You haven't sent any pending connection requests.</p>
+                                    <div className="network-empty-state-card">
+                                        <div className="empty-state-icon-circle">
+                                            <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" strokeWidth="1.8">
+                                                <line x1="22" y1="2" x2="11" y2="13" />
+                                                <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                                            </svg>
+                                        </div>
+                                        <h3>No Sent Requests</h3>
+                                        <p>You haven't sent any pending connection requests yet. Find classmates and alumni to grow your campus network!</p>
+                                        <Button variant="primary" onClick={() => setActiveTab("all")}>
+                                            Find People
+                                        </Button>
                                     </div>
                                 ) : (
                                     sentRequests.map(req => {
@@ -606,7 +641,7 @@ const MyNetwork_Page = () => {
                         </div>
                     )}
 
-                    {/* Active Grid View: All Recommendations */}
+                    {/* Active View: All Recommendations */}
                     {activeTab === "all" && (
                         <div className="network-section-card">
                             <div className="network-section-header">
@@ -641,7 +676,7 @@ const MyNetwork_Page = () => {
                         </div>
                     )}
 
-                    {/* Active Grid View: College */}
+                    {/* Active View: College */}
                     {activeTab === "college" && user?.collegeName && (
                         <div className="network-section-card">
                             <div className="network-section-header">
@@ -670,7 +705,7 @@ const MyNetwork_Page = () => {
                         </div>
                     )}
 
-                    {/* Active Grid View: City */}
+                    {/* Active View: City */}
                     {activeTab === "city" && user?.locationCity && (
                         <div className="network-section-card">
                             <div className="network-section-header">
