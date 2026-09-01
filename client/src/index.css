@@ -6633,6 +6633,16 @@ a:hover {
   color: var(--text-primary);
 }
 
+.network-sidebar-item.active {
+  background: rgba(56, 189, 248, 0.12);
+  color: var(--text-accent);
+}
+
+.network-sidebar-item.active .network-item-badge {
+  background: var(--color-primary);
+  color: #ffffff;
+}
+
 .network-item-label-group {
   display: flex;
   align-items: center;

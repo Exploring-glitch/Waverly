@@ -273,6 +273,21 @@ const MyNetwork_Page = () => {
                         </div>
 
                         <div className="network-sidebar-menu">
+                            <div 
+                                className={`network-sidebar-item hover-lift ${activeTab === "all" ? "active" : ""}`}
+                                onClick={() => setActiveTab("all")}
+                            >
+                                <div className="network-item-label-group">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                        <circle cx="9" cy="7" r="4" />
+                                        <polyline points="16 11 18 13 22 9" />
+                                    </svg>
+                                    <span>Recommendations</span>
+                                </div>
+                                <span className="network-item-badge">{suggestions.length}</span>
+                            </div>
+
                             <div className="network-sidebar-item hover-lift" onClick={handleOpenConnections}>
                                 <div className="network-item-label-group">
                                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
@@ -284,7 +299,15 @@ const MyNetwork_Page = () => {
                                 <span className="network-item-badge">{totalConnectionsCount}</span>
                             </div>
 
-                            <div className="network-sidebar-item">
+                            <div 
+                                className={`network-sidebar-item hover-lift ${receivedRequests.length > 0 ? "highlight-invitation" : ""}`}
+                                onClick={() => {
+                                    const invElem = document.getElementById("pending-invitations-section");
+                                    if (invElem) {
+                                        invElem.scrollIntoView({ behavior: "smooth" });
+                                    }
+                                }}
+                            >
                                 <div className="network-item-label-group">
                                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
@@ -298,7 +321,11 @@ const MyNetwork_Page = () => {
                             </div>
 
                             {user?.collegeName && (
-                                <div className="network-sidebar-item">
+                                <div 
+                                    className={`network-sidebar-item hover-lift ${activeTab === "college" ? "active" : ""}`}
+                                    onClick={() => setActiveTab("college")}
+                                    title={`View peers from ${user.collegeName}`}
+                                >
                                     <div className="network-item-label-group">
                                         <span>🎓</span>
                                         <span className="network-item-truncate">{user.collegeName}</span>
@@ -308,7 +335,11 @@ const MyNetwork_Page = () => {
                             )}
 
                             {user?.locationCity && (
-                                <div className="network-sidebar-item">
+                                <div 
+                                    className={`network-sidebar-item hover-lift ${activeTab === "city" ? "active" : ""}`}
+                                    onClick={() => setActiveTab("city")}
+                                    title={`View peers in ${user.locationCity}`}
+                                >
                                     <div className="network-item-label-group">
                                         <span>📍</span>
                                         <span className="network-item-truncate">{user.locationCity}</span>
@@ -333,7 +364,7 @@ const MyNetwork_Page = () => {
                 <main className="network-main-col">
                     {/* Received Invitations Section */}
                     {receivedRequests.length > 0 && (
-                        <div className="network-section-card">
+                        <div className="network-section-card" id="pending-invitations-section">
                             <div className="network-section-header">
                                 <div className="section-title-group">
                                     <div className="section-badge-icon invitations">
