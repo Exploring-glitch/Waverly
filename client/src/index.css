@@ -261,6 +261,45 @@ a:hover {
   background: rgba(56, 189, 248, 0.1);
 }
 
+.nav-icon-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-notification-dot {
+  position: absolute;
+  top: -2px;
+  right: -3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.9), 0 0 0 1.5px var(--bg-surface);
+  animation: pulseDot 2s infinite ease-in-out;
+}
+
+.nav-notification-dot.pulse {
+  background: #f43f5e;
+  box-shadow: 0 0 10px rgba(244, 63, 94, 0.95), 0 0 0 1.5px var(--bg-surface);
+}
+
+@keyframes pulseDot {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7), 0 0 0 1.5px var(--bg-surface);
+  }
+  70% {
+    transform: scale(1.15);
+    box-shadow: 0 0 0 5px rgba(239, 68, 68, 0), 0 0 0 1.5px var(--bg-surface);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0), 0 0 0 1.5px var(--bg-surface);
+  }
+}
+
 .navbar-user-chip {
   display: flex;
   align-items: center;

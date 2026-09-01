@@ -1,13 +1,110 @@
-import { useState } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
+import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { userApi, postApi } from "../services/api";
 import Button from "./Button";
 
 const Navbar = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
     const [searchQuery, setSearchQuery] = useState("");
     const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+    // Notification badges state
+    const [hasNetworkNotification, setHasNetworkNotification] = useState(false);
+    const [hasFeedNotification, setHasFeedNotification] = useState(false);
+
+    const checkNotifications = useCallback(async () => {
+        if (!user) return;
+
+        try {
+            // 1. Check Network notifications (received invitations or newly accepted connections)
+            const [receivedReqs, statsData] = await Promise.allSettled([
+                userApi.getReceivedConnections(),
+                userApi.getConnectionStats()
+            ]);
+
+            const reqs = receivedReqs.status === "fulfilled" ? (receivedReqs.value || []) : [];
+            const stats = statsData.status === "fulfilled" ? statsData.value : null;
+
+            const storedConnectionCount = parseInt(
+                localStorage.getItem("waverly_last_seen_connections_count") || "-1",
+                10
+            );
+
+            // If on /network page right now, update stored metrics and clear if no pending requests
+            if (location.pathname === "/network") {
+                if (stats && stats.connectionCount !== undefined) {
+                    localStorage.setItem("waverly_last_seen_connections_count", String(stats.connectionCount));
+                }
+                localStorage.setItem("waverly_last_network_visit", new Date().toISOString());
+                setHasNetworkNotification(reqs.length > 0);
+            } else {
+                const hasPendingInvitations = reqs.length > 0;
+                const hasNewAcceptedConnection =
+                    storedConnectionCount !== -1 &&
+                    stats &&
+                    stats.connectionCount > storedConnectionCount;
+
+                setHasNetworkNotification(hasPendingInvitations || Boolean(hasNewAcceptedConnection));
+            }
+        } catch (err) {
+            console.error("Failed to check network notifications", err);
+        }
+
+        try {
+            // 2. Check Feed notifications (new post by other users since last feed visit)
+            if (location.pathname === "/feed") {
+                localStorage.setItem("waverly_last_feed_visit", new Date().toISOString());
+                setHasFeedNotification(false);
+            } else {
+                const posts = await postApi.getPosts();
+                const lastFeedVisitStr = localStorage.getItem("waverly_last_feed_visit");
+                const lastFeedVisit = lastFeedVisitStr ? new Date(lastFeedVisitStr).getTime() : 0;
+
+                if (Array.isArray(posts) && posts.length > 0) {
+                    const otherUsersPosts = posts.filter(
+                        p => p.author?._id !== user._id && p.author !== user._id
+                    );
+
+                    if (otherUsersPosts.length > 0) {
+                        const latestPostTime = Math.max(
+                            ...otherUsersPosts.map(p => new Date(p.createdAt || 0).getTime())
+                        );
+
+                        if (latestPostTime > lastFeedVisit) {
+                            setHasFeedNotification(true);
+                        } else {
+                            setHasFeedNotification(false);
+                        }
+                    }
+                }
+            }
+        } catch (err) {
+            console.error("Failed to check feed notifications", err);
+        }
+    }, [user, location.pathname]);
+
+    useEffect(() => {
+        if (!user) {
+            setHasNetworkNotification(false);
+            setHasFeedNotification(false);
+            return;
+        }
+
+        checkNotifications();
+
+        // Check on window focus and every 25 seconds
+        const handleFocus = () => checkNotifications();
+        window.addEventListener("focus", handleFocus);
+        const intervalId = setInterval(checkNotifications, 25000);
+
+        return () => {
+            window.removeEventListener("focus", handleFocus);
+            clearInterval(intervalId);
+        };
+    }, [user, checkNotifications]);
 
     const handleSearchSubmit = (e) => {
         e.preventDefault();
@@ -71,10 +168,15 @@ const Navbar = () => {
                                     className={({ isActive }) => `navbar-nav-item ${isActive ? "active" : ""}`}
                                     title="Feed"
                                 >
-                                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                                        <polyline points="9 22 9 12 15 12 15 22" />
-                                    </svg>
+                                    <div className="nav-icon-wrap">
+                                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                                            <polyline points="9 22 9 12 15 12 15 22" />
+                                        </svg>
+                                        {hasFeedNotification && (
+                                            <span className="nav-notification-dot" title="New post on Feed" />
+                                        )}
+                                    </div>
                                     <span className="nav-item-label">Feed</span>
                                 </NavLink>
 
@@ -83,12 +185,17 @@ const Navbar = () => {
                                     className={({ isActive }) => `navbar-nav-item ${isActive ? "active" : ""}`}
                                     title="Network"
                                 >
-                                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                                        <circle cx="9" cy="7" r="4" />
-                                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                                    </svg>
+                                    <div className="nav-icon-wrap">
+                                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                            <circle cx="9" cy="7" r="4" />
+                                            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                                        </svg>
+                                        {hasNetworkNotification && (
+                                            <span className="nav-notification-dot pulse" title="New invitation or connection update" />
+                                        )}
+                                    </div>
                                     <span className="nav-item-label">Network</span>
                                 </NavLink>
 
@@ -97,12 +204,14 @@ const Navbar = () => {
                                     className={({ isActive }) => `navbar-nav-item ${isActive ? "active" : ""}`}
                                     title="Dashboard"
                                 >
-                                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <rect x="3" y="3" width="7" height="7" />
-                                        <rect x="14" y="3" width="7" height="7" />
-                                        <rect x="14" y="14" width="7" height="7" />
-                                        <rect x="3" y="14" width="7" height="7" />
-                                    </svg>
+                                    <div className="nav-icon-wrap">
+                                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <rect x="3" y="3" width="7" height="7" />
+                                            <rect x="14" y="3" width="7" height="7" />
+                                            <rect x="14" y="14" width="7" height="7" />
+                                            <rect x="3" y="14" width="7" height="7" />
+                                        </svg>
+                                    </div>
                                     <span className="nav-item-label">Dashboard</span>
                                 </NavLink>
 
@@ -153,60 +262,25 @@ const Navbar = () => {
                 </div>
             </header>
 
-            {/* Professional Logout Confirmation Modal */}
-            {showLogoutModal && user && (
-                <div className="modal-overlay" onClick={() => setShowLogoutModal(false)} style={{ zIndex: 3000 }}>
-                    <div
-                        className="modal-box modal-logout-box"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className="logout-modal-header">
-                            <div className="logout-modal-icon-badge">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                                    <polyline points="16 17 21 12 16 7"></polyline>
-                                    <line x1="21" y1="12" x2="9" y2="12"></line>
-                                </svg>
-                            </div>
-                            <h3 className="logout-modal-title">
-                                Sign out of Waverly?
-                            </h3>
-                            <p className="logout-modal-subtitle">
-                                You can always log back in to access your connections and posts.
-                            </p>
+            {/* Logout Confirmation Modal */}
+            {showLogoutModal && (
+                <div className="modal-overlay" onClick={() => setShowLogoutModal(false)} style={{ zIndex: 3500 }}>
+                    <div className="modal-box delete-confirm-modal-box" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-icon-badge" style={{ background: "rgba(239, 68, 68, 0.15)", color: "#f87171" }}>
+                            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                                <polyline points="16 17 21 12 16 7" />
+                                <line x1="21" y1="12" x2="9" y2="12" />
+                            </svg>
                         </div>
-
-                        {/* User Account Details */}
-                        <div className="logout-user-preview">
-                            <img
-                                src={user.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
-                                alt={user.name}
-                                className="logout-user-avatar"
-                                onError={(e) => {
-                                    e.currentTarget.src = "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
-                                }}
-                            />
-                            <div className="logout-user-info">
-                                <span className="logout-user-name">{user.name}</span>
-                                <span className="logout-user-handle">@{user.username}</span>
-                            </div>
-                        </div>
-
-                        {/* Action Buttons */}
-                        <div className="logout-modal-actions">
-                            <Button
-                                variant="secondary"
-                                onClick={() => setShowLogoutModal(false)}
-                                fullWidth
-                            >
+                        <h3>Sign out of Waverly?</h3>
+                        <p>You can always log back in at any time to connect with your campus network.</p>
+                        <div className="delete-confirm-actions">
+                            <Button variant="secondary" onClick={() => setShowLogoutModal(false)}>
                                 Cancel
                             </Button>
-                            <Button
-                                variant="danger"
-                                onClick={handleConfirmLogout}
-                                fullWidth
-                            >
-                                Log out
+                            <Button variant="danger" onClick={handleConfirmLogout}>
+                                Sign out
                             </Button>
                         </div>
                     </div>
