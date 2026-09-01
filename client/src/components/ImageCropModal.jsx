@@ -45,10 +45,11 @@ const ImageCropModal = ({
     title = "Edit Cover Image",
     aspectRatio = 3.6, // width / height ratio
     outputWidth = 1200,
-    outputHeight = 350,
     allowRemove = true,
 }) => {
     const [imageSrc, setImageSrc] = useState(currentImage || "");
+    const [naturalSize, setNaturalSize] = useState({ width: 0, height: 0 });
+    const [viewportSize, setViewportSize] = useState({ width: 600, height: 600 / aspectRatio });
     const [zoom, setZoom] = useState(1);
     const [rotation, setRotation] = useState(0); // 0, 90, 180, 270
     const [flipH, setFlipH] = useState(false);
@@ -63,7 +64,29 @@ const ImageCropModal = ({
 
     const fileInputRef = useRef(null);
     const viewportRef = useRef(null);
-    const imageRef = useRef(null);
+
+    // Measure viewport on render & resize
+    const updateViewportDimensions = useCallback(() => {
+        if (viewportRef.current) {
+            const w = viewportRef.current.clientWidth;
+            const h = w / aspectRatio;
+            setViewportSize({ width: w, height: h });
+        }
+    }, [aspectRatio]);
+
+    // Load image natural dimensions whenever imageSrc changes
+    useEffect(() => {
+        if (!imageSrc) {
+            setNaturalSize({ width: 0, height: 0 });
+            return;
+        }
+
+        const img = new Image();
+        img.onload = () => {
+            setNaturalSize({ width: img.naturalWidth || img.width, height: img.naturalHeight || img.height });
+        };
+        img.src = imageSrc;
+    }, [imageSrc]);
 
     // Sync currentImage when modal opens
     useEffect(() => {
@@ -76,8 +99,19 @@ const ImageCropModal = ({
             setPan({ x: 0, y: 0 });
             setErrorMessage("");
             setActiveTab(currentImage ? "crop" : "upload");
+
+            setTimeout(() => {
+                updateViewportDimensions();
+            }, 50);
         }
-    }, [isOpen, currentImage]);
+    }, [isOpen, currentImage, updateViewportDimensions]);
+
+    // Handle Window Resize
+    useEffect(() => {
+        if (!isOpen) return;
+        window.addEventListener("resize", updateViewportDimensions);
+        return () => window.removeEventListener("resize", updateViewportDimensions);
+    }, [isOpen, updateViewportDimensions]);
 
     // Handle Local File Selection
     const handleFileChange = (e) => {
@@ -89,8 +123,8 @@ const ImageCropModal = ({
             return;
         }
 
-        if (file.size > 15 * 1024 * 1024) {
-            setErrorMessage("Image is too large. Please select an image under 15MB.");
+        if (file.size > 20 * 1024 * 1024) {
+            setErrorMessage("Image is too large. Please select an image under 20MB.");
             return;
         }
 
@@ -159,15 +193,29 @@ const ImageCropModal = ({
 
     // Position Quick Shortcuts
     const handleAlignPosition = (pos) => {
-        if (pos === "top") setPan(prev => ({ ...prev, y: 50 }));
+        if (pos === "top") setPan(prev => ({ ...prev, y: 40 }));
         else if (pos === "center") setPan({ x: 0, y: 0 });
-        else if (pos === "bottom") setPan(prev => ({ ...prev, y: -50 }));
+        else if (pos === "bottom") setPan(prev => ({ ...prev, y: -40 }));
     };
 
-    // Generate Final Cropped Image with Canvas
+    // Exact Base Scale: Fits the image to cover the viewport cleanly
+    const vpW = viewportSize.width || 600;
+    const vpH = viewportSize.height || 600 / aspectRatio;
+
+    let baseScale = 1;
+    let baseW = vpW;
+    let baseH = vpH;
+
+    if (naturalSize.width > 0 && naturalSize.height > 0) {
+        baseScale = Math.max(vpW / naturalSize.width, vpH / naturalSize.height);
+        baseW = naturalSize.width * baseScale;
+        baseH = naturalSize.height * baseScale;
+    }
+
+    // Generate Final Cropped Image with WYSIWYG Canvas
     const handleSaveCrop = async () => {
         if (!imageSrc) {
-            onSave("");
+            await onSave("");
             onClose();
             return;
         }
@@ -176,9 +224,12 @@ const ImageCropModal = ({
         setErrorMessage("");
 
         try {
+            const outW = outputWidth;
+            const outH = Math.round(outputWidth / aspectRatio);
+
             const canvas = document.createElement("canvas");
-            canvas.width = outputWidth;
-            canvas.height = outputHeight;
+            canvas.width = outW;
+            canvas.height = outH;
             const ctx = canvas.getContext("2d");
 
             if (!ctx) {
@@ -195,7 +246,7 @@ const ImageCropModal = ({
             });
 
             // Fill canvas background
-            ctx.fillStyle = "#0f1419";
+            ctx.fillStyle = "#0f1624";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             // Apply selected filter to canvas
@@ -204,57 +255,44 @@ const ImageCropModal = ({
                 ctx.filter = activeFilterObj.filter;
             }
 
-            // Calculations for aspect scale & pan
-            const viewportEl = viewportRef.current;
-            const vpWidth = viewportEl ? viewportEl.clientWidth : 600;
-            const vpHeight = viewportEl ? viewportEl.clientHeight : 600 / aspectRatio;
-
-            const scaleRatio = outputWidth / vpWidth;
+            // Exact scale ratio between canvas and DOM viewport
+            const canvasScaleRatio = outW / vpW;
 
             ctx.save();
-            // Move origin to center of canvas
+            // 1. Move to canvas center
             ctx.translate(canvas.width / 2, canvas.height / 2);
 
-            // Apply user pan
-            ctx.translate(pan.x * scaleRatio, pan.y * scaleRatio);
+            // 2. Apply scaled pan (exact WYSIWYG)
+            ctx.translate(pan.x * canvasScaleRatio, pan.y * canvasScaleRatio);
 
-            // Apply rotation
+            // 3. Apply rotation
             ctx.rotate((rotation * Math.PI) / 180);
 
-            // Apply flip
+            // 4. Apply flip
             ctx.scale(flipH ? -1 : 1, 1);
 
-            // Base scale to cover viewport
-            const imgAspect = img.width / img.height;
-            const vpAspect = vpWidth / vpHeight;
+            // 5. Draw image matching exact DOM viewport dimensions
+            const targetDrawW = baseW * zoom * canvasScaleRatio;
+            const targetDrawH = baseH * zoom * canvasScaleRatio;
 
-            let drawW, drawH;
-            if (imgAspect > vpAspect) {
-                drawH = canvas.height * zoom;
-                drawW = drawH * imgAspect;
-            } else {
-                drawW = canvas.width * zoom;
-                drawH = drawW / imgAspect;
-            }
-
-            ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
+            ctx.drawImage(img, -targetDrawW / 2, -targetDrawH / 2, targetDrawW, targetDrawH);
             ctx.restore();
 
-            // Export high-quality image URL
-            const croppedDataUrl = canvas.toDataURL("image/jpeg", 0.9);
+            // Export high-quality image URL (JPEG quality 0.88)
+            const croppedDataUrl = canvas.toDataURL("image/jpeg", 0.88);
             await onSave(croppedDataUrl);
             setIsProcessing(false);
             onClose();
         } catch (err) {
             console.error("Cropping error:", err);
-            // If crossOrigin causes issue with an external URL, fallback to saving image URL directly
+            // Fallback for CORS restricted images
             if (imageSrc.startsWith("http")) {
                 await onSave(imageSrc);
                 setIsProcessing(false);
                 onClose();
             } else {
                 setIsProcessing(false);
-                setErrorMessage("Failed to crop image. Please try another image or format.");
+                setErrorMessage("Failed to crop image. Please try uploading a local image.");
             }
         }
     };
@@ -293,7 +331,7 @@ const ImageCropModal = ({
                         </div>
                         <div>
                             <h3 className="crop-modal-title">{title}</h3>
-                            <p className="crop-modal-subtitle">Upload, adjust, crop, and filter your profile banner</p>
+                            <p className="crop-modal-subtitle">What you see in this frame will be your profile banner</p>
                         </div>
                     </div>
                     <button type="button" className="crop-modal-close-btn" onClick={onClose} aria-label="Close">
@@ -397,7 +435,7 @@ const ImageCropModal = ({
                     </div>
                 )}
 
-                {/* Interactive Crop Viewport */}
+                {/* Interactive Crop Viewport (Exact WYSIWYG) */}
                 <div
                     className="crop-viewport-wrapper"
                     style={{ aspectRatio: `${aspectRatio}` }}
@@ -415,16 +453,22 @@ const ImageCropModal = ({
                             <div
                                 className="crop-image-layer"
                                 style={{
-                                    transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom}) rotate(${rotation}deg) scaleX(${flipH ? -1 : 1})`,
-                                    filter: currentFilterCss,
                                     cursor: isDragging ? "grabbing" : "grab",
                                 }}
                             >
                                 <img
-                                    ref={imageRef}
                                     src={imageSrc}
                                     alt="Crop target"
-                                    className="crop-target-img"
+                                    style={{
+                                        width: `${baseW}px`,
+                                        height: `${baseH}px`,
+                                        transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom}) rotate(${rotation}deg) scaleX(${flipH ? -1 : 1})`,
+                                        transformOrigin: "center center",
+                                        filter: currentFilterCss,
+                                        position: "absolute",
+                                        userSelect: "none",
+                                        pointerEvents: "none",
+                                    }}
                                     draggable={false}
                                 />
                             </div>
@@ -446,7 +490,7 @@ const ImageCropModal = ({
                                     <line x1="2" y1="12" x2="22" y2="12" />
                                     <line x1="12" y1="2" x2="12" y2="22" />
                                 </svg>
-                                <span>Drag to reposition</span>
+                                <span>Drag to reposition inside the frame</span>
                             </div>
                         </>
                     ) : (
@@ -459,7 +503,7 @@ const ImageCropModal = ({
                                 </svg>
                             </div>
                             <span className="crop-empty-text">Click to choose a banner image</span>
-                            <span className="crop-empty-sub">JPG, PNG, WebP up to 15MB</span>
+                            <span className="crop-empty-sub">JPG, PNG, WebP up to 20MB</span>
                         </div>
                     )}
                 </div>
@@ -588,7 +632,7 @@ const ImageCropModal = ({
                             onClick={handleSaveCrop}
                             isLoading={isProcessing}
                         >
-                            {isProcessing ? "Applying..." : "Save & Apply"}
+                            {isProcessing ? "Saving & Applying..." : "Save & Apply"}
                         </Button>
                     </div>
                 </div>
