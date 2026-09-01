@@ -1,5 +1,13 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import Button from "./Button";
+
+const POPULAR_SKILL_SUGGESTIONS = [
+    "JavaScript", "TypeScript", "React", "Node.js", "Python",
+    "Tailwind CSS", "Next.js", "Express", "MongoDB", "SQL",
+    "Machine Learning", "Data Science", "UI/UX Design", "Docker",
+    "Git", "AWS", "Figma", "Algorithms", "System Design"
+];
 
 const ProfileSkills = ({ user, isOwnProfile }) => {
     const { updateProfile } = useAuth();
@@ -16,19 +24,20 @@ const ProfileSkills = ({ user, isOwnProfile }) => {
         setIsEditing(true);
     };
 
-    const handleAddSkill = (e) => {
-        if (e) e.preventDefault();
-        const trimmed = newSkillInput.trim();
-        if (!trimmed) return;
-        
-        // Prevent duplicate tags
-        if (editedSkills.some(skill => skill.toLowerCase() === trimmed.toLowerCase())) {
-            setError("Skill already exists");
+    const handleAddSkill = (skillToAdd) => {
+        const text = (skillToAdd || newSkillInput).trim();
+        if (!text) return;
+
+        // Prevent duplicate tags (case-insensitive)
+        if (editedSkills.some(s => s.toLowerCase() === text.toLowerCase())) {
+            setError(`"${text}" is already in your skills list.`);
             return;
         }
 
-        setEditedSkills([...editedSkills, trimmed]);
-        setNewSkillInput("");
+        setEditedSkills([...editedSkills, text]);
+        if (!skillToAdd) {
+            setNewSkillInput("");
+        }
         setError("");
     };
 
@@ -37,7 +46,7 @@ const ProfileSkills = ({ user, isOwnProfile }) => {
     };
 
     const handleSave = async (e) => {
-        e.preventDefault();
+        e?.preventDefault();
         setIsSaving(true);
         setError("");
         try {
@@ -59,190 +68,194 @@ const ProfileSkills = ({ user, isOwnProfile }) => {
 
     return (
         <>
-            <div 
-                className="skills-container" 
-                style={{ 
-                    marginTop: '2rem', 
-                    background: '#16181c', 
-                    borderRadius: '16px', 
-                    padding: '1.5rem', 
-                    border: '1px solid #2f3336' 
-                }}
-            >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-                    <h3 style={{ margin: 0, fontSize: '1.25rem', color: '#e7e9ea', fontWeight: '600' }}>Skills</h3>
-                    {isOwnProfile && (
-                        <button 
+            <div className="profile-section-card">
+                <div className="section-card-header">
+                    <div className="section-header-title-group">
+                        <div className="section-header-icon-badge">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                            </svg>
+                        </div>
+                        <h3 className="section-card-title">Skills & Expertise</h3>
+                        {hasSkills && (
+                            <span className="section-count-pill">{user.skills.length}</span>
+                        )}
+                    </div>
+
+                    {isOwnProfile && hasSkills && (
+                        <button
                             type="button"
                             onClick={handleStartEdit}
-                            aria-label="Edit skills section" 
-                            style={{ 
-                                background: 'none',
-                                border: 'none',
-                                cursor: 'pointer',
-                                color: '#71767b', 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                padding: '6px',
-                                borderRadius: '50%',
-                                transition: 'color 0.2s, background-color 0.2s' 
-                            }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.color = '#1d9bf0';
-                                e.currentTarget.style.backgroundColor = 'rgba(29, 155, 240, 0.1)';
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.color = '#71767b';
-                                e.currentTarget.style.backgroundColor = 'transparent';
-                            }}
+                            className="section-edit-icon-btn"
+                            title="Edit skills"
+                            aria-label="Edit skills"
                         >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M12 20h9" />
-                                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                             </svg>
                         </button>
                     )}
                 </div>
-                
+
                 {hasSkills ? (
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
+                    <div className="skills-tags-wrap">
                         {user.skills.map((skill, index) => (
-                            <span 
-                                key={index} 
-                                className="skill-badge"
-                            >
-                                {skill}
+                            <span key={index} className="skill-pill-modern hover-lift">
+                                <span className="skill-pill-dot" />
+                                <span className="skill-pill-label">{skill}</span>
                             </span>
                         ))}
                     </div>
                 ) : (
-                    <p style={{ margin: 0, color: '#71767b', fontStyle: 'italic', fontSize: '0.95rem' }}>
-                        {isOwnProfile 
-                            ? "Highlight your skills to stand out to peers and potential recruiters." 
-                            : "No skills listed."}
-                    </p>
+                    <div className="section-empty-state">
+                        <p className="empty-state-message">
+                            {isOwnProfile
+                                ? "Highlight your technical strengths and tools to stand out to peers and project collaborators."
+                                : "No skills listed yet."}
+                        </p>
+                        {isOwnProfile && (
+                            <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={handleStartEdit}
+                                className="empty-state-cta-btn"
+                            >
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <line x1="12" y1="5" x2="12" y2="19" />
+                                    <line x1="5" y1="12" x2="19" y2="12" />
+                                </svg>
+                                <span>Add skills</span>
+                            </Button>
+                        )}
+                    </div>
                 )}
             </div>
 
             {/* Edit Modal */}
             {isEditing && (
-                <div className="modal-overlay" onClick={handleDiscard}>
-                    <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h2>Edit Skills</h2>
-                            <p className="modal-subtitle">Showcase your professional strengths and areas of expertise.</p>
+                <div className="modal-overlay" onClick={handleDiscard} style={{ zIndex: 3200 }}>
+                    <div className="modal-box skills-edit-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header-row">
+                            <div className="modal-header-title-group">
+                                <div className="modal-icon-badge">
+                                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 className="modal-title">Edit Skills</h3>
+                                    <p className="modal-subtitle">Showcase your programming languages, tools, and frameworks</p>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                className="crop-modal-close-btn"
+                                onClick={handleDiscard}
+                            >
+                                ✕
+                            </button>
                         </div>
 
-                        {error && <div className="form-error" style={{ marginBottom: '0.5rem' }}>{error}</div>}
+                        {error && <div className="crop-error-banner" style={{ marginBottom: "1rem" }}>{error}</div>}
 
-                        <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                        <form onSubmit={handleSave} className="skills-modal-form">
                             {/* Input to add new skills */}
-                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <div className="skills-input-row">
                                 <input
                                     type="text"
-                                    placeholder="Add a skill (e.g. React, Node.js, Python)"
+                                    placeholder="Type a skill and press Enter (e.g. React, Python)..."
                                     value={newSkillInput}
                                     onChange={(e) => setNewSkillInput(e.target.value)}
                                     onKeyDown={(e) => {
-                                        if (e.key === 'Enter') {
+                                        if (e.key === "Enter") {
                                             e.preventDefault();
                                             handleAddSkill();
                                         }
                                     }}
-                                    style={{
-                                        flex: 1,
-                                        padding: '0.75rem 1rem',
-                                        border: '1px solid #2f3336',
-                                        borderRadius: '8px',
-                                        background: '#0f1419',
-                                        color: '#e7e9ea',
-                                        fontSize: '1rem',
-                                    }}
+                                    className="skills-input-field"
                                     autoFocus
+                                    maxLength={40}
                                 />
-                                <button
+                                <Button
                                     type="button"
-                                    onClick={handleAddSkill}
-                                    className="btn btn-secondary"
-                                    style={{ padding: '0.75rem 1.25rem', borderRadius: '8px', fontSize: '0.95rem' }}
+                                    variant="secondary"
+                                    onClick={() => handleAddSkill()}
                                 >
                                     Add
-                                </button>
+                                </Button>
                             </div>
 
-                            {/* Current Skills list/chips within modal */}
-                            <div>
-                                <label style={{ fontSize: '0.875rem', color: '#71767b', display: 'block', marginBottom: '0.75rem' }}>
-                                    Your skills ({editedSkills.length})
-                                </label>
+                            {/* Suggestions */}
+                            <div className="skills-suggestions-section">
+                                <span className="skills-section-label">Suggested skills:</span>
+                                <div className="skills-suggestions-chips">
+                                    {POPULAR_SKILL_SUGGESTIONS.filter(
+                                        s => !editedSkills.some(es => es.toLowerCase() === s.toLowerCase())
+                                    ).slice(0, 10).map((suggestion) => (
+                                        <button
+                                            key={suggestion}
+                                            type="button"
+                                            className="skill-suggestion-chip"
+                                            onClick={() => handleAddSkill(suggestion)}
+                                        >
+                                            + {suggestion}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Current Skills list/chips */}
+                            <div className="skills-selected-section">
+                                <div className="skills-section-header">
+                                    <span className="skills-section-label">Your skills ({editedSkills.length})</span>
+                                    {editedSkills.length > 0 && (
+                                        <button
+                                            type="button"
+                                            className="skills-clear-all-btn"
+                                            onClick={() => setEditedSkills([])}
+                                        >
+                                            Clear all
+                                        </button>
+                                    )}
+                                </div>
+
                                 {editedSkills.length > 0 ? (
-                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', maxHeight: '200px', overflowY: 'auto', padding: '4px' }}>
+                                    <div className="skills-editable-chips-wrap">
                                         {editedSkills.map((skill, index) => (
-                                            <span 
-                                                key={index}
-                                                style={{
-                                                    display: 'inline-flex',
-                                                    alignItems: 'center',
-                                                    gap: '0.35rem',
-                                                    padding: '0.4rem 0.8rem',
-                                                    background: '#2f3336',
-                                                    border: '1px solid #536471',
-                                                    color: '#e7e9ea',
-                                                    borderRadius: '9999px',
-                                                    fontSize: '0.85rem',
-                                                    fontWeight: '500',
-                                                }}
-                                            >
-                                                {skill}
+                                            <span key={index} className="skill-editable-chip">
+                                                <span>{skill}</span>
                                                 <button
                                                     type="button"
+                                                    className="skill-chip-remove-btn"
                                                     onClick={() => handleRemoveSkill(skill)}
-                                                    aria-label={`Remove ${skill}`}
-                                                    style={{
-                                                        background: 'none',
-                                                        border: 'none',
-                                                        color: '#71767b',
-                                                        cursor: 'pointer',
-                                                        padding: 0,
-                                                        display: 'inline-flex',
-                                                        alignItems: 'center',
-                                                        fontSize: '1rem',
-                                                        fontWeight: 'bold',
-                                                        lineHeight: 1
-                                                    }}
-                                                    onMouseEnter={(e) => e.currentTarget.style.color = '#f4212e'}
-                                                    onMouseLeave={(e) => e.currentTarget.style.color = '#71767b'}
+                                                    title={`Remove ${skill}`}
                                                 >
-                                                    &times;
+                                                    ✕
                                                 </button>
                                             </span>
                                         ))}
                                     </div>
                                 ) : (
-                                    <p style={{ margin: 0, color: '#71767b', fontStyle: 'italic', fontSize: '0.9rem' }}>
-                                        No skills added yet. Add skills using the input above.
-                                    </p>
+                                    <p className="skills-empty-notice">No skills added yet. Add a skill from above.</p>
                                 )}
                             </div>
 
-                            <div className="modal-actions">
-                                <button 
-                                    type="button" 
-                                    className="btn btn-secondary" 
+                            <div className="modal-footer-actions">
+                                <Button
+                                    variant="secondary"
                                     onClick={handleDiscard}
                                     disabled={isSaving}
-                                    style={{ padding: '0.5rem 1.25rem', fontSize: '0.9rem' }}
                                 >
-                                    Discard
-                                </button>
-                                <button 
-                                    type="submit" 
-                                    className="btn btn-primary" 
-                                    disabled={isSaving}
-                                    style={{ padding: '0.5rem 1.25rem', fontSize: '0.9rem' }}
+                                    Cancel
+                                </Button>
+                                <Button
+                                    variant="primary"
+                                    type="submit"
+                                    isLoading={isSaving}
                                 >
-                                    {isSaving ? "Saving..." : "Save"}
-                                </button>
+                                    {isSaving ? "Saving..." : "Save Skills"}
+                                </Button>
                             </div>
                         </form>
                     </div>

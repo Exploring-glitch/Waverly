@@ -11,6 +11,9 @@ const Profile_Page = () => {
     const { user } = useAuth();
     const [usersToFollow, setUsersToFollow] = useState([]);
     const [collegeUsers, setCollegeUsers] = useState([]);
+    const [isCollegeModalOpen, setIsCollegeModalOpen] = useState(false);
+    const [isRecommendModalOpen, setIsRecommendModalOpen] = useState(false);
+    const [connectionCount, setConnectionCount] = useState(0);
 
     const handleConnectUser = async (userId, listType) => {
         try {
@@ -54,9 +57,6 @@ const Profile_Page = () => {
             console.error("Failed to accept connection request", err);
         }
     };
-    const [isCollegeModalOpen, setIsCollegeModalOpen] = useState(false);
-    const [isRecommendModalOpen, setIsRecommendModalOpen] = useState(false);
-    const [connectionCount, setConnectionCount] = useState(0);
 
     useEffect(() => {
         const fetchRecommendations = async () => {
@@ -75,7 +75,6 @@ const Profile_Page = () => {
                     const data = await userApi.getCollegeMembers(user.collegeName);
                     if (data && data.members) {
                         const filtered = data.members.filter(m => m._id !== user?._id && m.username !== user?.username);
-                        // Sort alphabetically by name
                         filtered.sort((a, b) => a.name.localeCompare(b.name));
                         setCollegeUsers(filtered);
                     }
@@ -105,9 +104,22 @@ const Profile_Page = () => {
         return <div className="page-center"><div className="spinner" /></div>;
     }
 
+    // Profile Completion Calculation
+    const profileChecks = [
+        { label: "Profile photo", done: Boolean(user.profilePic) },
+        { label: "Cover banner", done: Boolean(user.coverPic) },
+        { label: "Short bio", done: Boolean(user.bio) },
+        { label: "University/College", done: Boolean(user.collegeName) },
+        { label: "Skills & expertise", done: Boolean(user.skills && user.skills.length > 0) },
+        { label: "About summary", done: Boolean(user.about) },
+    ];
+    const completedCount = profileChecks.filter(c => c.done).length;
+    const completionPercentage = Math.round((completedCount / profileChecks.length) * 100);
+
     return (
-        <>
+        <div className="profile-page-wrapper">
             <div className="profile-grid">
+                {/* Main Left Column */}
                 <div className="profile-main-content">
                     <ProfileHeader user={user} connectionCount={connectionCount} />
                     <ProfileAbout user={user} isOwnProfile={true} />
@@ -115,241 +127,236 @@ const Profile_Page = () => {
                     <ProfileActivity />
                 </div>
 
+                {/* Sidebar Right Column */}
                 <div className="profile-right-sidebar">
-                    {/* People You May Know - From your University/Clg */}
-                    <div className="widget-card" style={{ padding: '0' }}>
-                        <div style={{ padding: '1.25rem 1.25rem 0 1.25rem' }}>
-                            <h3 className="widget-title" style={{ margin: 0 }}>People you may know</h3>
-                            <p style={{ margin: '0.15rem 0 0 0', fontSize: '0.75rem', color: '#71767b', fontWeight: '600' }}>
-                                From your University/Clg
+                    {/* Profile Strength Widget (if not 100%) */}
+                    {completionPercentage < 100 && (
+                        <div className="sidebar-widget-card profile-strength-widget">
+                            <div className="widget-header-row">
+                                <div className="widget-icon-pill">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                                    </svg>
+                                </div>
+                                <div className="widget-title-col">
+                                    <h4 className="widget-card-title">Profile Strength</h4>
+                                    <span className="widget-card-subtitle">{completionPercentage}% Completed</span>
+                                </div>
+                            </div>
+
+                            <div className="strength-progress-track">
+                                <div
+                                    className="strength-progress-fill"
+                                    style={{ width: `${completionPercentage}%` }}
+                                />
+                            </div>
+
+                            <p className="strength-suggestion-text">
+                                Complete your profile to unlock more connection recommendations.
                             </p>
+
+                            <Link to="/edit-profile" className="btn btn-secondary btn-sm strength-cta-btn">
+                                Complete Profile
+                            </Link>
                         </div>
-                        <div className="widget-list" style={{ marginTop: '0.5rem', padding: '0 1.25rem 1.25rem 1.25rem' }}>
+                    )}
+
+                    {/* University / College Peers */}
+                    <div className="sidebar-widget-card">
+                        <div className="widget-header-row">
+                            <div className="widget-icon-pill university-pill">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                                    <path d="M6 12v5c0 2 3 3 6 3s6-1 6-3v-5" />
+                                </svg>
+                            </div>
+                            <div className="widget-title-col">
+                                <h4 className="widget-card-title">Campus Peers</h4>
+                                <span className="widget-card-subtitle">
+                                    {user.collegeName ? `From ${user.collegeName}` : "Find your peers"}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="widget-users-list">
                             {!user.collegeName ? (
-                                <div style={{ fontSize: '0.8rem', color: '#71767b', padding: '0.5rem 0' }}>
-                                    Add your university/college to your profile to find peers.
+                                <div className="widget-empty-msg">
+                                    <p>Add your university or college to your profile to find classmates and alumni.</p>
+                                    <Link to="/edit-profile" className="widget-inline-link">
+                                        + Add College
+                                    </Link>
                                 </div>
                             ) : collegeUsers.length > 0 ? (
-                                collegeUsers.slice(0, 5).map(item => (
-                                    <div key={item._id} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start', paddingBottom: '0.75rem', marginBottom: '0.75rem', borderBottom: '1px solid #2f3336' }}>
-                                        <Link to={`/users/${item.username}`}>
+                                collegeUsers.slice(0, 4).map(item => (
+                                    <div key={item._id} className="widget-user-row">
+                                        <Link to={`/users/${item.username}`} className="widget-user-avatar-link">
                                             <img
                                                 src={item.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
                                                 alt={item.name}
-                                                style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                                                className="widget-user-avatar"
                                                 onError={(e) => {
                                                     e.currentTarget.src = "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
                                                 }}
                                             />
                                         </Link>
-                                        <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, minWidth: 0 }}>
-                                            <Link to={`/users/${item.username}`} style={{ fontSize: '0.95rem', fontWeight: '700', color: '#e7e9ea', textDecoration: 'none' }} className="hover-underline">
+                                        <div className="widget-user-info">
+                                            <Link to={`/users/${item.username}`} className="widget-user-name">
                                                 {item.name}
-                                                <span style={{ fontSize: '0.8rem', color: '#71767b', fontWeight: '400', marginLeft: '0.35rem' }}>@{item.username}</span>
                                             </Link>
-                                            <span style={{ fontSize: '0.8rem', color: '#71767b', lineHeight: '1.25', margin: '0.15rem 0 0.45rem 0', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                                                {item.bio || item.collegeName || item.companyName || "Waverly Member"}
+                                            <span className="widget-user-bio">
+                                                {item.bio || item.collegeName || "Campus Peer"}
                                             </span>
+                                        </div>
+                                        <div className="widget-user-action">
                                             {item.connectionStatus === "accepted" ? (
                                                 <button
+                                                    type="button"
                                                     onClick={() => handleCancelUserRequest(item._id, "college")}
-                                                    style={{
-                                                        background: 'transparent',
-                                                        border: '1px solid #71767b',
-                                                        color: '#71767b',
-                                                        borderRadius: '20px',
-                                                        padding: '0.3rem 0.9rem',
-                                                        fontSize: '0.75rem',
-                                                        fontWeight: '600',
-                                                        cursor: 'pointer',
-                                                        width: 'fit-content'
-                                                    }}
+                                                    className="btn-status-pill connected"
                                                 >
                                                     Connected
                                                 </button>
                                             ) : item.connectionStatus === "pending_sent" ? (
                                                 <button
+                                                    type="button"
                                                     onClick={() => handleCancelUserRequest(item._id, "college")}
-                                                    style={{
-                                                        background: 'transparent',
-                                                        border: '1px solid #71767b',
-                                                        color: '#71767b',
-                                                        borderRadius: '20px',
-                                                        padding: '0.3rem 0.9rem',
-                                                        fontSize: '0.75rem',
-                                                        fontWeight: '600',
-                                                        cursor: 'pointer',
-                                                        width: 'fit-content'
-                                                    }}
+                                                    className="btn-status-pill pending"
                                                 >
                                                     Pending
                                                 </button>
                                             ) : item.connectionStatus === "pending_received" ? (
                                                 <button
+                                                    type="button"
                                                     onClick={() => handleAcceptUserRequest(item._id, "college")}
-                                                    style={{
-                                                        background: '#1d9bf0',
-                                                        border: '1px solid #1d9bf0',
-                                                        color: '#fff',
-                                                        borderRadius: '20px',
-                                                        padding: '0.3rem 0.9rem',
-                                                        fontSize: '0.75rem',
-                                                        fontWeight: '600',
-                                                        cursor: 'pointer',
-                                                        width: 'fit-content'
-                                                    }}
+                                                    className="btn-status-pill accept"
                                                 >
                                                     Accept
                                                 </button>
                                             ) : (
                                                 <button
+                                                    type="button"
                                                     onClick={() => handleConnectUser(item._id, "college")}
-                                                    style={{
-                                                        background: 'transparent',
-                                                        border: '1px solid #1d9bf0',
-                                                        color: '#1d9bf0',
-                                                        borderRadius: '20px',
-                                                        padding: '0.3rem 0.9rem',
-                                                        fontSize: '0.75rem',
-                                                        fontWeight: '600',
-                                                        cursor: 'pointer',
-                                                        width: 'fit-content'
-                                                    }}
+                                                    className="btn-status-pill connect"
                                                 >
-                                                    Connect
+                                                    + Connect
                                                 </button>
                                             )}
                                         </div>
                                     </div>
                                 ))
                             ) : (
-                                <div style={{ fontSize: '0.8rem', color: '#71767b', padding: '0.5rem 0' }}>
-                                    No members from your university/college found.
+                                <div className="widget-empty-msg">
+                                    <p>No other members from your college found yet.</p>
                                 </div>
                             )}
                         </div>
-                        {user.collegeName && collegeUsers.length > 5 && (
-                            <button className="show-all-btn" onClick={() => setIsCollegeModalOpen(true)}>
-                                Show all
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                                    <polyline points="12 5 19 12 12 19"></polyline>
+
+                        {user.collegeName && collegeUsers.length > 4 && (
+                            <button
+                                type="button"
+                                className="widget-show-all-btn"
+                                onClick={() => setIsCollegeModalOpen(true)}
+                            >
+                                <span>Show all ({collegeUsers.length})</span>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                    <polyline points="9 18 15 12 9 6" />
                                 </svg>
                             </button>
                         )}
                     </div>
 
-                    {/* People You May Know */}
-                    <div className="widget-card" style={{ marginTop: '0.75rem', padding: '0' }}>
-                        <div style={{ padding: '1.25rem 1.25rem 0 1.25rem' }}>
-                            <h3 className="widget-title" style={{ margin: 0 }}>People you may know</h3>
+                    {/* Recommended Connections */}
+                    <div className="sidebar-widget-card">
+                        <div className="widget-header-row">
+                            <div className="widget-icon-pill suggest-pill">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                    <circle cx="9" cy="7" r="4" />
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                                </svg>
+                            </div>
+                            <div className="widget-title-col">
+                                <h4 className="widget-card-title">People You May Know</h4>
+                                <span className="widget-card-subtitle">Recommended for you</span>
+                            </div>
                         </div>
-                        <div className="widget-list" style={{ marginTop: '0.5rem', padding: '0 1.25rem 1.25rem 1.25rem' }}>
+
+                        <div className="widget-users-list">
                             {usersToFollow.length > 0 ? (
-                                usersToFollow.slice(0, 5).map(item => (
-                                    <div key={item._id} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start', paddingBottom: '0.75rem', marginBottom: '0.75rem', borderBottom: '1px solid #2f3336' }}>
-                                        <Link to={`/users/${item.username}`}>
+                                usersToFollow.slice(0, 4).map(item => (
+                                    <div key={item._id} className="widget-user-row">
+                                        <Link to={`/users/${item.username}`} className="widget-user-avatar-link">
                                             <img
                                                 src={item.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
                                                 alt={item.name}
-                                                style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                                                className="widget-user-avatar"
                                                 onError={(e) => {
                                                     e.currentTarget.src = "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
                                                 }}
                                             />
                                         </Link>
-                                        <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, minWidth: 0 }}>
-                                            <Link to={`/users/${item.username}`} style={{ fontSize: '0.95rem', fontWeight: '700', color: '#e7e9ea', textDecoration: 'none' }} className="hover-underline">
+                                        <div className="widget-user-info">
+                                            <Link to={`/users/${item.username}`} className="widget-user-name">
                                                 {item.name}
-                                                <span style={{ fontSize: '0.8rem', color: '#71767b', fontWeight: '400', marginLeft: '0.35rem' }}>@{item.username}</span>
                                             </Link>
-                                            <span style={{ fontSize: '0.8rem', color: '#71767b', lineHeight: '1.25', margin: '0.15rem 0 0.45rem 0', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                            <span className="widget-user-bio">
                                                 {item.bio || item.collegeName || item.companyName || "Waverly Member"}
                                             </span>
+                                        </div>
+                                        <div className="widget-user-action">
                                             {item.connectionStatus === "accepted" ? (
                                                 <button
+                                                    type="button"
                                                     onClick={() => handleCancelUserRequest(item._id, "suggestions")}
-                                                    style={{
-                                                        background: 'transparent',
-                                                        border: '1px solid #71767b',
-                                                        color: '#71767b',
-                                                        borderRadius: '20px',
-                                                        padding: '0.3rem 0.9rem',
-                                                        fontSize: '0.75rem',
-                                                        fontWeight: '600',
-                                                        cursor: 'pointer',
-                                                        width: 'fit-content'
-                                                    }}
+                                                    className="btn-status-pill connected"
                                                 >
                                                     Connected
                                                 </button>
                                             ) : item.connectionStatus === "pending_sent" ? (
                                                 <button
+                                                    type="button"
                                                     onClick={() => handleCancelUserRequest(item._id, "suggestions")}
-                                                    style={{
-                                                        background: 'transparent',
-                                                        border: '1px solid #71767b',
-                                                        color: '#71767b',
-                                                        borderRadius: '20px',
-                                                        padding: '0.3rem 0.9rem',
-                                                        fontSize: '0.75rem',
-                                                        fontWeight: '600',
-                                                        cursor: 'pointer',
-                                                        width: 'fit-content'
-                                                    }}
+                                                    className="btn-status-pill pending"
                                                 >
                                                     Pending
                                                 </button>
                                             ) : item.connectionStatus === "pending_received" ? (
                                                 <button
+                                                    type="button"
                                                     onClick={() => handleAcceptUserRequest(item._id, "suggestions")}
-                                                    style={{
-                                                        background: '#1d9bf0',
-                                                        border: '1px solid #1d9bf0',
-                                                        color: '#fff',
-                                                        borderRadius: '20px',
-                                                        padding: '0.3rem 0.9rem',
-                                                        fontSize: '0.75rem',
-                                                        fontWeight: '600',
-                                                        cursor: 'pointer',
-                                                        width: 'fit-content'
-                                                    }}
+                                                    className="btn-status-pill accept"
                                                 >
                                                     Accept
                                                 </button>
                                             ) : (
                                                 <button
+                                                    type="button"
                                                     onClick={() => handleConnectUser(item._id, "suggestions")}
-                                                    style={{
-                                                        background: 'transparent',
-                                                        border: '1px solid #1d9bf0',
-                                                        color: '#1d9bf0',
-                                                        borderRadius: '20px',
-                                                        padding: '0.3rem 0.9rem',
-                                                        fontSize: '0.75rem',
-                                                        fontWeight: '600',
-                                                        cursor: 'pointer',
-                                                        width: 'fit-content'
-                                                    }}
+                                                    className="btn-status-pill connect"
                                                 >
-                                                    Connect
+                                                    + Connect
                                                 </button>
                                             )}
                                         </div>
                                     </div>
                                 ))
                             ) : (
-                                <div style={{ fontSize: '0.75rem', color: '#71767b', textAlign: 'center', padding: '0.5rem 0' }}>
-                                    No suggestions at the moment
+                                <div className="widget-empty-msg">
+                                    <p>No new recommendations at the moment.</p>
                                 </div>
                             )}
                         </div>
-                        {usersToFollow.length > 5 && (
-                            <button className="show-all-btn" onClick={() => setIsRecommendModalOpen(true)}>
-                                Show all
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                                    <polyline points="12 5 19 12 12 19"></polyline>
+
+                        {usersToFollow.length > 4 && (
+                            <button
+                                type="button"
+                                className="widget-show-all-btn"
+                                onClick={() => setIsRecommendModalOpen(true)}
+                            >
+                                <span>Show all ({usersToFollow.length})</span>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                    <polyline points="9 18 15 12 9 6" />
                                 </svg>
                             </button>
                         )}
@@ -357,110 +364,94 @@ const Profile_Page = () => {
                 </div>
             </div>
 
-            {/* University Peers Modal */}
+            {/* University Peers Full Modal */}
             {isCollegeModalOpen && (
-                <div className="modal-overlay" onClick={() => setIsCollegeModalOpen(false)}>
-                    <div className="modal-box" onClick={e => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <div>
-                                <h3 className="modal-title">People you may know</h3>
-                                <p className="modal-subtitle">From {user.collegeName}</p>
+                <div className="modal-overlay" onClick={() => setIsCollegeModalOpen(false)} style={{ zIndex: 3200 }}>
+                    <div className="modal-box connections-modal-box" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header-row">
+                            <div className="modal-header-title-group">
+                                <div className="modal-icon-badge">
+                                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                                        <path d="M6 12v5c0 2 3 3 6 3s6-1 6-3v-5" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 className="modal-title">Campus Peers</h3>
+                                    <p className="modal-subtitle">Members from {user.collegeName}</p>
+                                </div>
                             </div>
-                            <button className="modal-close-btn" onClick={() => setIsCollegeModalOpen(false)}>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                                </svg>
+                            <button
+                                type="button"
+                                className="crop-modal-close-btn"
+                                onClick={() => setIsCollegeModalOpen(false)}
+                            >
+                                ✕
                             </button>
                         </div>
-                        <div className="modal-body">
+
+                        <div className="connections-modal-list">
                             {collegeUsers.map(item => (
-                                <div key={item._id} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start', paddingBottom: '0.75rem', borderBottom: '1px solid #2f3336' }}>
-                                    <Link to={`/users/${item.username}`} onClick={() => setIsCollegeModalOpen(false)}>
+                                <div key={item._id} className="connection-member-row">
+                                    <Link
+                                        to={`/users/${item.username}`}
+                                        onClick={() => setIsCollegeModalOpen(false)}
+                                        className="connection-avatar-link"
+                                    >
                                         <img
                                             src={item.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
                                             alt={item.name}
-                                            style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                                            className="connection-avatar-img"
                                             onError={(e) => {
                                                 e.currentTarget.src = "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
                                             }}
                                         />
                                     </Link>
-                                    <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, minWidth: 0 }}>
-                                        <Link to={`/users/${item.username}`} onClick={() => setIsCollegeModalOpen(false)} style={{ fontSize: '0.95rem', fontWeight: '700', color: '#e7e9ea', textDecoration: 'none' }} className="hover-underline">
+                                    <div className="connection-info-col">
+                                        <Link
+                                            to={`/users/${item.username}`}
+                                            onClick={() => setIsCollegeModalOpen(false)}
+                                            className="connection-name-link"
+                                        >
                                             {item.name}
-                                            <span style={{ fontSize: '0.8rem', color: '#71767b', fontWeight: '400', marginLeft: '0.35rem' }}>@{item.username}</span>
                                         </Link>
-                                        <span style={{ fontSize: '0.8rem', color: '#71767b', lineHeight: '1.25', margin: '0.15rem 0 0.45rem 0', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                                            {item.bio || item.collegeName || item.companyName || "Waverly Member"}
+                                        <span className="connection-handle-text">@{item.username}</span>
+                                        <span className="connection-college-text">
+                                            {item.bio || item.collegeName || "Campus Peer"}
                                         </span>
+                                    </div>
+                                    <div className="widget-user-action">
                                         {item.connectionStatus === "accepted" ? (
                                             <button
+                                                type="button"
                                                 onClick={() => handleCancelUserRequest(item._id, "college")}
-                                                style={{
-                                                    background: 'transparent',
-                                                    border: '1px solid #71767b',
-                                                    color: '#71767b',
-                                                    borderRadius: '20px',
-                                                    padding: '0.3rem 0.9rem',
-                                                    fontSize: '0.75rem',
-                                                    fontWeight: '600',
-                                                    cursor: 'pointer',
-                                                    width: 'fit-content'
-                                                }}
+                                                className="btn-status-pill connected"
                                             >
                                                 Connected
                                             </button>
                                         ) : item.connectionStatus === "pending_sent" ? (
                                             <button
+                                                type="button"
                                                 onClick={() => handleCancelUserRequest(item._id, "college")}
-                                                style={{
-                                                    background: 'transparent',
-                                                    border: '1px solid #71767b',
-                                                    color: '#71767b',
-                                                    borderRadius: '20px',
-                                                    padding: '0.3rem 0.9rem',
-                                                    fontSize: '0.75rem',
-                                                    fontWeight: '600',
-                                                    cursor: 'pointer',
-                                                    width: 'fit-content'
-                                                }}
+                                                className="btn-status-pill pending"
                                             >
                                                 Pending
                                             </button>
                                         ) : item.connectionStatus === "pending_received" ? (
                                             <button
+                                                type="button"
                                                 onClick={() => handleAcceptUserRequest(item._id, "college")}
-                                                style={{
-                                                    background: '#1d9bf0',
-                                                    border: '1px solid #1d9bf0',
-                                                    color: '#fff',
-                                                    borderRadius: '20px',
-                                                    padding: '0.3rem 0.9rem',
-                                                    fontSize: '0.75rem',
-                                                    fontWeight: '600',
-                                                    cursor: 'pointer',
-                                                    width: 'fit-content'
-                                                }}
+                                                className="btn-status-pill accept"
                                             >
                                                 Accept
                                             </button>
                                         ) : (
                                             <button
+                                                type="button"
                                                 onClick={() => handleConnectUser(item._id, "college")}
-                                                style={{
-                                                    background: 'transparent',
-                                                    border: '1px solid #1d9bf0',
-                                                    color: '#1d9bf0',
-                                                    borderRadius: '20px',
-                                                    padding: '0.3rem 0.9rem',
-                                                    fontSize: '0.75rem',
-                                                    fontWeight: '600',
-                                                    cursor: 'pointer',
-                                                    width: 'fit-content'
-                                                }}
+                                                className="btn-status-pill connect"
                                             >
-                                                Connect
+                                                + Connect
                                             </button>
                                         )}
                                     </div>
@@ -471,110 +462,96 @@ const Profile_Page = () => {
                 </div>
             )}
 
-            {/* General Recommendations Modal */}
+            {/* General Recommendations Full Modal */}
             {isRecommendModalOpen && (
-                <div className="modal-overlay" onClick={() => setIsRecommendModalOpen(false)}>
-                    <div className="modal-box" onClick={e => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <div>
-                                <h3 className="modal-title">People you may know</h3>
-                                <p className="modal-subtitle">Recommended for you</p>
+                <div className="modal-overlay" onClick={() => setIsRecommendModalOpen(false)} style={{ zIndex: 3200 }}>
+                    <div className="modal-box connections-modal-box" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header-row">
+                            <div className="modal-header-title-group">
+                                <div className="modal-icon-badge">
+                                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                        <circle cx="9" cy="7" r="4" />
+                                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 className="modal-title">People You May Know</h3>
+                                    <p className="modal-subtitle">Suggested connections for you</p>
+                                </div>
                             </div>
-                            <button className="modal-close-btn" onClick={() => setIsRecommendModalOpen(false)}>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                                </svg>
+                            <button
+                                type="button"
+                                className="crop-modal-close-btn"
+                                onClick={() => setIsRecommendModalOpen(false)}
+                            >
+                                ✕
                             </button>
                         </div>
-                        <div className="modal-body">
+
+                        <div className="connections-modal-list">
                             {[...usersToFollow].sort((a, b) => a.name.localeCompare(b.name)).map(item => (
-                                <div key={item._id} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start', paddingBottom: '0.75rem', borderBottom: '1px solid #2f3336' }}>
-                                    <Link to={`/users/${item.username}`} onClick={() => setIsRecommendModalOpen(false)}>
+                                <div key={item._id} className="connection-member-row">
+                                    <Link
+                                        to={`/users/${item.username}`}
+                                        onClick={() => setIsRecommendModalOpen(false)}
+                                        className="connection-avatar-link"
+                                    >
                                         <img
                                             src={item.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
                                             alt={item.name}
-                                            style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                                            className="connection-avatar-img"
                                             onError={(e) => {
                                                 e.currentTarget.src = "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
                                             }}
                                         />
                                     </Link>
-                                    <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, minWidth: 0 }}>
-                                        <Link to={`/users/${item.username}`} onClick={() => setIsRecommendModalOpen(false)} style={{ fontSize: '0.95rem', fontWeight: '700', color: '#e7e9ea', textDecoration: 'none' }} className="hover-underline">
+                                    <div className="connection-info-col">
+                                        <Link
+                                            to={`/users/${item.username}`}
+                                            onClick={() => setIsRecommendModalOpen(false)}
+                                            className="connection-name-link"
+                                        >
                                             {item.name}
-                                            <span style={{ fontSize: '0.8rem', color: '#71767b', fontWeight: '400', marginLeft: '0.35rem' }}>@{item.username}</span>
                                         </Link>
-                                        <span style={{ fontSize: '0.8rem', color: '#71767b', lineHeight: '1.25', margin: '0.15rem 0 0.45rem 0', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                        <span className="connection-handle-text">@{item.username}</span>
+                                        <span className="connection-college-text">
                                             {item.bio || item.collegeName || item.companyName || "Waverly Member"}
                                         </span>
+                                    </div>
+                                    <div className="widget-user-action">
                                         {item.connectionStatus === "accepted" ? (
                                             <button
+                                                type="button"
                                                 onClick={() => handleCancelUserRequest(item._id, "suggestions")}
-                                                style={{
-                                                    background: 'transparent',
-                                                    border: '1px solid #71767b',
-                                                    color: '#71767b',
-                                                    borderRadius: '20px',
-                                                    padding: '0.3rem 0.9rem',
-                                                    fontSize: '0.75rem',
-                                                    fontWeight: '600',
-                                                    cursor: 'pointer',
-                                                    width: 'fit-content'
-                                                }}
+                                                className="btn-status-pill connected"
                                             >
                                                 Connected
                                             </button>
                                         ) : item.connectionStatus === "pending_sent" ? (
                                             <button
+                                                type="button"
                                                 onClick={() => handleCancelUserRequest(item._id, "suggestions")}
-                                                style={{
-                                                    background: 'transparent',
-                                                    border: '1px solid #71767b',
-                                                    color: '#71767b',
-                                                    borderRadius: '20px',
-                                                    padding: '0.3rem 0.9rem',
-                                                    fontSize: '0.75rem',
-                                                    fontWeight: '600',
-                                                    cursor: 'pointer',
-                                                    width: 'fit-content'
-                                                }}
+                                                className="btn-status-pill pending"
                                             >
                                                 Pending
                                             </button>
                                         ) : item.connectionStatus === "pending_received" ? (
                                             <button
+                                                type="button"
                                                 onClick={() => handleAcceptUserRequest(item._id, "suggestions")}
-                                                style={{
-                                                    background: '#1d9bf0',
-                                                    border: '1px solid #1d9bf0',
-                                                    color: '#fff',
-                                                    borderRadius: '20px',
-                                                    padding: '0.3rem 0.9rem',
-                                                    fontSize: '0.75rem',
-                                                    fontWeight: '600',
-                                                    cursor: 'pointer',
-                                                    width: 'fit-content'
-                                                }}
+                                                className="btn-status-pill accept"
                                             >
                                                 Accept
                                             </button>
                                         ) : (
                                             <button
+                                                type="button"
                                                 onClick={() => handleConnectUser(item._id, "suggestions")}
-                                                style={{
-                                                    background: 'transparent',
-                                                    border: '1px solid #1d9bf0',
-                                                    color: '#1d9bf0',
-                                                    borderRadius: '20px',
-                                                    padding: '0.3rem 0.9rem',
-                                                    fontSize: '0.75rem',
-                                                    fontWeight: '600',
-                                                    cursor: 'pointer',
-                                                    width: 'fit-content'
-                                                }}
+                                                className="btn-status-pill connect"
                                             >
-                                                Connect
+                                                + Connect
                                             </button>
                                         )}
                                     </div>
@@ -584,7 +561,7 @@ const Profile_Page = () => {
                     </div>
                 </div>
             )}
-        </>
+        </div>
     );
 };
 
