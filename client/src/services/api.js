@@ -64,6 +64,7 @@ export const userApi = {
         request(`/api/users/connect/reject/${targetUserId}`, { method: "POST" }),
 
     getReceivedConnections: () => request("/api/users/connect/requests/received"),
+    getSentConnections: () => request("/api/users/connect/requests/sent"),
 };
 
 export const searchApi = {

@@ -13,6 +13,7 @@ import {
     acceptConnectionRequest,
     rejectConnectionRequest,
     getReceivedConnections,
+    getSentConnections,
     getUsersByCity,
 } from "../controllers/userController.js";
 const userRouter = express.Router();
@@ -26,6 +27,7 @@ userRouter.get("/city/:name/members", protect, getUsersByCity)
 userRouter.get("/recommend", protect, getRecommendedUsers)
 userRouter.get("/stats", protect, getConnectionStats)
 userRouter.get("/connect/requests/received", protect, getReceivedConnections)
+userRouter.get("/connect/requests/sent", protect, getSentConnections)
 userRouter.post("/connect/:userId", protect, sendConnectionRequest)
 userRouter.post("/connect/accept/:senderId", protect, acceptConnectionRequest)
 userRouter.post("/connect/reject/:targetUserId", protect, rejectConnectionRequest)

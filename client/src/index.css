@@ -6,7 +6,7 @@
   --bg-card: rgba(22, 31, 48, 0.75);
   --bg-card-hover: rgba(28, 40, 62, 0.85);
   --bg-input: #0f1624;
-  
+
   --border-subtle: rgba(255, 255, 255, 0.08);
   --border-strong: #24324a;
   --border-focus: #38bdf8;
@@ -95,9 +95,7 @@ a:hover {
   color: var(--text-muted);
 }
 
-/* ==========================================================================
-   Modern Navbar
-   ========================================================================== */
+/* NAVBAR */
 .navbar-container,
 .navbar {
   display: flex;
@@ -213,7 +211,7 @@ a:hover {
   box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
 }
 
-.navbar-search-input:focus + .navbar-search-shortcut {
+.navbar-search-input:focus+.navbar-search-shortcut {
   opacity: 0;
 }
 
@@ -341,9 +339,7 @@ a:hover {
   font-size: 0.9rem !important;
 }
 
-/* ==========================================================================
-   Buttons
-   ========================================================================== */
+/* BUTTONS */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -441,13 +437,16 @@ a:hover {
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-/* ==========================================================================
-   Form Input System
-   ========================================================================== */
+/* FORM INPUT */
 .form-group {
   display: flex;
   flex-direction: column;
@@ -564,9 +563,7 @@ a:hover {
   background-color: rgba(255, 255, 255, 0.08);
 }
 
-/* ==========================================================================
-   Elevated Auth Layout & Auth Pages
-   ========================================================================== */
+/* AUTH LAYOUT AND AUTH PAGES */
 .auth-page-container {
   position: relative;
   min-height: calc(100vh - 68px);
@@ -614,6 +611,7 @@ a:hover {
     opacity: 0;
     transform: translateY(18px) scale(0.98);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -835,9 +833,7 @@ a:hover {
   font-weight: 600;
 }
 
-/* ==========================================================================
-   Home Landing Page Styles
-   ========================================================================== */
+/* HOME LANDING PAGE */
 .home-page-container {
   position: relative;
   min-height: calc(100vh - 68px);
@@ -1464,9 +1460,7 @@ a:hover {
   color: var(--text-accent);
 }
 
-/* ==========================================================================
-   Profile Section Cards (About, Skills, Activity)
-   ========================================================================== */
+/* Profile Section Cards (About, Skills, Activity) */
 .profile-section-card {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
@@ -1763,9 +1757,7 @@ a:hover {
   margin-top: 0.5rem;
 }
 
-/* ==========================================================================
-   Image Crop & Edit Modal Styles
-   ========================================================================== */
+/* Image Crop & Edit Modal */
 .crop-modal-overlay {
   display: flex;
   align-items: center;
@@ -2070,10 +2062,33 @@ a:hover {
   background: rgba(255, 255, 255, 0.15);
 }
 
-.grid-line-h1 { top: 33.33%; left: 0; right: 0; height: 1px; }
-.grid-line-h2 { top: 66.66%; left: 0; right: 0; height: 1px; }
-.grid-line-v1 { left: 33.33%; top: 0; bottom: 0; width: 1px; }
-.grid-line-v2 { left: 66.66%; top: 0; bottom: 0; width: 1px; }
+.grid-line-h1 {
+  top: 33.33%;
+  left: 0;
+  right: 0;
+  height: 1px;
+}
+
+.grid-line-h2 {
+  top: 66.66%;
+  left: 0;
+  right: 0;
+  height: 1px;
+}
+
+.grid-line-v1 {
+  left: 33.33%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+}
+
+.grid-line-v2 {
+  left: 66.66%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+}
 
 .crop-drag-hint {
   position: absolute;
@@ -2245,7 +2260,7 @@ a:hover {
   color: #ffffff;
 }
 
-.crop-align-pills button + button {
+.crop-align-pills button+button {
   border-left: 1px solid var(--border-subtle);
 }
 
@@ -3904,9 +3919,7 @@ a:hover {
   margin-top: 0.15rem;
 }
 
-/* ==========================================================================
-   Feed Page & Post Cards System
-   ========================================================================== */
+/* Feed Page & Post Cards System */
 .feed-page-wrapper {
   width: 100%;
   max-width: 1180px;
@@ -4152,9 +4165,7 @@ a:hover {
   color: #c084fc;
 }
 
-/* ==========================================================================
-   Composer Card (Feed Middle)
-   ========================================================================== */
+/* Composer Card (Feed Middle) */
 .feed-composer-card {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
@@ -4234,17 +4245,37 @@ a:hover {
   transform: translateY(-1px);
 }
 
-.composer-action-btn.photo svg { color: #38bdf8; }
-.composer-action-btn.photo:hover { color: #38bdf8; }
+.composer-action-btn.photo svg {
+  color: #38bdf8;
+}
 
-.composer-action-btn.video svg { color: #22c55e; }
-.composer-action-btn.video:hover { color: #22c55e; }
+.composer-action-btn.photo:hover {
+  color: #38bdf8;
+}
 
-.composer-action-btn.event svg { color: #eab308; }
-.composer-action-btn.event:hover { color: #eab308; }
+.composer-action-btn.video svg {
+  color: #22c55e;
+}
 
-.composer-action-btn.article svg { color: #f43f5e; }
-.composer-action-btn.article:hover { color: #f43f5e; }
+.composer-action-btn.video:hover {
+  color: #22c55e;
+}
+
+.composer-action-btn.event svg {
+  color: #eab308;
+}
+
+.composer-action-btn.event:hover {
+  color: #eab308;
+}
+
+.composer-action-btn.article svg {
+  color: #f43f5e;
+}
+
+.composer-action-btn.article:hover {
+  color: #f43f5e;
+}
 
 /* Posts Stream */
 .feed-posts-stream {
@@ -4275,8 +4306,13 @@ a:hover {
 }
 
 @keyframes shimmerGradient {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 .pending-post-header {
@@ -5083,9 +5119,7 @@ a:hover {
   justify-content: center;
 }
 
-/* ==========================================================================
-   Feed Right Sidebar (Jobs & Trending)
-   ========================================================================== */
+/* Feed Right Sidebar (Jobs & Trending) */
 .feed-sidebar-card {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
@@ -5278,9 +5312,7 @@ a:hover {
   color: var(--text-muted);
 }
 
-/* ==========================================================================
-   Composer Modal Styles
-   ========================================================================== */
+/* Composer Modal Styles */
 .feed-composer-modal {
   width: 100%;
   max-width: 580px;
@@ -5476,7 +5508,7 @@ a:hover {
   .feed-grid-layout {
     grid-template-columns: 220px 1fr;
   }
-  
+
   .feed-right-col {
     display: none;
   }
@@ -5486,7 +5518,7 @@ a:hover {
   .feed-grid-layout {
     grid-template-columns: 1fr;
   }
-  
+
   .feed-left-col {
     display: none;
   }
@@ -6411,7 +6443,7 @@ a:hover {
   .profile-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .profile-right-sidebar {
     display: none;
   }
@@ -6452,6 +6484,7 @@ a:hover {
     opacity: 0;
     transform: scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -6543,9 +6576,7 @@ a:hover {
   color: #0f75bc;
 }
 
-/* ==========================================================================
-   My Network Page Styling
-   ========================================================================== */
+/* My Network Page Styling */
 .network-page-wrapper {
   width: 100%;
   max-width: 1180px;
@@ -6631,16 +6662,6 @@ a:hover {
 .network-sidebar-item:hover {
   background: rgba(255, 255, 255, 0.05);
   color: var(--text-primary);
-}
-
-.network-sidebar-item.active {
-  background: rgba(56, 189, 248, 0.12);
-  color: var(--text-accent);
-}
-
-.network-sidebar-item.active .network-item-badge {
-  background: var(--color-primary);
-  color: #ffffff;
 }
 
 .network-item-label-group {
@@ -6895,6 +6916,17 @@ a:hover {
 .btn-invitation.accept:hover {
   opacity: 0.9;
   transform: translateY(-1px);
+}
+
+.sent-pending-tag {
+  font-size: 0.78rem;
+  color: var(--text-accent);
+  background: rgba(56, 189, 248, 0.12);
+  padding: 0.3rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
 }
 
 /* Tabs Bar */

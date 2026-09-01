@@ -362,3 +362,17 @@ export const getReceivedConnections = async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 };
+
+export const getSentConnections = async (req, res) => {
+    try {
+        const requests = await Connection.find({
+            sender: req.user._id,
+            status: "pending"
+        }).populate("recipient", "name username profilePic bio collegeName companyName additionalName");
+
+        res.status(200).json(requests);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};

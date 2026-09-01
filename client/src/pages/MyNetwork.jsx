@@ -7,13 +7,15 @@ import Button from "../components/Button";
 const MyNetwork_Page = () => {
     const { user } = useAuth();
     const [receivedRequests, setReceivedRequests] = useState([]);
+    const [sentRequests, setSentRequests] = useState([]);
     const [suggestions, setSuggestions] = useState([]);
     const [cityMembers, setCityMembers] = useState([]);
     const [collegeMembers, setCollegeMembers] = useState([]);
     const [totalConnectionsCount, setTotalConnectionsCount] = useState(0);
-    const [activeTab, setActiveTab] = useState("all"); // 'all' | 'college' | 'city'
+    const [activeTab, setActiveTab] = useState("all"); // 'all' | 'college' | 'city' | 'sent'
     
     const [isLoadingRequests, setIsLoadingRequests] = useState(true);
+    const [isLoadingSent, setIsLoadingSent] = useState(true);
     const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(true);
     const [isLoadingCity, setIsLoadingCity] = useState(false);
     const [isLoadingCollege, setIsLoadingCollege] = useState(false);
@@ -31,6 +33,16 @@ const MyNetwork_Page = () => {
             console.error("Failed to load connection requests", err);
         } finally {
             setIsLoadingRequests(false);
+        }
+
+        // Fetch sent requests
+        try {
+            const sent = await userApi.getSentConnections();
+            setSentRequests(sent || []);
+        } catch (err) {
+            console.error("Failed to load sent connection requests", err);
+        } finally {
+            setIsLoadingSent(false);
         }
 
         // Fetch general suggestions
@@ -123,6 +135,24 @@ const MyNetwork_Page = () => {
         }
     };
 
+    const handleWithdrawSentRequest = async (recipientId) => {
+        try {
+            await userApi.rejectConnectionRequest(recipientId);
+            setSentRequests(prev => prev.filter(req => req.recipient?._id !== recipientId));
+
+            const updater = prev =>
+                prev.map(item =>
+                    item._id === recipientId ? { ...item, connectionStatus: "none" } : item
+                );
+            setSuggestions(updater);
+            setCityMembers(updater);
+            setCollegeMembers(updater);
+        } catch (err) {
+            console.error("Failed to withdraw connection request", err);
+            alert("Error withdrawing connection request");
+        }
+    };
+
     const handleConnect = async (userId, listType) => {
         try {
             await userApi.sendConnectionRequest(userId);
@@ -133,6 +163,10 @@ const MyNetwork_Page = () => {
             if (listType === "suggestions") setSuggestions(updater);
             else if (listType === "city") setCityMembers(updater);
             else if (listType === "college") setCollegeMembers(updater);
+
+            // Refetch sent requests to keep list updated
+            const updatedSent = await userApi.getSentConnections();
+            setSentRequests(updatedSent || []);
         } catch (err) {
             console.error("Failed to send connection request", err);
             alert("Error sending connection request");
@@ -149,6 +183,8 @@ const MyNetwork_Page = () => {
             if (listType === "suggestions") setSuggestions(updater);
             else if (listType === "city") setCityMembers(updater);
             else if (listType === "college") setCollegeMembers(updater);
+
+            setSentRequests(prev => prev.filter(req => req.recipient?._id !== userId));
         } catch (err) {
             console.error("Failed to cancel connection request", err);
             alert("Error cancelling connection request");
@@ -313,11 +349,26 @@ const MyNetwork_Page = () => {
                                         <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
                                         <polyline points="22,6 12,13 2,6" />
                                     </svg>
-                                    <span>Invitations</span>
+                                    <span>Received Invitations</span>
                                 </div>
                                 <span className={`network-item-badge ${receivedRequests.length > 0 ? "alert" : ""}`}>
                                     {receivedRequests.length}
                                 </span>
+                            </div>
+
+                            <div 
+                                className={`network-sidebar-item hover-lift ${activeTab === "sent" ? "active" : ""}`}
+                                onClick={() => setActiveTab("sent")}
+                                title="View connection requests you have sent"
+                            >
+                                <div className="network-item-label-group">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <line x1="22" y1="2" x2="11" y2="13" />
+                                        <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                                    </svg>
+                                    <span>Sent Requests</span>
+                                </div>
+                                <span className="network-item-badge">{sentRequests.length}</span>
                             </div>
 
                             {user?.collegeName && (
@@ -374,7 +425,7 @@ const MyNetwork_Page = () => {
                                         </svg>
                                     </div>
                                     <div>
-                                        <h3 className="network-section-title">Pending Invitations</h3>
+                                        <h3 className="network-section-title">Received Invitations</h3>
                                         <span className="network-section-subtitle">{receivedRequests.length} people want to connect with you</span>
                                     </div>
                                 </div>
@@ -387,10 +438,10 @@ const MyNetwork_Page = () => {
                                     receivedRequests.map(req => (
                                         <div key={req._id} className="network-invitation-row">
                                             <div className="invitation-user-info">
-                                                <Link to={`/users/${req.sender.username}`}>
+                                                <Link to={`/users/${req.sender?.username}`}>
                                                     <img
-                                                        src={req.sender.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
-                                                        alt={req.sender.name}
+                                                        src={req.sender?.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
+                                                        alt={req.sender?.name}
                                                         className="invitation-avatar"
                                                         onError={(e) => {
                                                             e.currentTarget.src = "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
@@ -398,17 +449,17 @@ const MyNetwork_Page = () => {
                                                     />
                                                 </Link>
                                                 <div className="invitation-details">
-                                                    <Link to={`/users/${req.sender.username}`} className="invitation-name">
-                                                        <span>{req.sender.name}</span>
+                                                    <Link to={`/users/${req.sender?.username}`} className="invitation-name">
+                                                        <span>{req.sender?.name}</span>
                                                         <span className="profile-verified-badge" style={{ padding: "2px" }}>
                                                             <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
                                                                 <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
                                                             </svg>
                                                         </span>
                                                     </Link>
-                                                    <span className="invitation-handle">@{req.sender.username}</span>
+                                                    <span className="invitation-handle">@{req.sender?.username}</span>
                                                     <p className="invitation-bio">
-                                                        {req.sender.bio || req.sender.collegeName || req.sender.companyName || "Peer on Waverly"}
+                                                        {req.sender?.bio || req.sender?.collegeName || req.sender?.companyName || "Peer on Waverly"}
                                                     </p>
                                                 </div>
                                             </div>
@@ -416,14 +467,14 @@ const MyNetwork_Page = () => {
                                             <div className="invitation-action-group">
                                                 <button
                                                     type="button"
-                                                    onClick={() => handleIgnoreRequest(req.sender._id)}
+                                                    onClick={() => handleIgnoreRequest(req.sender?._id)}
                                                     className="btn-invitation ignore"
                                                 >
                                                     Ignore
                                                 </button>
                                                 <button
                                                     type="button"
-                                                    onClick={() => handleAcceptRequest(req.sender._id)}
+                                                    onClick={() => handleAcceptRequest(req.sender?._id)}
                                                     className="btn-invitation accept"
                                                 >
                                                     Accept
@@ -445,6 +496,15 @@ const MyNetwork_Page = () => {
                         >
                             <span>All Recommendations</span>
                             <span className="tab-count-badge">{suggestions.length}</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            className={`network-filter-tab ${activeTab === "sent" ? "active" : ""}`}
+                            onClick={() => setActiveTab("sent")}
+                        >
+                            <span>📤 Sent Requests</span>
+                            <span className="tab-count-badge">{sentRequests.length}</span>
                         </button>
 
                         {user?.collegeName && (
@@ -470,7 +530,83 @@ const MyNetwork_Page = () => {
                         )}
                     </div>
 
-                    {/* Active Grid View */}
+                    {/* Active Grid View: Sent Requests */}
+                    {activeTab === "sent" && (
+                        <div className="network-section-card">
+                            <div className="network-section-header">
+                                <div className="section-title-group">
+                                    <div className="section-badge-icon sent" style={{ background: "rgba(56, 189, 248, 0.12)", color: "var(--text-accent)" }}>
+                                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <line x1="22" y1="2" x2="11" y2="13" />
+                                            <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 className="network-section-title">Sent Connection Requests</h3>
+                                        <span className="network-section-subtitle">{sentRequests.length} invitations sent waiting for response</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="network-invitations-list">
+                                {isLoadingSent ? (
+                                    <div className="page-center" style={{ padding: "2rem 0" }}><div className="spinner" /></div>
+                                ) : sentRequests.length === 0 ? (
+                                    <div className="network-empty-state">
+                                        <p>You haven't sent any pending connection requests.</p>
+                                    </div>
+                                ) : (
+                                    sentRequests.map(req => {
+                                        const target = req.recipient || {};
+                                        return (
+                                            <div key={req._id} className="network-invitation-row">
+                                                <div className="invitation-user-info">
+                                                    <Link to={`/users/${target.username}`}>
+                                                        <img
+                                                            src={target.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
+                                                            alt={target.name}
+                                                            className="invitation-avatar"
+                                                            onError={(e) => {
+                                                                e.currentTarget.src = "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
+                                                            }}
+                                                        />
+                                                    </Link>
+                                                    <div className="invitation-details">
+                                                        <Link to={`/users/${target.username}`} className="invitation-name">
+                                                            <span>{target.name}</span>
+                                                            <span className="profile-verified-badge" style={{ padding: "2px" }}>
+                                                                <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
+                                                                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
+                                                                </svg>
+                                                            </span>
+                                                        </Link>
+                                                        <span className="invitation-handle">@{target.username}</span>
+                                                        <p className="invitation-bio">
+                                                            {target.bio || target.collegeName || target.companyName || "Student / Peer on Waverly"}
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                <div className="invitation-action-group">
+                                                    <span className="sent-pending-tag">⏳ Pending Response</span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleWithdrawSentRequest(target._id)}
+                                                        className="btn-invitation ignore"
+                                                        title="Withdraw request"
+                                                    >
+                                                        Withdraw
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        );
+                                    })
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Active Grid View: All Recommendations */}
                     {activeTab === "all" && (
                         <div className="network-section-card">
                             <div className="network-section-header">
@@ -505,6 +641,7 @@ const MyNetwork_Page = () => {
                         </div>
                     )}
 
+                    {/* Active Grid View: College */}
                     {activeTab === "college" && user?.collegeName && (
                         <div className="network-section-card">
                             <div className="network-section-header">
@@ -533,6 +670,7 @@ const MyNetwork_Page = () => {
                         </div>
                     )}
 
+                    {/* Active Grid View: City */}
                     {activeTab === "city" && user?.locationCity && (
                         <div className="network-section-card">
                             <div className="network-section-header">
