@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { postApi, userApi } from "../services/api";
 import PostCard from "../components/PostCard";
@@ -7,6 +7,8 @@ import Button from "../components/Button";
 
 const Feed_Page = () => {
     const { user } = useAuth();
+    const [searchParams] = useSearchParams();
+    const location = useLocation();
     const [posts, setPosts] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -25,6 +27,8 @@ const Feed_Page = () => {
     const [showViewersModal, setShowViewersModal] = useState(false);
     const [viewersList, setViewersList] = useState([]);
     const [isFetchingViewers, setIsFetchingViewers] = useState(false);
+
+    const targetPostId = searchParams.get("post") || (location.hash ? location.hash.replace("#post-", "") : null);
 
     const recommendedJobs = [
         { id: "j1", title: "Software Engineer Intern", company: "Google", location: "Mountain View, CA", type: "Hybrid", logoBg: "#ea4335", initials: "G" },
@@ -61,6 +65,22 @@ const Feed_Page = () => {
         fetchPosts();
         fetchStats();
     }, []);
+
+    useEffect(() => {
+        if (!isLoading && targetPostId && posts.length > 0) {
+            const timeoutId = setTimeout(() => {
+                const element = document.getElementById(`post-${targetPostId}`);
+                if (element) {
+                    element.scrollIntoView({ behavior: "smooth", block: "center" });
+                    element.classList.add("target-post-highlight");
+                    setTimeout(() => {
+                        element.classList.remove("target-post-highlight");
+                    }, 3500);
+                }
+            }, 300);
+            return () => clearTimeout(timeoutId);
+        }
+    }, [isLoading, targetPostId, posts]);
 
     const handleCreatePostSubmit = async (e) => {
         e.preventDefault();

@@ -126,3 +126,13 @@ export const postApi = {
     deleteReply: (postId, commentId, replyId) =>
         request(`/api/posts/${postId}/comments/${commentId}/replies/${replyId}`, { method: "DELETE" }),
 };
+
+export const notificationApi = {
+    getNotifications: () => request("/api/notifications"),
+    getUnreadCount: () => request("/api/notifications/unread-count"),
+    markAsRead: (id) => request(`/api/notifications/${id}/read`, { method: "PUT" }),
+    markAllAsRead: () => request("/api/notifications/read-all", { method: "PUT" }),
+    deleteNotification: (id) => request(`/api/notifications/${id}`, { method: "DELETE" }),
+    clearAll: () => request("/api/notifications", { method: "DELETE" }),
+};
+

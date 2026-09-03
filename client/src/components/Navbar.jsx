@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { userApi, postApi } from "../services/api";
+import { userApi, postApi, notificationApi } from "../services/api";
 import Button from "./Button";
 
 const Navbar = () => {
@@ -13,12 +13,22 @@ const Navbar = () => {
 
     const [hasNetworkNotification, setHasNetworkNotification] = useState(false);
     const [hasFeedNotification, setHasFeedNotification] = useState(false);
+    const [unreadNotifCount, setUnreadNotifCount] = useState(0);
 
     const checkNotifications = useCallback(async () => {
         if (!user) return;
 
+        // Check general notifications count (likes, comments, replies, connections)
         try {
+            const countData = await notificationApi.getUnreadCount();
+            if (countData && typeof countData.unreadCount === "number") {
+                setUnreadNotifCount(countData.unreadCount);
+            }
+        } catch (err) {
+            console.error("Failed to fetch unread notification count", err);
+        }
 
+        try {
             const [receivedReqs, statsData] = await Promise.allSettled([
                 userApi.getReceivedConnections(),
                 userApi.getConnectionStats()
@@ -52,7 +62,6 @@ const Navbar = () => {
         }
 
         try {
-
             if (location.pathname === "/feed") {
                 localStorage.setItem("waverly_last_feed_visit", new Date().toISOString());
                 setHasFeedNotification(false);
@@ -88,6 +97,7 @@ const Navbar = () => {
         if (!user) {
             setHasNetworkNotification(false);
             setHasFeedNotification(false);
+            setUnreadNotifCount(0);
             return;
         }
 
@@ -95,7 +105,7 @@ const Navbar = () => {
 
         const handleFocus = () => checkNotifications();
         window.addEventListener("focus", handleFocus);
-        const intervalId = setInterval(checkNotifications, 25000);
+        const intervalId = setInterval(checkNotifications, 20000);
 
         return () => {
             window.removeEventListener("focus", handleFocus);
@@ -192,6 +202,25 @@ const Navbar = () => {
                                         )}
                                     </div>
                                     <span className="nav-item-label">Network</span>
+                                </NavLink>
+
+                                <NavLink
+                                    to="/notifications"
+                                    className={({ isActive }) => `navbar-nav-item ${isActive ? "active" : ""}`}
+                                    title="Notifications"
+                                >
+                                    <div className="nav-icon-wrap">
+                                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                                            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                                        </svg>
+                                        {unreadNotifCount > 0 && (
+                                            <span className="nav-notification-badge" title={`${unreadNotifCount} new notifications`}>
+                                                {unreadNotifCount > 99 ? "99+" : unreadNotifCount}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <span className="nav-item-label">Notifications</span>
                                 </NavLink>
 
                                 <NavLink

@@ -1,5 +1,6 @@
 import Post from "../models/Post.js";
 import User from "../models/User.js";
+import Notification from "../models/Notification.js";
 
 export const createPost = async (req, res) => {
     try {
@@ -121,6 +122,7 @@ export const deletePost = async (req, res) => {
     }
 };
 
+
 export const likePost = async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
@@ -133,6 +135,19 @@ export const likePost = async (req, res) => {
 
         if (likeIndex === -1) {
             post.likes.push(userId);
+            if (post.author.toString() !== userId.toString()) {
+                try {
+                    await Notification.create({
+                        recipient: post.author,
+                        sender: userId,
+                        type: "like_post",
+                        post: post._id,
+                        contentPreview: post.content ? post.content.substring(0, 80) : "",
+                    });
+                } catch (notifErr) {
+                    console.error("Failed to create like notification:", notifErr);
+                }
+            }
         } else {
             post.likes.splice(likeIndex, 1);
         }
@@ -168,6 +183,22 @@ export const commentPost = async (req, res) => {
 
         post.comments.push(newComment);
         await post.save();
+
+        if (post.author.toString() !== req.user._id.toString()) {
+            try {
+                const addedComment = post.comments[post.comments.length - 1];
+                await Notification.create({
+                    recipient: post.author,
+                    sender: req.user._id,
+                    type: "comment_post",
+                    post: post._id,
+                    commentId: addedComment?._id,
+                    contentPreview: content.trim().substring(0, 80),
+                });
+            } catch (notifErr) {
+                console.error("Failed to create comment notification:", notifErr);
+            }
+        }
 
         const populatedPost = await Post.findById(post._id)
             .populate({
@@ -257,12 +288,30 @@ export const replyComment = async (req, res) => {
             comment.replies = [];
         }
 
-        comment.replies.push({
+        const newReply = {
             author: req.user._id,
             content: content.trim()
-        });
+        };
 
+        comment.replies.push(newReply);
         await post.save();
+
+        if (comment.author.toString() !== req.user._id.toString()) {
+            try {
+                const addedReply = comment.replies[comment.replies.length - 1];
+                await Notification.create({
+                    recipient: comment.author,
+                    sender: req.user._id,
+                    type: "reply_comment",
+                    post: post._id,
+                    commentId: comment._id,
+                    replyId: addedReply?._id,
+                    contentPreview: content.trim().substring(0, 80),
+                });
+            } catch (notifErr) {
+                console.error("Failed to create reply notification:", notifErr);
+            }
+        }
 
         const populatedPost = await Post.findById(post._id)
             .populate({
@@ -388,11 +437,27 @@ export const likeReply = async (req, res) => {
             reply.likes = [];
         }
 
+
         const userId = req.user._id;
         const likeIndex = reply.likes.indexOf(userId);
 
         if (likeIndex === -1) {
             reply.likes.push(userId);
+            if (reply.author.toString() !== userId.toString()) {
+                try {
+                    await Notification.create({
+                        recipient: reply.author,
+                        sender: userId,
+                        type: "like_reply",
+                        post: post._id,
+                        commentId: comment._id,
+                        replyId: reply._id,
+                        contentPreview: reply.content ? reply.content.substring(0, 80) : "",
+                    });
+                } catch (notifErr) {
+                    console.error("Failed to create reply like notification:", notifErr);
+                }
+            }
         } else {
             reply.likes.splice(likeIndex, 1);
         }

@@ -6,6 +6,7 @@ import authRouter from "./src/routes/authRoutes.js";
 import userRouter from "./src/routes/userRoutes.js";
 import postRouter from "./src/routes/postRoutes.js";
 import searchRouter from "./src/routes/searchRoutes.js";
+import notificationRouter from "./src/routes/notificationRoutes.js";
 dotenv.config({ path: "./.env" });
 
 if (!process.env.JWT_SECRET) {
@@ -27,6 +28,7 @@ app.use("/api/auth", authRouter)
 app.use("/api/users", userRouter)
 app.use("/api/posts", postRouter)
 app.use("/api/search", searchRouter)
+app.use("/api/notifications", notificationRouter)
 
 const PORT = process.env.PORT;
 connectDB().then(() => {

@@ -1,5 +1,6 @@
 import User from "../models/User.js";
 import Connection from "../models/Connection.js";
+import Notification from "../models/Notification.js";
 
 const addConnectionStatuses = async (users, currentUserId) => {
     const userObjects = [];
@@ -289,11 +290,22 @@ export const sendConnectionRequest = async (req, res) => {
             return res.status(400).json({ message: "Connection request already exists or you are already connected" });
         }
 
+
         const newConn = await Connection.create({
             sender: req.user._id,
             recipient: targetUserId,
             status: "pending"
         });
+
+        try {
+            await Notification.create({
+                recipient: targetUserId,
+                sender: req.user._id,
+                type: "connection_request",
+            });
+        } catch (notifErr) {
+            console.error("Failed to create connection request notification:", notifErr);
+        }
 
         res.status(201).json({ message: "Connection request sent successfully", connection: newConn });
     } catch (err) {
@@ -318,6 +330,16 @@ export const acceptConnectionRequest = async (req, res) => {
 
         connection.status = "accepted";
         await connection.save();
+
+        try {
+            await Notification.create({
+                recipient: senderId,
+                sender: req.user._id,
+                type: "connection_accept",
+            });
+        } catch (notifErr) {
+            console.error("Failed to create connection accept notification:", notifErr);
+        }
 
         res.status(200).json({ message: "Connection request accepted", connection });
     } catch (err) {

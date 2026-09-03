@@ -16,6 +16,7 @@ import OrganizationMembers_Page from "./pages/OrganizationMembers.jsx";
 import SavedPosts_Page from "./pages/SavedPosts.jsx";
 import LikedPosts_Page from "./pages/LikedPosts.jsx";
 import CommentedPosts_Page from "./pages/CommentedPosts.jsx";
+import Notifications_Page from "./pages/Notifications.jsx";
 
 const App = () => {
     return (
@@ -38,6 +39,14 @@ const App = () => {
                     element={
                         <ProtectedRoute>
                             <MyNetwork_Page />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/notifications"
+                    element={
+                        <ProtectedRoute>
+                            <Notifications_Page />
                         </ProtectedRoute>
                     }
                 />
