@@ -104,7 +104,7 @@ const UserProfile_Page = () => {
 
     return (
         <div className="page">
-            <div className="profile-container">
+            <div className="profile-container profile-card-elevated">
                 <div className="profile-banner-container">
                     {user?.coverPic ? (
                         <img
@@ -115,6 +115,7 @@ const UserProfile_Page = () => {
                     ) : (
                         <div className="profile-banner-default">
                             <div className="profile-banner-glow" />
+                            <div className="profile-banner-pattern-overlay" />
                         </div>
                     )}
                 </div>
@@ -132,35 +133,54 @@ const UserProfile_Page = () => {
                             />
                         </div>
                         {isOwnProfile && (
-                            <Link to="/edit-profile" className="btn btn-secondary">
-                                Edit Profile
-                            </Link>
+                            <div className="profile-action-buttons">
+                                <Link to="/edit-profile" className="btn btn-primary btn-edit-profile">
+                                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                    </svg>
+                                    <span>Edit Profile</span>
+                                </Link>
+                            </div>
                         )}
                         {!isOwnProfile && (
-                            <div style={{ display: "flex", gap: "0.5rem", alignSelf: "center" }}>
+                            <div className="profile-action-buttons">
                                 {connectionStatus === "none" && (
-                                    <button onClick={handleConnect} className="btn btn-primary" style={{ borderRadius: "20px", padding: "0.4rem 1.25rem", fontSize: "0.85rem" }}>
-                                        Connect
+                                    <button onClick={handleConnect} className="btn btn-primary btn-edit-profile">
+                                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                            <circle cx="8.5" cy="7" r="4" />
+                                            <line x1="20" y1="8" x2="20" y2="14" />
+                                            <line x1="23" y1="11" x2="17" y2="11" />
+                                        </svg>
+                                        <span>Connect</span>
                                     </button>
                                 )}
                                 {connectionStatus === "pending_sent" && (
-                                    <button onClick={handleCancelRequest} className="btn btn-secondary" style={{ borderRadius: "20px", padding: "0.4rem 1.25rem", fontSize: "0.85rem" }}>
-                                        Pending
+                                    <button onClick={handleCancelRequest} className="btn btn-secondary btn-share-profile" title="Click to cancel connection request">
+                                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                            <circle cx="12" cy="12" r="10" />
+                                            <polyline points="12 6 12 12 16 14" />
+                                        </svg>
+                                        <span>Pending</span>
                                     </button>
                                 )}
                                 {connectionStatus === "pending_received" && (
-                                    <div style={{ display: "flex", gap: "0.5rem" }}>
-                                        <button onClick={handleIgnoreRequest} className="btn btn-secondary" style={{ borderRadius: "20px", padding: "0.4rem 1.25rem", fontSize: "0.85rem" }}>
+                                    <div className="profile-action-buttons" style={{ margin: 0 }}>
+                                        <button onClick={handleIgnoreRequest} className="btn btn-secondary btn-share-profile">
                                             Ignore
                                         </button>
-                                        <button onClick={handleAcceptRequest} className="btn btn-primary" style={{ borderRadius: "20px", padding: "0.4rem 1.25rem", fontSize: "0.85rem" }}>
+                                        <button onClick={handleAcceptRequest} className="btn btn-primary btn-edit-profile">
                                             Accept
                                         </button>
                                     </div>
                                 )}
                                 {connectionStatus === "accepted" && (
-                                    <button onClick={handleCancelRequest} className="btn btn-secondary" style={{ borderRadius: "20px", padding: "0.4rem 1.25rem", fontSize: "0.85rem" }}>
-                                        Connected
+                                    <button onClick={handleCancelRequest} className="btn btn-secondary btn-share-profile" title="Click to disconnect">
+                                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                            <polyline points="20 6 9 17 4 12" />
+                                        </svg>
+                                        <span>Connected</span>
                                     </button>
                                 )}
                             </div>
