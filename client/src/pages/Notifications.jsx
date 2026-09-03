@@ -216,7 +216,7 @@ const Notifications_Page = () => {
     return (
         <div className="page notifications-page-container">
             <div className="notifications-page-inner">
-                
+
                 {/* Header banner */}
                 <div className="notifications-header">
                     <div className="notifications-header-left">

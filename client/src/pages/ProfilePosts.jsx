@@ -33,12 +33,12 @@ const ProfilePosts_Page = () => {
         <div className="page">
             <div style={{ maxWidth: '1000px', margin: '0 auto', width: '100%', padding: '1rem 0' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem', padding: '0 1rem' }}>
-                    <button 
+                    <button
                         onClick={() => navigate('/profile')}
                         style={{ background: 'transparent', border: 'none', color: '#e7e9ea', cursor: 'pointer', padding: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                     >
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M19 12H5M12 19l-7-7 7-7"/>
+                            <path d="M19 12H5M12 19l-7-7 7-7" />
                         </svg>
                     </button>
                     <div>

@@ -43,7 +43,6 @@ const ProfileInfo = ({ user, showEmail = true, connectionCount = 0, showConnecti
             )}
 
             <div className="profile-chips-grid">
-
                 {user.collegeName && (
                     <div className="profile-meta-chip education-chip" title="University / College">
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -79,7 +78,19 @@ const ProfileInfo = ({ user, showEmail = true, connectionCount = 0, showConnecti
                     </div>
                 )}
 
-                {showConnections && (
+                {showEmail && user.email && (
+                    <div className="profile-meta-chip email-chip" title="Contact email">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                            <polyline points="22,6 12,13 2,6" />
+                        </svg>
+                        <span className="chip-primary-text">{user.email}</span>
+                    </div>
+                )}
+            </div>
+
+            {showConnections && (
+                <div className="profile-connections-row">
                     <button
                         type="button"
                         className="profile-meta-chip connections-chip hover-lift"
@@ -94,18 +105,8 @@ const ProfileInfo = ({ user, showEmail = true, connectionCount = 0, showConnecti
                         </svg>
                         <span className="chip-highlight-text">{connectionCount} connections</span>
                     </button>
-                )}
-
-                {showEmail && user.email && (
-                    <div className="profile-meta-chip email-chip" title="Contact email">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                            <polyline points="22,6 12,13 2,6" />
-                        </svg>
-                        <span className="chip-primary-text">{user.email}</span>
-                    </div>
-                )}
-            </div>
+                </div>
+            )}
 
             {showConnectionsModal && (
                 <div className="modal-overlay" onClick={() => setShowConnectionsModal(false)} style={{ zIndex: 3200 }}>

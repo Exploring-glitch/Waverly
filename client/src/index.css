@@ -1488,6 +1488,12 @@ a:hover {
   color: var(--text-accent);
 }
 
+.profile-connections-row {
+  margin-top: 0.85rem;
+  display: flex;
+  align-items: center;
+}
+
 .profile-section-card {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
