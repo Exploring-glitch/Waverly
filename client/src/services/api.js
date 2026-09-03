@@ -45,12 +45,14 @@ export const userApi = {
     getCompanyMembers: (name) =>
         request(`/api/users/company/${encodeURIComponent(name)}/members`),
 
+
     getCityMembers: (name) =>
         request(`/api/users/city/${encodeURIComponent(name)}/members`),
 
     getRecommendedUsers: () => request("/api/users/recommend"),
 
     getConnectionStats: () => request("/api/users/stats"),
+    getProfileViewers: () => request("/api/users/profile-viewers"),
 
     getUserConnections: (username) => request(`/api/users/${encodeURIComponent(username)}/connections`),
 

@@ -112,6 +112,35 @@ export const getUserByUsername = async (req, res) => {
         }
 
         const isOwnProfile = req.user._id.toString() === user._id.toString();
+
+        // Record profile view if viewing another user's profile
+        if (!isOwnProfile) {
+            try {
+                const viewerIdStr = req.user._id.toString();
+                if (!user.profileViewers) {
+                    user.profileViewers = [];
+                }
+                const existingViewerIndex = user.profileViewers.findIndex(
+                    (pv) => pv.viewer && pv.viewer.toString() === viewerIdStr
+                );
+
+                if (existingViewerIndex === -1) {
+                    // First time viewing -> Add viewer and increment count
+                    user.profileViewers.push({
+                        viewer: req.user._id,
+                        viewedAt: new Date(),
+                    });
+                    await user.save();
+                } else {
+                    // Already viewed before -> Update timestamp without increasing count
+                    user.profileViewers[existingViewerIndex].viewedAt = new Date();
+                    await user.save();
+                }
+            } catch (viewErr) {
+                console.error("Failed to record profile view:", viewErr);
+            }
+        }
+
         const userObj = user.toJSON();
 
         if (!isOwnProfile) {
@@ -230,7 +259,7 @@ export const getConnectionStats = async (req, res) => {
             ]
         });
 
-        const viewsCount = Math.max(12, (currentUser.name.length * 3) + 7);
+        const viewsCount = currentUser.profileViewers ? currentUser.profileViewers.length : 0;
 
         res.status(200).json({
             connectionCount,
@@ -238,6 +267,37 @@ export const getConnectionStats = async (req, res) => {
         });
     } catch (err) {
         console.error(err);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+export const getProfileViewers = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id).populate({
+            path: "profileViewers.viewer",
+            select: "name username profilePic bio collegeName companyName additionalName",
+        });
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const validViewers = (user.profileViewers || [])
+            .filter((pv) => pv.viewer != null)
+            .sort((a, b) => new Date(b.viewedAt) - new Date(a.viewedAt))
+            .map((pv) => ({
+                ...(pv.viewer.toJSON ? pv.viewer.toJSON() : pv.viewer),
+                viewedAt: pv.viewedAt,
+            }));
+
+        const viewersWithStatus = await addConnectionStatuses(validViewers, req.user._id);
+
+        res.status(200).json({
+            count: viewersWithStatus.length,
+            viewers: viewersWithStatus,
+        });
+    } catch (err) {
+        console.error("Error fetching profile viewers:", err);
         res.status(500).json({ message: "Internal server error" });
     }
 };

@@ -1,5 +1,5 @@
-import mongoose from "mongoose"
-import bcrypt from "bcrypt"
+import mongoose from "mongoose";
+import bcrypt from "bcrypt";
 
 const userSchema = new mongoose.Schema(
     {
@@ -56,11 +56,11 @@ const userSchema = new mongoose.Schema(
         },
         startYear: {
             type: Number,
-            default: 0
+            default: 0,
         },
         endYear: {
             type: Number,
-            default: 0
+            default: 0,
         },
         locationCountry: {
             type: String,
@@ -74,32 +74,43 @@ const userSchema = new mongoose.Schema(
             type: String,
             default: "",
         },
-
         isCollegeVerified: {
             type: Boolean,
             default: false,
         },
+        profileViewers: [
+            {
+                viewer: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: "User",
+                },
+                viewedAt: {
+                    type: Date,
+                    default: Date.now,
+                },
+            },
+        ],
     },
     {
-        timestamps: true
+        timestamps: true,
     }
-)
+);
 
 userSchema.methods.comparePassword = async function (password) {
     return await bcrypt.compare(password, this.password);
-}
+};
 
-userSchema.set('toJSON', {
+userSchema.set("toJSON", {
     transform: function (doc, ret) {
         delete ret.password;
         delete ret.__v;
         return ret;
-    }
+    },
 });
 
-userSchema.pre("save", async function () { 
+userSchema.pre("save", async function () {
     if (!this.isModified("password")) return;
-    this.password = await bcrypt.hash(this.password, 10); 
+    this.password = await bcrypt.hash(this.password, 10);
 });
 
 const userModel = mongoose.model("User", userSchema);

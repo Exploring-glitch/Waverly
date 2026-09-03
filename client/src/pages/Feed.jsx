@@ -5,6 +5,21 @@ import { postApi, userApi } from "../services/api";
 import PostCard from "../components/PostCard";
 import Button from "../components/Button";
 
+function timeAgo(dateString) {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now - date) / 1000);
+    if (seconds < 60) return "just now";
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days}d ago`;
+    return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+
 const Feed_Page = () => {
     const { user } = useAuth();
     const [searchParams] = useSearchParams();
@@ -689,13 +704,16 @@ const Feed_Page = () => {
                             ) : viewersList.length === 0 ? (
                                 <div className="connections-empty-state"><p>No profile views recorded yet.</p></div>
                             ) : (
-                                viewersList.map(viewer => (
+                                viewersList.map((viewer) => (
                                     <div key={viewer._id} className="connection-member-row">
                                         <Link to={`/users/${viewer.username}`} onClick={() => setShowViewersModal(false)} className="connection-avatar-link">
                                             <img
                                                 src={viewer.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
                                                 alt={viewer.name}
                                                 className="connection-avatar-img"
+                                                onError={(e) => {
+                                                    e.currentTarget.src = "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
+                                                }}
                                             />
                                         </Link>
                                         <div className="connection-info-col">
@@ -703,15 +721,28 @@ const Feed_Page = () => {
                                                 {viewer.name}
                                             </Link>
                                             <span className="connection-handle-text">@{viewer.username}</span>
-                                            {viewer.viewTime && (
-                                                <span className="connection-college-text" style={{ color: "var(--text-accent)" }}>
-                                                    Viewed {viewer.viewTime}
+                                            {viewer.collegeName && (
+                                                <span className="connection-college-text">🎓 {viewer.collegeName}</span>
+                                            )}
+                                            {viewer.viewedAt && (
+                                                <span className="connection-college-text" style={{ color: "#38bdf8", fontSize: "0.78rem" }}>
+                                                    Viewed {timeAgo(viewer.viewedAt)}
                                                 </span>
                                             )}
                                         </div>
-                                        <Link to={`/users/${viewer.username}`} onClick={() => setShowViewersModal(false)} className="btn btn-primary btn-sm">
-                                            Connect
-                                        </Link>
+                                        {viewer.connectionStatus === "accepted" ? (
+                                            <span className="btn btn-secondary btn-sm" style={{ opacity: 0.85, cursor: "default" }}>
+                                                ✓ Connected
+                                            </span>
+                                        ) : viewer.connectionStatus === "pending_sent" ? (
+                                            <span className="btn btn-secondary btn-sm" style={{ opacity: 0.85, cursor: "default" }}>
+                                                Pending
+                                            </span>
+                                        ) : (
+                                            <Link to={`/users/${viewer.username}`} onClick={() => setShowViewersModal(false)} className="btn btn-primary btn-sm">
+                                                View
+                                            </Link>
+                                        )}
                                     </div>
                                 ))
                             )}

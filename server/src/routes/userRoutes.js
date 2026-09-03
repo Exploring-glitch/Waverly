@@ -8,6 +8,7 @@ import {
     getUsersByCompany,
     getRecommendedUsers,
     getConnectionStats,
+    getProfileViewers,
     getUserConnections,
     sendConnectionRequest,
     acceptConnectionRequest,
@@ -25,6 +26,7 @@ userRouter.get("/company/:name/members", protect, getUsersByCompany)
 userRouter.get("/city/:name/members", protect, getUsersByCity)
 userRouter.get("/recommend", protect, getRecommendedUsers)
 userRouter.get("/stats", protect, getConnectionStats)
+userRouter.get("/profile-viewers", protect, getProfileViewers)
 userRouter.get("/connect/requests/received", protect, getReceivedConnections)
 userRouter.get("/connect/requests/sent", protect, getSentConnections)
 userRouter.post("/connect/:userId", protect, sendConnectionRequest)
