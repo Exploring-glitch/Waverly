@@ -42,68 +42,77 @@ const Navbar = () => {
         }
 
         try {
-            const [receivedReqs, statsData, recsData] = await Promise.allSettled([
+            const [receivedReqs, statsData] = await Promise.allSettled([
                 userApi.getReceivedConnections(),
-                userApi.getConnectionStats(),
-                userApi.getRecommendedUsers()
+                userApi.getConnectionStats()
             ]);
 
             const reqs = receivedReqs.status === "fulfilled" ? (receivedReqs.value || []) : [];
             const stats = statsData.status === "fulfilled" ? statsData.value : null;
-            const recs = recsData.status === "fulfilled" ? (recsData.value || []) : [];
 
-            const storedConnectionCount = parseInt(
-                localStorage.getItem("waverly_last_seen_connections_count") || "-1",
-                10
-            );
-            const lastNetworkVisitStr = localStorage.getItem("waverly_last_network_visit");
-            const lastNetworkVisit = lastNetworkVisitStr ? new Date(lastNetworkVisitStr).getTime() : 0;
+            const userKey = user._id || user.id || "guest";
+            const lastSeenConnectionsKey = `waverly_${userKey}_last_seen_connections_count`;
+            const storedConnectionCountStr = localStorage.getItem(lastSeenConnectionsKey);
+
+            let hasNewAcceptedConnection = false;
+            if (stats && typeof stats.connectionCount === "number") {
+                if (storedConnectionCountStr === null) {
+                    // First login: initialize baseline connection count so no false-positive dot is shown
+                    localStorage.setItem(lastSeenConnectionsKey, String(stats.connectionCount));
+                } else {
+                    const storedConnectionCount = parseInt(storedConnectionCountStr, 10);
+                    if (stats.connectionCount > storedConnectionCount) {
+                        hasNewAcceptedConnection = true;
+                    }
+                }
+            }
+
+            const hasPendingInvitations = reqs.length > 0;
 
             if (location.pathname === "/network") {
-                if (stats && stats.connectionCount !== undefined) {
-                    localStorage.setItem("waverly_last_seen_connections_count", String(stats.connectionCount));
+                if (stats && typeof stats.connectionCount === "number") {
+                    localStorage.setItem(lastSeenConnectionsKey, String(stats.connectionCount));
                 }
-                localStorage.setItem("waverly_last_network_visit", new Date().toISOString());
                 setHasNetworkNotification(reqs.length > 0);
             } else {
-                const hasPendingInvitations = reqs.length > 0;
-                const hasNewAcceptedConnection =
-                    storedConnectionCount !== -1 &&
-                    stats &&
-                    stats.connectionCount > storedConnectionCount;
-                
-                // Show dot for new recommendations if never visited or recommendations available
-                const hasNewRecommendations = !lastNetworkVisit && recs.length > 0;
-
-                setHasNetworkNotification(hasPendingInvitations || Boolean(hasNewAcceptedConnection) || hasNewRecommendations);
+                setHasNetworkNotification(hasPendingInvitations || hasNewAcceptedConnection);
             }
         } catch (err) {
             console.error("Failed to check network notifications", err);
         }
 
         try {
+            const userKey = user._id || user.id || "guest";
+            const feedVisitKey = `waverly_${userKey}_last_feed_visit`;
+
             if (location.pathname === "/feed") {
-                localStorage.setItem("waverly_last_feed_visit", new Date().toISOString());
+                localStorage.setItem(feedVisitKey, new Date().toISOString());
                 setHasFeedNotification(false);
             } else {
                 const posts = await postApi.getPosts();
-                const lastFeedVisitStr = localStorage.getItem("waverly_last_feed_visit");
-                const lastFeedVisit = lastFeedVisitStr ? new Date(lastFeedVisitStr).getTime() : 0;
+                const lastFeedVisitStr = localStorage.getItem(feedVisitKey);
 
-                if (Array.isArray(posts) && posts.length > 0) {
-                    const otherUsersPosts = posts.filter(
-                        p => p.author?._id !== user._id && p.author !== user._id
-                    );
-
-                    if (otherUsersPosts.length > 0) {
-                        const latestPostTime = Math.max(
-                            ...otherUsersPosts.map(p => new Date(p.createdAt || 0).getTime())
+                if (lastFeedVisitStr === null) {
+                    // First login: initialize baseline visit timestamp
+                    localStorage.setItem(feedVisitKey, new Date().toISOString());
+                    setHasFeedNotification(false);
+                } else {
+                    const lastFeedVisit = new Date(lastFeedVisitStr).getTime();
+                    if (Array.isArray(posts) && posts.length > 0) {
+                        const otherUsersPosts = posts.filter(
+                            p => (p.author?._id || p.author) !== user._id
                         );
 
-                        if (latestPostTime > lastFeedVisit) {
-                            setHasFeedNotification(true);
-                        } else {
-                            setHasFeedNotification(false);
+                        if (otherUsersPosts.length > 0) {
+                            const latestPostTime = Math.max(
+                                ...otherUsersPosts.map(p => new Date(p.createdAt || 0).getTime())
+                            );
+
+                            if (latestPostTime > lastFeedVisit) {
+                                setHasFeedNotification(true);
+                            } else {
+                                setHasFeedNotification(false);
+                            }
                         }
                     }
                 }
