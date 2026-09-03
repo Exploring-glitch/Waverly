@@ -249,6 +249,7 @@ a:hover {
     opacity: 0;
     transform: translateY(-6px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -525,10 +526,12 @@ a:hover {
     transform: scale(0.95);
     box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7), 0 0 0 1.5px var(--bg-surface);
   }
+
   70% {
     transform: scale(1.15);
     box-shadow: 0 0 0 5px rgba(239, 68, 68, 0), 0 0 0 1.5px var(--bg-surface);
   }
+
   100% {
     transform: scale(0.95);
     box-shadow: 0 0 0 0 rgba(239, 68, 68, 0), 0 0 0 1.5px var(--bg-surface);
@@ -7471,317 +7474,333 @@ a:hover {
     transform: scale(0.6);
     opacity: 0;
   }
+
   100% {
     transform: scale(1);
     opacity: 1;
   }
 }
 
-.notifications-page-container {
+/* ==========================================================================
+   Instagram-Style Notifications System
+   ========================================================================== */
+
+.ig-notif-page {
   min-height: calc(100vh - 64px);
-  padding: 1.5rem 1rem 3rem;
+  padding: 1.5rem 1rem 3.5rem;
   background: var(--bg-base);
 }
 
-.notifications-page-inner {
-  max-width: 820px;
+.ig-notif-container {
+  max-width: 620px;
   margin: 0 auto;
-  width: 100%;
-}
-
-.notifications-header {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  padding: 1.25rem 1.5rem;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: 16px;
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.2);
+  flex-direction: column;
+  gap: 1.25rem;
 }
 
-.notifications-header-title-group {
+/* Instagram Header */
+.ig-notif-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.ig-notif-header-title-row {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  justify-content: space-between;
 }
 
-.notifications-page-title {
+.ig-notif-title {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 1.45rem;
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.02em;
 }
 
-.notifications-unread-pill {
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #38bdf8;
-  background: rgba(56, 189, 248, 0.12);
-  border: 1px solid rgba(56, 189, 248, 0.25);
-  padding: 0.2rem 0.6rem;
-  border-radius: 9999px;
-}
-
-.notifications-page-subtitle {
-  margin: 0.35rem 0 0 0;
-  font-size: 0.88rem;
-  color: var(--text-muted);
-}
-
-.notifications-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.notifications-clear-btn {
+.ig-notif-clear-btn {
   background: transparent;
   border: 1px solid var(--border-subtle);
   color: var(--text-muted);
-  font-size: 0.82rem;
-  font-weight: 500;
-  padding: 0.45rem 0.85rem;
-  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.35rem 0.8rem;
+  border-radius: 9999px;
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
-.notifications-clear-btn:hover {
-  background: rgba(239, 68, 68, 0.1);
+.ig-notif-clear-btn:hover {
+  background: rgba(239, 68, 68, 0.12);
   color: #f87171;
-  border-color: rgba(239, 68, 68, 0.25);
+  border-color: rgba(239, 68, 68, 0.3);
 }
 
-.notifications-tabs-bar {
+/* Filter Pills */
+.ig-notif-filters {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 1.25rem;
-  padding-bottom: 0.5rem;
   overflow-x: auto;
   scrollbar-width: none;
+  padding-bottom: 0.25rem;
 }
 
-.notifications-tabs-bar::-webkit-scrollbar {
+.ig-notif-filters::-webkit-scrollbar {
   display: none;
 }
 
-.notifications-tab-btn {
+.ig-filter-pill {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
+  gap: 0.45rem;
+  padding: 0.42rem 0.95rem;
   border-radius: 9999px;
-  background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  color: var(--text-muted);
-  font-size: 0.85rem;
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
-  transition: all 0.18s ease;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.notifications-tab-btn:hover {
-  color: var(--text-primary);
+.ig-filter-pill:hover {
   border-color: var(--border-medium);
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
 }
 
-.notifications-tab-btn.active {
+.ig-filter-pill.active {
   background: rgba(56, 189, 248, 0.12);
-  border-color: rgba(56, 189, 248, 0.35);
+  border-color: rgba(56, 189, 248, 0.4);
   color: #38bdf8;
+  font-weight: 600;
 }
 
-.notifications-tab-btn .tab-count {
+.ig-pill-badge {
   font-size: 0.72rem;
-  padding: 0.1rem 0.45rem;
+  padding: 0.08rem 0.45rem;
   border-radius: 9999px;
   background: rgba(255, 255, 255, 0.08);
   color: var(--text-secondary);
+  font-weight: 700;
 }
 
-.notifications-tab-btn .tab-count.highlight {
-  background: #f43f5e;
-  color: #ffffff;
+.ig-filter-pill.active .ig-pill-badge {
+  background: rgba(56, 189, 248, 0.22);
+  color: #38bdf8;
 }
 
-.notifications-list {
+/* Grouped List */
+.ig-notif-list-container {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  gap: 1.5rem;
 }
 
-.notification-card-item {
-  position: relative;
+.ig-notif-section {
   display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-  padding: 1.1rem 1.25rem;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.ig-section-title {
+  margin: 0 0 0.4rem 0.25rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.ig-section-items {
+  display: flex;
+  flex-direction: column;
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  border-radius: 14px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* Instagram Row */
+.ig-notif-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border-subtle);
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background 0.15s ease;
+  position: relative;
 }
 
-.notification-card-item:hover {
-  transform: translateY(-1.5px);
-  border-color: rgba(56, 189, 248, 0.25);
-  box-shadow: 0 6px 20px -4px rgba(0, 0, 0, 0.35);
-  background: rgba(255, 255, 255, 0.025);
+.ig-notif-row:last-child {
+  border-bottom: none;
 }
 
-.notification-card-item.unread {
+.ig-notif-row:hover {
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.ig-notif-row.unread {
   background: rgba(56, 189, 248, 0.04);
-  border-left: 3.5px solid #38bdf8;
 }
 
-.notif-avatar-wrapper {
+.ig-notif-row.unread::before {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #38bdf8;
+}
+
+/* Avatar with Reaction Badge */
+.ig-avatar-wrap {
   position: relative;
   flex-shrink: 0;
 }
 
-.notif-avatar-img {
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid var(--border-subtle);
+.ig-avatar-link {
   display: block;
 }
 
-.notif-badge-indicator {
+.ig-avatar-img {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  border: 1.5px solid var(--border-subtle);
+  background: var(--bg-base);
+}
+
+.ig-reaction-badge {
   position: absolute;
-  bottom: -3px;
-  right: -3px;
-  width: 22px;
-  height: 22px;
+  bottom: -2px;
+  right: -2px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1.5px solid var(--bg-surface);
+  border: 2px solid var(--bg-surface);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
 
-.notif-content-wrapper {
+/* Text Content */
+.ig-content-wrap {
   flex: 1;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
 }
 
-.notif-main-text {
-  font-size: 0.94rem;
-  line-height: 1.45;
+.ig-text-body {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.38;
   color: var(--text-primary);
+  word-break: break-word;
 }
 
-.notif-user-highlight {
+.ig-username {
   font-weight: 700;
   color: var(--text-primary);
   text-decoration: none;
   transition: color 0.15s ease;
 }
 
-.notif-user-highlight:hover {
+.ig-username:hover {
   color: #38bdf8;
   text-decoration: underline;
 }
 
-.notif-action-desc {
+.ig-action-text {
   color: var(--text-secondary);
 }
 
-.notif-preview-box {
-  padding: 0.45rem 0.75rem;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.04);
-  border-left: 2px solid rgba(255, 255, 255, 0.15);
-  font-size: 0.84rem;
+.ig-quote-snippet {
   color: var(--text-muted);
-  line-height: 1.4;
-  word-break: break-word;
-  max-width: 95%;
+  font-style: normal;
+  display: inline;
 }
 
-.notif-timestamp-row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 0.15rem;
-}
-
-.notif-time-ago {
+.ig-time {
+  color: var(--text-muted);
   font-size: 0.78rem;
-  color: var(--text-muted);
+  margin-left: 0.35rem;
+  white-space: nowrap;
 }
 
-.notif-unread-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #38bdf8;
-  box-shadow: 0 0 6px rgba(56, 189, 248, 0.9);
-}
-
-.notif-card-actions-group {
+/* Action Area */
+.ig-action-wrap {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   flex-shrink: 0;
-  margin-top: 0.15rem;
+  margin-left: 0.25rem;
 }
 
-.notif-reply-pill-btn {
+.ig-post-thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.ig-post-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ig-btn-reply,
+.ig-btn-view {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  justify-content: center;
+  padding: 0.35rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid rgba(56, 189, 248, 0.4);
   background: rgba(56, 189, 248, 0.12);
-  border: 1px solid rgba(56, 189, 248, 0.3);
   color: #38bdf8;
   font-size: 0.78rem;
   font-weight: 600;
-  padding: 0.35rem 0.75rem;
-  border-radius: 9999px;
+  text-decoration: none;
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition: all 0.15s ease;
+  white-space: nowrap;
 }
 
-.notif-reply-pill-btn:hover {
+.ig-btn-reply:hover,
+.ig-btn-view:hover {
   background: #38bdf8;
   color: #0b0f17;
   border-color: #38bdf8;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.35);
 }
 
-.notif-reply-pill-btn.view-reply {
-  background: rgba(148, 163, 184, 0.1);
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  color: var(--text-secondary);
+.ig-btn-reply.replied {
+  border-color: var(--border-subtle);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
 }
 
-.notif-reply-pill-btn.view-reply:hover {
-  background: rgba(56, 189, 248, 0.18);
-  border-color: rgba(56, 189, 248, 0.4);
-  color: #38bdf8;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.2);
-}
-
-.notif-delete-btn {
+.ig-delete-btn {
   background: transparent;
   border: none;
   color: var(--text-muted);
-  opacity: 0.4;
-  padding: 0.35rem;
+  opacity: 0.3;
+  padding: 0.3rem;
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -7790,39 +7809,55 @@ a:hover {
   justify-content: center;
 }
 
-.notification-card-item:hover .notif-delete-btn {
-  opacity: 0.9;
+.ig-notif-row:hover .ig-delete-btn {
+  opacity: 0.85;
 }
 
-.notif-delete-btn:hover {
+.ig-delete-btn:hover {
   background: rgba(239, 68, 68, 0.15);
   color: #f87171;
   opacity: 1;
 }
 
-.notifications-empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 4rem 1.5rem;
+/* Empty State */
+.ig-empty-state {
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: 16px;
-  color: var(--text-muted);
+  padding: 4rem 2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
 }
 
-.empty-bell-icon-wrapper {
-  width: 72px;
-  height: 72px;
+.ig-empty-icon-circle {
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
-  background: rgba(56, 189, 248, 0.08);
-  border: 1px solid rgba(56, 189, 248, 0.18);
+  background: rgba(244, 63, 94, 0.1);
+  border: 1.5px solid rgba(244, 63, 94, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #38bdf8;
-  margin-bottom: 1.25rem;
+  color: #f43f5e;
+}
+
+.ig-empty-state h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.ig-empty-state p {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  max-width: 360px;
+  line-height: 1.45;
 }
 
 .notifications-empty-state h3 {
@@ -7848,10 +7883,12 @@ a:hover {
     box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.8), 0 0 25px rgba(56, 189, 248, 0.4);
     border-color: #38bdf8;
   }
+
   50% {
     box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.5), 0 0 15px rgba(56, 189, 248, 0.2);
     border-color: rgba(56, 189, 248, 0.8);
   }
+
   100% {
     box-shadow: none;
     border-color: var(--border-subtle);
@@ -7868,10 +7905,12 @@ a:hover {
     box-shadow: 0 0 0 2.5px rgba(56, 189, 248, 0.85), 0 0 20px rgba(56, 189, 248, 0.45);
     background: rgba(56, 189, 248, 0.08) !important;
   }
+
   50% {
     box-shadow: 0 0 0 1.5px rgba(56, 189, 248, 0.5), 0 0 12px rgba(56, 189, 248, 0.25);
     background: rgba(56, 189, 248, 0.04) !important;
   }
+
   100% {
     box-shadow: none;
     background: var(--bg-surface-soft, rgba(255, 255, 255, 0.03)) !important;

@@ -11,16 +11,41 @@ function timeAgo(dateString) {
 
     if (seconds < 60) return "just now";
     const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes}m ago`;
+    if (minutes < 60) return `${minutes}m`;
     const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}h ago`;
+    if (hours < 24) return `${hours}h`;
     const days = Math.floor(hours / 24);
-    if (days < 30) return `${days}d ago`;
+    if (days < 30) return `${days}d`;
     const months = Math.floor(days / 30);
-    if (months < 12) return `${months}mo ago`;
+    if (months < 12) return `${months}w`;
     const years = Math.floor(days / 365);
-    return `${years}y ago`;
+    return `${years}y`;
 }
+
+function getNotificationSection(dateString) {
+    if (!dateString) return "Earlier";
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffHours = diffMs / (1000 * 60 * 60);
+    const diffDays = diffMs / (1000 * 60 * 60 * 24);
+
+    if (diffHours < 24 && now.getDate() === date.getDate()) {
+        return "Today";
+    }
+    if (diffDays <= 2) {
+        return "Yesterday";
+    }
+    if (diffDays <= 7) {
+        return "This week";
+    }
+    if (diffDays <= 30) {
+        return "This month";
+    }
+    return "Earlier";
+}
+
+const SECTION_ORDER = ["Today", "Yesterday", "This week", "This month", "Earlier"];
 
 const getNotificationMeta = (item) => {
     const senderName = item.sender?.name || item.sender?.username || "Someone";
@@ -28,25 +53,25 @@ const getNotificationMeta = (item) => {
         case "like_post":
             return {
                 title: `${senderName} liked your post`,
+                actionText: "liked your post.",
                 icon: (
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="#f43f5e" stroke="#f43f5e" strokeWidth="2">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="#ffffff">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
                     </svg>
                 ),
-                badgeBg: "rgba(244, 63, 94, 0.15)",
-                badgeBorder: "rgba(244, 63, 94, 0.3)",
+                badgeBg: "#f43f5e",
                 link: item.post ? `/feed?post=${item.post._id || item.post}` : "/feed",
             };
         case "comment_post":
             return {
                 title: `${senderName} commented on your post`,
+                actionText: "commented on your post.",
                 icon: (
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="#38bdf8" stroke="#38bdf8" strokeWidth="2">
-                        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="#ffffff">
+                        <path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18z" />
                     </svg>
                 ),
-                badgeBg: "rgba(56, 189, 248, 0.15)",
-                badgeBorder: "rgba(56, 189, 248, 0.3)",
+                badgeBg: "#0284c7",
                 link: item.post
                     ? `/feed?post=${item.post._id || item.post}&comment=${item.commentId || ""}${item.replied ? "&viewReplies=true" : "&reply=true"}`
                     : "/feed",
@@ -56,14 +81,14 @@ const getNotificationMeta = (item) => {
         case "reply_comment":
             return {
                 title: `${senderName} replied to your comment`,
+                actionText: "replied to your comment.",
                 icon: (
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#818cf8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#ffffff" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="9 14 4 9 9 4" />
                         <path d="M20 20v-7a4 4 0 0 0-4-4H4" />
                     </svg>
                 ),
-                badgeBg: "rgba(129, 140, 248, 0.15)",
-                badgeBorder: "rgba(129, 140, 248, 0.3)",
+                badgeBg: "#6366f1",
                 link: item.post
                     ? `/feed?post=${item.post._id || item.post}&comment=${item.commentId || ""}${item.replied ? "&viewReplies=true" : "&reply=true"}`
                     : "/feed",
@@ -73,77 +98,78 @@ const getNotificationMeta = (item) => {
         case "like_comment":
             return {
                 title: `${senderName} liked your comment`,
+                actionText: "liked your comment.",
                 icon: (
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="#f43f5e" stroke="#f43f5e" strokeWidth="2">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="#ffffff">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
                     </svg>
                 ),
-                badgeBg: "rgba(244, 63, 94, 0.15)",
-                badgeBorder: "rgba(244, 63, 94, 0.3)",
+                badgeBg: "#f43f5e",
                 link: item.post ? `/feed?post=${item.post._id || item.post}` : "/feed",
             };
         case "like_reply":
             return {
                 title: `${senderName} liked your reply`,
+                actionText: "liked your reply.",
                 icon: (
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="#f43f5e" stroke="#f43f5e" strokeWidth="2">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="#ffffff">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
                     </svg>
                 ),
-                badgeBg: "rgba(244, 63, 94, 0.15)",
-                badgeBorder: "rgba(244, 63, 94, 0.3)",
+                badgeBg: "#f43f5e",
                 link: item.post ? `/feed?post=${item.post._id || item.post}` : "/feed",
             };
         case "profile_view":
             return {
                 title: `${senderName} viewed your profile`,
+                actionText: "viewed your profile.",
                 icon: (
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#a855f7" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                         <circle cx="12" cy="12" r="3" />
                     </svg>
                 ),
-                badgeBg: "rgba(168, 85, 247, 0.15)",
-                badgeBorder: "rgba(168, 85, 247, 0.3)",
+                badgeBg: "#8b5cf6",
                 link: item.sender?.username ? `/users/${item.sender.username}` : "/feed",
+                isProfileView: true,
             };
         case "new_post":
             return {
                 title: `${senderName} shared a new post`,
+                actionText: "shared a new post.",
                 icon: (
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M12 20h9" />
                         <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
                     </svg>
                 ),
-                badgeBg: "rgba(16, 185, 129, 0.15)",
-                badgeBorder: "rgba(16, 185, 129, 0.3)",
+                badgeBg: "#10b981",
                 link: item.post ? `/feed?post=${item.post._id || item.post}` : "/feed",
             };
         case "mention_post":
             return {
                 title: `${senderName} mentioned you in a post`,
+                actionText: "mentioned you in a post.",
                 icon: (
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#eab308" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <circle cx="12" cy="12" r="4" />
                         <path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94" />
                     </svg>
                 ),
-                badgeBg: "rgba(234, 179, 8, 0.15)",
-                badgeBorder: "rgba(234, 179, 8, 0.3)",
+                badgeBg: "#f59e0b",
                 link: item.post ? `/feed?post=${item.post._id || item.post}` : "/feed",
             };
         case "mention_comment":
             return {
                 title: `${senderName} mentioned you in a comment`,
+                actionText: "mentioned you in a comment.",
                 icon: (
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#eab308" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <circle cx="12" cy="12" r="4" />
                         <path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94" />
                     </svg>
                 ),
-                badgeBg: "rgba(234, 179, 8, 0.15)",
-                badgeBorder: "rgba(234, 179, 8, 0.3)",
+                badgeBg: "#f59e0b",
                 link: item.post
                     ? `/feed?post=${item.post._id || item.post}&comment=${item.commentId || ""}${item.replied ? "&viewReplies=true" : "&reply=true"}`
                     : "/feed",
@@ -153,15 +179,15 @@ const getNotificationMeta = (item) => {
         default:
             return {
                 title: `${senderName} interacted with your account`,
+                actionText: "interacted with your account.",
                 icon: (
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <circle cx="12" cy="12" r="10" />
                         <line x1="12" y1="16" x2="12" y2="12" />
                         <line x1="12" y1="8" x2="12.01" y2="8" />
                     </svg>
                 ),
-                badgeBg: "rgba(56, 189, 248, 0.15)",
-                badgeBorder: "rgba(56, 189, 248, 0.3)",
+                badgeBg: "#38bdf8",
                 link: "/feed",
             };
     }
@@ -180,7 +206,6 @@ const Notifications_Page = () => {
             const data = await notificationApi.getNotifications();
             setNotifications(data || []);
 
-            // Automatically mark all notifications as read upon opening
             try {
                 await notificationApi.markAllAsRead();
                 window.dispatchEvent(new Event("notifications_read"));
@@ -232,6 +257,13 @@ const Notifications_Page = () => {
         return true;
     });
 
+    const groupedNotifications = filteredNotifications.reduce((acc, item) => {
+        const section = getNotificationSection(item.createdAt);
+        if (!acc[section]) acc[section] = [];
+        acc[section].push(item);
+        return acc;
+    }, {});
+
     if (!user || isLoading) {
         return (
             <div className="page-center">
@@ -241,200 +273,178 @@ const Notifications_Page = () => {
     }
 
     return (
-        <div className="page notifications-page-container">
-            <div className="notifications-page-inner">
+        <div className="page ig-notif-page">
+            <div className="ig-notif-container">
 
-                {/* Header banner */}
-                <div className="notifications-header">
-                    <div className="notifications-header-left">
-                        <div className="notifications-header-title-group">
-                            <h1 className="notifications-page-title">Notifications</h1>
-                        </div>
-                        <p className="notifications-page-subtitle">
-                            Stay up to date with interactions on your posts, mentions, and profile views.
-                        </p>
-                    </div>
-
-                    <div className="notifications-header-actions">
+                <div className="ig-notif-header">
+                    <div className="ig-notif-header-title-row">
+                        <h1 className="ig-notif-title">Notifications</h1>
                         {notifications.length > 0 && (
                             <button
                                 type="button"
-                                className="notifications-clear-btn"
+                                className="ig-notif-clear-btn"
                                 onClick={handleClearAll}
-                                title="Clear all notifications"
+                                title="Clear all"
                             >
                                 Clear all
                             </button>
                         )}
                     </div>
+
+                    <div className="ig-notif-filters">
+                        <button
+                            type="button"
+                            className={`ig-filter-pill ${activeTab === "all" ? "active" : ""}`}
+                            onClick={() => setActiveTab("all")}
+                        >
+                            All
+                            <span className="ig-pill-badge">{notifications.length}</span>
+                        </button>
+                        <button
+                            type="button"
+                            className={`ig-filter-pill ${activeTab === "likes" ? "active" : ""}`}
+                            onClick={() => setActiveTab("likes")}
+                        >
+                            Likes
+                        </button>
+                        <button
+                            type="button"
+                            className={`ig-filter-pill ${activeTab === "comments" ? "active" : ""}`}
+                            onClick={() => setActiveTab("comments")}
+                        >
+                            Comments & Mentions
+                        </button>
+                        <button
+                            type="button"
+                            className={`ig-filter-pill ${activeTab === "activities" ? "active" : ""}`}
+                            onClick={() => setActiveTab("activities")}
+                        >
+                            Views & Posts
+                        </button>
+                    </div>
                 </div>
 
-                {/* Filter tabs */}
-                <div className="notifications-tabs-bar">
-                    <button
-                        type="button"
-                        className={`notifications-tab-btn ${activeTab === "all" ? "active" : ""}`}
-                        onClick={() => setActiveTab("all")}
-                    >
-                        All
-                        <span className="tab-count">{notifications.length}</span>
-                    </button>
-                    <button
-                        type="button"
-                        className={`notifications-tab-btn ${activeTab === "likes" ? "active" : ""}`}
-                        onClick={() => setActiveTab("likes")}
-                    >
-                        Likes
-                    </button>
-                    <button
-                        type="button"
-                        className={`notifications-tab-btn ${activeTab === "comments" ? "active" : ""}`}
-                        onClick={() => setActiveTab("comments")}
-                    >
-                        Comments & Mentions
-                    </button>
-                    <button
-                        type="button"
-                        className={`notifications-tab-btn ${activeTab === "activities" ? "active" : ""}`}
-                        onClick={() => setActiveTab("activities")}
-                    >
-                        Views & Posts
-                    </button>
-                </div>
-
-                {/* Notification Items List */}
                 {filteredNotifications.length > 0 ? (
-                    <div className="notifications-list">
-                        {filteredNotifications.map((item) => {
-                            const meta = getNotificationMeta(item);
-                            const sender = item.sender || {};
+                    <div className="ig-notif-list-container">
+                        {SECTION_ORDER.map((sectionKey) => {
+                            const items = groupedNotifications[sectionKey];
+                            if (!items || items.length === 0) return null;
+
                             return (
-                                <div
-                                    key={item._id}
-                                    className="notification-card-item"
-                                    onClick={() => handleNotificationClick(item)}
-                                    role="button"
-                                    tabIndex={0}
-                                >
-                                    {/* Avatar with icon badge */}
-                                    <div className="notif-avatar-wrapper">
-                                        <Link
-                                            to={`/users/${sender.username || ""}`}
-                                            onClick={(e) => e.stopPropagation()}
-                                            className="notif-avatar-link"
-                                        >
-                                            <img
-                                                src={sender.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
-                                                alt={sender.name || "User"}
-                                                className="notif-avatar-img"
-                                                onError={(e) => {
-                                                    e.currentTarget.src = "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
-                                                }}
-                                            />
-                                        </Link>
-                                        <div
-                                            className="notif-badge-indicator"
-                                            style={{
-                                                backgroundColor: meta.badgeBg,
-                                                borderColor: meta.badgeBorder,
-                                            }}
-                                        >
-                                            {meta.icon}
-                                        </div>
-                                    </div>
+                                <div key={sectionKey} className="ig-notif-section">
+                                    <h3 className="ig-section-title">{sectionKey}</h3>
 
-                                    {/* Content info */}
-                                    <div className="notif-content-wrapper">
-                                        <div className="notif-main-text">
-                                            <Link
-                                                to={`/users/${sender.username || ""}`}
-                                                className="notif-user-highlight"
-                                                onClick={(e) => e.stopPropagation()}
-                                            >
-                                                {sender.name || sender.username || "User"}
-                                            </Link>{" "}
-                                            <span className="notif-action-desc">
-                                                {item.type === "like_post" && "liked your post"}
-                                                {item.type === "comment_post" && "commented on your post"}
-                                                {item.type === "reply_comment" && "replied to your comment"}
-                                                {item.type === "like_comment" && "liked your comment"}
-                                                {item.type === "like_reply" && "liked your reply"}
-                                                {item.type === "connection_request" && "sent you a connection request"}
-                                                {item.type === "connection_accept" && "accepted your connection request"}
-                                            </span>
-                                        </div>
+                                    <div className="ig-section-items">
+                                        {items.map((item) => {
+                                            const meta = getNotificationMeta(item);
+                                            const sender = item.sender || {};
+                                            const postImg = item.post?.image;
 
-                                        {item.contentPreview && (
-                                            <div className="notif-preview-box">
-                                                &ldquo;{item.contentPreview}&rdquo;
-                                            </div>
-                                        )}
+                                            return (
+                                                <div
+                                                    key={item._id}
+                                                    className={`ig-notif-row ${!item.read ? "unread" : ""}`}
+                                                    onClick={() => handleNotificationClick(item)}
+                                                    role="button"
+                                                    tabIndex={0}
+                                                >
+                                                    <div className="ig-avatar-wrap">
+                                                        <Link
+                                                            to={`/users/${sender.username || ""}`}
+                                                            onClick={(e) => e.stopPropagation()}
+                                                            className="ig-avatar-link"
+                                                        >
+                                                            <img
+                                                                src={sender.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
+                                                                alt={sender.name || "User"}
+                                                                className="ig-avatar-img"
+                                                                onError={(e) => {
+                                                                    e.currentTarget.src = "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
+                                                                }}
+                                                            />
+                                                        </Link>
+                                                        <div
+                                                            className="ig-reaction-badge"
+                                                            style={{ backgroundColor: meta.badgeBg }}
+                                                        >
+                                                            {meta.icon}
+                                                        </div>
+                                                    </div>
 
-                                        <div className="notif-timestamp-row">
-                                            <span className="notif-time-ago">{timeAgo(item.createdAt)}</span>
-                                        </div>
-                                    </div>
+                                                    <div className="ig-content-wrap">
+                                                        <p className="ig-text-body">
+                                                            <Link
+                                                                to={`/users/${sender.username || ""}`}
+                                                                className="ig-username"
+                                                                onClick={(e) => e.stopPropagation()}
+                                                            >
+                                                                {sender.username || sender.name || "user"}
+                                                            </Link>{" "}
+                                                            <span className="ig-action-text">{meta.actionText}</span>{" "}
+                                                            {item.contentPreview && (
+                                                                <span className="ig-quote-snippet">
+                                                                    &ldquo;{item.contentPreview}&rdquo;
+                                                                </span>
+                                                            )}{" "}
+                                                            <span className="ig-time">{timeAgo(item.createdAt)}</span>
+                                                        </p>
+                                                    </div>
 
-                                    {/* Action buttons */}
-                                    <div className="notif-card-actions-group">
-                                        {meta.canReply && (
-                                            <button
-                                                type="button"
-                                                className={`notif-reply-pill-btn ${meta.isReplied ? "view-reply" : ""}`}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    if (meta.link) navigate(meta.link);
-                                                }}
-                                                title={meta.isReplied ? "View your reply" : "Reply to comment"}
-                                            >
-                                                {meta.isReplied ? (
-                                                    <>
-                                                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                                                            <circle cx="12" cy="12" r="3" />
-                                                        </svg>
-                                                        <span>View reply</span>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                                                            <polyline points="9 14 4 9 9 4" />
-                                                            <path d="M20 20v-7a4 4 0 0 0-4-4H4" />
-                                                        </svg>
-                                                        <span>Reply</span>
-                                                    </>
-                                                )}
-                                            </button>
-                                        )}
-                                        <button
-                                            type="button"
-                                            className="notif-delete-btn"
-                                            onClick={(e) => handleDeleteNotification(e, item._id)}
-                                            title="Delete notification"
-                                        >
-                                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                <line x1="18" y1="6" x2="6" y2="18" />
-                                                <line x1="6" y1="6" x2="18" y2="18" />
-                                            </svg>
-                                        </button>
+                                                    <div className="ig-action-wrap">
+                                                        {meta.canReply ? (
+                                                            <button
+                                                                type="button"
+                                                                className={`ig-btn-reply ${meta.isReplied ? "replied" : ""}`}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    if (meta.link) navigate(meta.link);
+                                                                }}
+                                                                title={meta.isReplied ? "View reply" : "Reply"}
+                                                            >
+                                                                {meta.isReplied ? "Replied" : "Reply"}
+                                                            </button>
+                                                        ) : meta.isProfileView ? (
+                                                            <Link
+                                                                to={`/users/${sender.username || ""}`}
+                                                                onClick={(e) => e.stopPropagation()}
+                                                                className="ig-btn-view"
+                                                            >
+                                                                Profile
+                                                            </Link>
+                                                        ) : null}
+
+                                                        <button
+                                                            type="button"
+                                                            className="ig-delete-btn"
+                                                            onClick={(e) => handleDeleteNotification(e, item._id)}
+                                                            title="Delete"
+                                                        >
+                                                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                <line x1="18" y1="6" x2="6" y2="18" />
+                                                                <line x1="6" y1="6" x2="18" y2="18" />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             );
                         })}
                     </div>
                 ) : (
-                    <div className="notifications-empty-state">
-                        <div className="empty-bell-icon-wrapper">
-                            <svg viewBox="0 0 24 24" width="42" height="42" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                    <div className="ig-empty-state">
+                        <div className="ig-empty-icon-circle">
+                            <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                             </svg>
                         </div>
-                        <h3>No notifications in this view</h3>
+                        <h3>Activity on your posts</h3>
                         <p>
                             {activeTab === "all"
-                                ? "When someone likes or comments on your posts, or sends a connection request, you'll find them here."
-                                : `You don't have any ${activeTab} notifications right now.`}
+                                ? "When someone likes, comments, mentions you, or views your profile, you'll see them here."
+                                : `No ${activeTab} activity right now.`}
                         </p>
                     </div>
                 )}
