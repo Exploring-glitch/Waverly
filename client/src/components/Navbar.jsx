@@ -121,6 +121,19 @@ const Navbar = () => {
         };
     }, [user, checkNotifications]);
 
+    // Automatically clear the search bar when navigating away from the search page
+    useEffect(() => {
+        if (location.pathname !== "/search") {
+            setSearchQuery("");
+        } else {
+            const params = new URLSearchParams(location.search);
+            const q = params.get("q");
+            if (q) {
+                setSearchQuery(q);
+            }
+        }
+    }, [location.pathname, location.search]);
+
     const handleSearchSubmit = (e) => {
         e.preventDefault();
         const trimmed = searchQuery.trim();
