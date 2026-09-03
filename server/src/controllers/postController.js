@@ -360,53 +360,6 @@ export const commentPost = async (req, res) => {
     }
 };
 
-export const likeComment = async (req, res) => {
-    try {
-        const post = await Post.findById(req.params.id);
-        if (!post) {
-            return res.status(404).json({ message: "Post not found" });
-        }
-
-        const comment = post.comments.id(req.params.commentId);
-        if (!comment) {
-            return res.status(404).json({ message: "Comment not found" });
-        }
-
-        if (!comment.likes) {
-            comment.likes = [];
-        }
-
-        const userId = req.user._id;
-        const likeIndex = comment.likes.indexOf(userId);
-
-        if (likeIndex === -1) {
-            comment.likes.push(userId);
-        } else {
-            comment.likes.splice(likeIndex, 1);
-        }
-
-        await post.save();
-
-        const populatedPost = await Post.findById(post._id)
-            .populate({
-                path: "comments.author",
-                select: "name username profilePic additionalName"
-            })
-            .populate({
-                path: "comments.replies.author",
-                select: "name username profilePic additionalName"
-            });
-
-        res.status(200).json({
-            message: "Comment like status updated successfully",
-            comments: populatedPost.comments
-        });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "Internal server error" });
-    }
-};
-
 export const replyComment = async (req, res) => {
     try {
         const { content } = req.body;
