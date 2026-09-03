@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { userApi, postApi, notificationApi } from "../services/api";
+import { getSocket } from "../services/socket";
 import {
     getSearchHistory,
     saveSearchQuery,
@@ -132,6 +133,36 @@ const Navbar = () => {
 
         checkNotifications();
 
+        // 1. Setup socket connection and realtime listeners
+        const socket = getSocket(user._id || user.id);
+
+        const handleRealtimeNotif = (data) => {
+            if (location.pathname !== "/notifications") {
+                setUnreadNotifCount((prev) => prev + 1);
+            }
+            // Also notify any open Notifications page view
+            window.dispatchEvent(new CustomEvent("socket_new_notification", { detail: data }));
+        };
+
+        const handleRealtimeNetwork = (data) => {
+            if (location.pathname !== "/network") {
+                setHasNetworkNotification(true);
+            }
+            // Also notify open Network page view
+            window.dispatchEvent(new CustomEvent("socket_network_update", { detail: data }));
+        };
+
+        const handleRealtimeFeedPost = (data) => {
+            const currentUserId = user._id || user.id;
+            if (data?.authorId !== currentUserId && location.pathname !== "/feed") {
+                setHasFeedNotification(true);
+            }
+        };
+
+        socket.on("new_notification", handleRealtimeNotif);
+        socket.on("network_update", handleRealtimeNetwork);
+        socket.on("new_feed_post", handleRealtimeFeedPost);
+
         const handleFocus = () => checkNotifications();
         const handleNotifsRead = () => setUnreadNotifCount(0);
 
@@ -140,11 +171,14 @@ const Navbar = () => {
         const intervalId = setInterval(checkNotifications, 20000);
 
         return () => {
+            socket.off("new_notification", handleRealtimeNotif);
+            socket.off("network_update", handleRealtimeNetwork);
+            socket.off("new_feed_post", handleRealtimeFeedPost);
             window.removeEventListener("focus", handleFocus);
             window.removeEventListener("notifications_read", handleNotifsRead);
             clearInterval(intervalId);
         };
-    }, [user, checkNotifications]);
+    }, [user, checkNotifications, location.pathname]);
 
     // Keep search history in sync with localStorage updates
     useEffect(() => {

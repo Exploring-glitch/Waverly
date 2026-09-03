@@ -100,6 +100,15 @@ const MyNetwork_Page = () => {
         if (user) {
             fetchData();
         }
+
+        const handleRealtimeNetworkUpdate = () => {
+            if (user) {
+                fetchData();
+            }
+        };
+
+        window.addEventListener("socket_network_update", handleRealtimeNetworkUpdate);
+        return () => window.removeEventListener("socket_network_update", handleRealtimeNetworkUpdate);
     }, [user]);
 
     const handleAcceptRequest = async (senderId) => {

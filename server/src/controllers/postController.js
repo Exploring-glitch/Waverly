@@ -2,6 +2,7 @@ import Post from "../models/Post.js";
 import User from "../models/User.js";
 import Connection from "../models/Connection.js";
 import Notification from "../models/Notification.js";
+import { emitToUser, emitToUsers, emitBroadcast } from "../socket.js";
 
 export const createPost = async (req, res) => {
     try {
@@ -19,6 +20,9 @@ export const createPost = async (req, res) => {
 
         const populatedPost = await newPost.populate("author", "name username profilePic additionalName");
 
+        // Broadcast new post so active users on other pages get the feed dot in realtime
+        emitBroadcast("new_feed_post", { postId: newPost._id, authorId: req.user._id });
+
         // 1. Notify all accepted connections that user created a new post
         try {
             const connections = await Connection.find({
@@ -29,14 +33,23 @@ export const createPost = async (req, res) => {
                 ]
             });
 
+            const connectedUserIds = [];
             for (const conn of connections) {
                 const connectedUserId = conn.sender.toString() === req.user._id.toString() ? conn.recipient : conn.sender;
+                connectedUserIds.push(connectedUserId);
                 await Notification.create({
                     recipient: connectedUserId,
                     sender: req.user._id,
                     type: "new_post",
                     post: newPost._id,
                     contentPreview: content ? content.trim().slice(0, 100) : "shared a new post",
+                });
+            }
+            if (connectedUserIds.length > 0) {
+                emitToUsers(connectedUserIds, "new_notification", {
+                    type: "new_post",
+                    postId: newPost._id,
+                    sender: req.user._id,
                 });
             }
         } catch (connNotifErr) {
@@ -51,12 +64,16 @@ export const createPost = async (req, res) => {
                 for (const uname of uniqueUsernames) {
                     const mentionedUser = await User.findOne({ username: { $regex: new RegExp(`^${uname}$`, "i") } });
                     if (mentionedUser && mentionedUser._id.toString() !== req.user._id.toString()) {
-                        await Notification.create({
+                        const notif = await Notification.create({
                             recipient: mentionedUser._id,
                             sender: req.user._id,
                             type: "mention_post",
                             post: newPost._id,
                             contentPreview: content.trim().slice(0, 100),
+                        });
+                        emitToUser(mentionedUser._id, "new_notification", {
+                            notification: notif,
+                            type: "mention_post",
                         });
                     }
                 }
@@ -184,12 +201,16 @@ export const likePost = async (req, res) => {
             post.likes.push(userId);
             if (post.author.toString() !== userId.toString()) {
                 try {
-                    await Notification.create({
+                    const notif = await Notification.create({
                         recipient: post.author,
                         sender: userId,
                         type: "like_post",
                         post: post._id,
                         contentPreview: post.content ? post.content.substring(0, 80) : "",
+                    });
+                    emitToUser(post.author, "new_notification", {
+                        notification: notif,
+                        type: "like_post",
                     });
                 } catch (notifErr) {
                     console.error("Failed to create like notification:", notifErr);
@@ -234,13 +255,17 @@ export const commentPost = async (req, res) => {
         if (post.author.toString() !== req.user._id.toString()) {
             try {
                 const addedComment = post.comments[post.comments.length - 1];
-                await Notification.create({
+                const notif = await Notification.create({
                     recipient: post.author,
                     sender: req.user._id,
                     type: "comment_post",
                     post: post._id,
                     commentId: addedComment?._id,
                     contentPreview: content.trim().substring(0, 80),
+                });
+                emitToUser(post.author, "new_notification", {
+                    notification: notif,
+                    type: "comment_post",
                 });
             } catch (notifErr) {
                 console.error("Failed to create comment notification:", notifErr);
@@ -260,13 +285,17 @@ export const commentPost = async (req, res) => {
                         mentionedUser._id.toString() !== req.user._id.toString() &&
                         mentionedUser._id.toString() !== post.author.toString()
                     ) {
-                        await Notification.create({
+                        const notif = await Notification.create({
                             recipient: mentionedUser._id,
                             sender: req.user._id,
                             type: "mention_comment",
                             post: post._id,
                             commentId: addedComment?._id,
                             contentPreview: content.trim().slice(0, 100),
+                        });
+                        emitToUser(mentionedUser._id, "new_notification", {
+                            notification: notif,
+                            type: "mention_comment",
                         });
                     }
                 }
@@ -374,7 +403,7 @@ export const replyComment = async (req, res) => {
         if (comment.author.toString() !== req.user._id.toString()) {
             try {
                 const addedReply = comment.replies[comment.replies.length - 1];
-                await Notification.create({
+                const notif = await Notification.create({
                     recipient: comment.author,
                     sender: req.user._id,
                     type: "reply_comment",
@@ -382,6 +411,10 @@ export const replyComment = async (req, res) => {
                     commentId: comment._id,
                     replyId: addedReply?._id,
                     contentPreview: content.trim().substring(0, 80),
+                });
+                emitToUser(comment.author, "new_notification", {
+                    notification: notif,
+                    type: "reply_comment",
                 });
             } catch (notifErr) {
                 console.error("Failed to create reply notification:", notifErr);
@@ -401,7 +434,7 @@ export const replyComment = async (req, res) => {
                         mentionedUser._id.toString() !== req.user._id.toString() &&
                         mentionedUser._id.toString() !== comment.author.toString()
                     ) {
-                        await Notification.create({
+                        const notif = await Notification.create({
                             recipient: mentionedUser._id,
                             sender: req.user._id,
                             type: "mention_comment",
@@ -409,6 +442,10 @@ export const replyComment = async (req, res) => {
                             commentId: comment._id,
                             replyId: addedReply?._id,
                             contentPreview: content.trim().slice(0, 100),
+                        });
+                        emitToUser(mentionedUser._id, "new_notification", {
+                            notification: notif,
+                            type: "mention_comment",
                         });
                     }
                 }
@@ -424,11 +461,12 @@ export const replyComment = async (req, res) => {
                     recipient: req.user._id,
                     post: post._id,
                     commentId: comment._id,
+                    type: { $in: ["comment_post", "reply_comment"] },
                 },
-                { replied: true }
+                { $set: { replied: true } }
             );
-        } catch (notifErr) {
-            console.error("Failed to update replied status on notification:", notifErr);
+        } catch (updateErr) {
+            console.error("Failed to mark notifications as replied:", updateErr);
         }
 
         const populatedPost = await Post.findById(post._id)
@@ -563,7 +601,7 @@ export const likeReply = async (req, res) => {
             reply.likes.push(userId);
             if (reply.author.toString() !== userId.toString()) {
                 try {
-                    await Notification.create({
+                    const notif = await Notification.create({
                         recipient: reply.author,
                         sender: userId,
                         type: "like_reply",
@@ -571,6 +609,10 @@ export const likeReply = async (req, res) => {
                         commentId: comment._id,
                         replyId: reply._id,
                         contentPreview: reply.content ? reply.content.substring(0, 80) : "",
+                    });
+                    emitToUser(reply.author, "new_notification", {
+                        notification: notif,
+                        type: "like_reply",
                     });
                 } catch (notifErr) {
                     console.error("Failed to create reply like notification:", notifErr);

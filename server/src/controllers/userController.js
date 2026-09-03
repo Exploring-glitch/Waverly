@@ -1,6 +1,7 @@
 import User from "../models/User.js";
 import Connection from "../models/Connection.js";
 import Notification from "../models/Notification.js";
+import { emitToUser } from "../socket.js";
 
 const addConnectionStatuses = async (users, currentUserId) => {
     const userObjects = [];
@@ -134,11 +135,15 @@ export const getUserByUsername = async (req, res) => {
 
                     // Notify user that someone viewed their profile
                     try {
-                        await Notification.create({
+                        const notif = await Notification.create({
                             recipient: user._id,
                             sender: req.user._id,
                             type: "profile_view",
                             contentPreview: "viewed your profile",
+                        });
+                        emitToUser(user._id, "new_notification", {
+                            notification: notif,
+                            type: "profile_view",
                         });
                     } catch (notifErr) {
                         console.error("Failed to create profile view notification:", notifErr);
@@ -153,19 +158,18 @@ export const getUserByUsername = async (req, res) => {
             }
         }
 
-        const userObj = user.toJSON();
-
-        if (!isOwnProfile) {
-            delete userObj.email;
+        let connectionCount = 0;
+        try {
+            connectionCount = await Connection.countDocuments({
+                status: "accepted",
+                $or: [
+                    { sender: user._id },
+                    { recipient: user._id }
+                ]
+            });
+        } catch (cntErr) {
+            console.error("Failed to count connections for profile", cntErr);
         }
-
-        const connectionCount = await Connection.countDocuments({
-            status: "accepted",
-            $or: [
-                { sender: user._id },
-                { recipient: user._id }
-            ]
-        });
 
         let connectionStatus = "none";
         if (!isOwnProfile) {
@@ -184,6 +188,12 @@ export const getUserByUsername = async (req, res) => {
                     connectionStatus = "pending_received";
                 }
             }
+        }
+
+        const userObj = user.toJSON();
+
+        if (!isOwnProfile) {
+            delete userObj.email;
         }
 
         res.status(200).json({ user: userObj, isOwnProfile, connectionCount, connectionStatus });
@@ -379,6 +389,11 @@ export const sendConnectionRequest = async (req, res) => {
             console.error("Failed to create connection request notification:", notifErr);
         }
 
+        emitToUser(targetUserId, "network_update", {
+            type: "connection_request",
+            senderId: req.user._id,
+        });
+
         res.status(201).json({ message: "Connection request sent successfully", connection: newConn });
     } catch (err) {
         console.error(err);
@@ -412,6 +427,11 @@ export const acceptConnectionRequest = async (req, res) => {
         } catch (notifErr) {
             console.error("Failed to create connection accept notification:", notifErr);
         }
+
+        emitToUser(senderId, "network_update", {
+            type: "connection_accept",
+            userId: req.user._id,
+        });
 
         res.status(200).json({ message: "Connection request accepted", connection });
     } catch (err) {

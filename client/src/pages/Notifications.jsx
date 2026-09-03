@@ -221,6 +221,13 @@ const Notifications_Page = () => {
 
     useEffect(() => {
         fetchNotifications();
+
+        const handleRealtimeNewNotif = () => {
+            fetchNotifications();
+        };
+
+        window.addEventListener("socket_new_notification", handleRealtimeNewNotif);
+        return () => window.removeEventListener("socket_new_notification", handleRealtimeNewNotif);
     }, [fetchNotifications]);
 
     const handleClearAll = async () => {
