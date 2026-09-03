@@ -1,6 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { searchApi } from "../services/api";
+import {
+    getSearchHistory,
+    saveSearchQuery,
+    removeSearchQuery,
+    clearSearchHistory,
+} from "../utils/searchHistory";
 import PostCard from "../components/PostCard";
 
 const TABS = [
@@ -20,6 +26,15 @@ const Search_Page = () => {
     const [results, setResults] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [searchHistory, setSearchHistory] = useState(() => getSearchHistory());
+
+    useEffect(() => {
+        const handleHistoryUpdated = (e) => {
+            setSearchHistory(e.detail || getSearchHistory());
+        };
+        window.addEventListener("search_history_updated", handleHistoryUpdated);
+        return () => window.removeEventListener("search_history_updated", handleHistoryUpdated);
+    }, []);
 
     const runSearch = useCallback(async (searchQuery, searchTab) => {
         if (!searchQuery.trim()) {
@@ -28,6 +43,7 @@ const Search_Page = () => {
             return;
         }
 
+        saveSearchQuery(searchQuery.trim());
         setLoading(true);
         setError("");
 
@@ -51,7 +67,13 @@ const Search_Page = () => {
         e.preventDefault();
         const trimmed = inputValue.trim();
         if (!trimmed) return;
+        saveSearchQuery(trimmed);
         setSearchParams({ q: trimmed, tab });
+    };
+
+    const handleSelectHistory = (item) => {
+        setInputValue(item);
+        setSearchParams({ q: item, tab });
     };
 
     const handleTabChange = (nextTab) => {
@@ -116,6 +138,45 @@ const Search_Page = () => {
             )}
 
             {error && <div className="alert-box alert-danger">{error}</div>}
+
+            {!loading && !query && searchHistory.length > 0 && (
+                <div className="search-recent-container">
+                    <div className="search-recent-header">
+                        <div className="search-recent-title">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="12" cy="12" r="10" />
+                                <polyline points="12 6 12 12 16 14" />
+                            </svg>
+                            <span>Recent Searches</span>
+                        </div>
+                        <button
+                            type="button"
+                            className="search-clear-all-link"
+                            onClick={() => clearSearchHistory()}
+                        >
+                            Clear all
+                        </button>
+                    </div>
+                    <div className="search-recent-chips">
+                        {searchHistory.map((item) => (
+                            <div key={item} className="search-recent-chip" onClick={() => handleSelectHistory(item)}>
+                                <span className="search-recent-chip-text">{item}</span>
+                                <button
+                                    type="button"
+                                    className="search-recent-chip-remove"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        removeSearchQuery(item);
+                                    }}
+                                    title="Remove"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {!loading && query && results && !hasResults && (
                 <div className="search-empty">

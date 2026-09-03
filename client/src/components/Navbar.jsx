@@ -2,6 +2,12 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { userApi, postApi, notificationApi } from "../services/api";
+import {
+    getSearchHistory,
+    saveSearchQuery,
+    removeSearchQuery,
+    clearSearchHistory,
+} from "../utils/searchHistory";
 import Button from "./Button";
 
 const Navbar = () => {
@@ -9,7 +15,10 @@ const Navbar = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [searchQuery, setSearchQuery] = useState("");
+    const [searchHistory, setSearchHistory] = useState(() => getSearchHistory());
+    const [showHistoryDropdown, setShowHistoryDropdown] = useState(false);
     const [showLogoutModal, setShowLogoutModal] = useState(false);
+    const searchContainerRef = useRef(null);
 
     const [hasNetworkNotification, setHasNetworkNotification] = useState(false);
     const [hasFeedNotification, setHasFeedNotification] = useState(false);
@@ -121,6 +130,36 @@ const Navbar = () => {
         };
     }, [user, checkNotifications]);
 
+    // Keep search history in sync with localStorage updates
+    useEffect(() => {
+        const handleHistoryUpdated = (e) => {
+            setSearchHistory(e.detail || getSearchHistory());
+        };
+        window.addEventListener("search_history_updated", handleHistoryUpdated);
+        return () => window.removeEventListener("search_history_updated", handleHistoryUpdated);
+    }, []);
+
+    // Close search history dropdown on outside click or escape
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (searchContainerRef.current && !searchContainerRef.current.contains(e.target)) {
+                setShowHistoryDropdown(false);
+            }
+        };
+        const handleKeyDown = (e) => {
+            if (e.key === "Escape") {
+                setShowHistoryDropdown(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        document.addEventListener("keydown", handleKeyDown);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener("keydown", handleKeyDown);
+        };
+    }, []);
+
     // Automatically clear the search bar when navigating away from the search page
     useEffect(() => {
         if (location.pathname !== "/search") {
@@ -132,14 +171,40 @@ const Navbar = () => {
                 setSearchQuery(q);
             }
         }
+        setShowHistoryDropdown(false);
     }, [location.pathname, location.search]);
 
     const handleSearchSubmit = (e) => {
         e.preventDefault();
         const trimmed = searchQuery.trim();
         if (!trimmed) return;
+        saveSearchQuery(trimmed);
+        setShowHistoryDropdown(false);
         navigate(`/search?q=${encodeURIComponent(trimmed)}`);
     };
+
+    const handleSelectHistoryItem = (item) => {
+        saveSearchQuery(item);
+        setSearchQuery(item);
+        setShowHistoryDropdown(false);
+        navigate(`/search?q=${encodeURIComponent(item)}`);
+    };
+
+    const handleRemoveHistoryItem = (e, item) => {
+        e.stopPropagation();
+        removeSearchQuery(item);
+    };
+
+    const handleClearAllHistory = (e) => {
+        e.stopPropagation();
+        clearSearchHistory();
+    };
+
+    const filteredHistory = searchQuery.trim()
+        ? searchHistory.filter((item) =>
+              item.toLowerCase().includes(searchQuery.trim().toLowerCase())
+          )
+        : searchHistory;
 
     const handleConfirmLogout = () => {
         setShowLogoutModal(false);
@@ -166,7 +231,7 @@ const Navbar = () => {
                     </div>
 
                     {user && (
-                        <div className="navbar-center">
+                        <div className="navbar-center" ref={searchContainerRef}>
                             <form className="navbar-search-form" onSubmit={handleSearchSubmit}>
                                 <div className="navbar-search-wrapper">
                                     <svg className="navbar-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -178,11 +243,67 @@ const Navbar = () => {
                                         className="navbar-search-input"
                                         placeholder="Search students, alumni, colleges..."
                                         value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        onChange={(e) => {
+                                            setSearchQuery(e.target.value);
+                                            setShowHistoryDropdown(true);
+                                        }}
+                                        onFocus={() => setShowHistoryDropdown(true)}
                                     />
                                     <span className="navbar-search-shortcut">⌘K</span>
                                 </div>
                             </form>
+
+                            {showHistoryDropdown && searchHistory.length > 0 && (
+                                <div className="navbar-search-dropdown">
+                                    <div className="navbar-search-dropdown-header">
+                                        <div className="navbar-search-dropdown-title">
+                                            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <circle cx="12" cy="12" r="10" />
+                                                <polyline points="12 6 12 12 16 14" />
+                                            </svg>
+                                            <span>Recent Searches</span>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            className="navbar-clear-history-btn"
+                                            onClick={handleClearAllHistory}
+                                        >
+                                            Clear all
+                                        </button>
+                                    </div>
+                                    <div className="navbar-search-dropdown-list">
+                                        {filteredHistory.length > 0 ? (
+                                            filteredHistory.map((item) => (
+                                                <div
+                                                    key={item}
+                                                    className="navbar-search-history-item"
+                                                    onClick={() => handleSelectHistoryItem(item)}
+                                                >
+                                                    <div className="navbar-search-history-item-main">
+                                                        <svg className="navbar-history-item-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                            <circle cx="12" cy="12" r="10" />
+                                                            <polyline points="12 6 12 12 16 14" />
+                                                        </svg>
+                                                        <span className="navbar-history-item-text">{item}</span>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        className="navbar-delete-history-btn"
+                                                        onClick={(e) => handleRemoveHistoryItem(e, item)}
+                                                        title="Remove from history"
+                                                    >
+                                                        ✕
+                                                    </button>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="navbar-search-empty-history">
+                                                No matching past searches
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
 
