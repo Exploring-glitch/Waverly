@@ -166,6 +166,7 @@ a:hover {
 .navbar-search {
   flex: 1;
   max-width: 440px;
+  position: relative;
 }
 
 .navbar-search-form {
