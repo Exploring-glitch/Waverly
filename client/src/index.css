@@ -7241,6 +7241,7 @@ a:hover {
   text-align: center;
   transition: all var(--transition-normal);
   position: relative;
+  cursor: pointer;
 }
 
 .network-user-card:hover {

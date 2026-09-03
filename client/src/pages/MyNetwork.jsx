@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { userApi } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import Button from "../components/Button";
 
 const MyNetwork_Page = () => {
     const { user } = useAuth();
+    const navigate = useNavigate();
     const [receivedRequests, setReceivedRequests] = useState([]);
     const [sentRequests, setSentRequests] = useState([]);
     const [suggestions, setSuggestions] = useState([]);
@@ -201,8 +202,21 @@ const MyNetwork_Page = () => {
     };
 
     const renderUserCard = (person, listType) => {
+        const handleCardClick = (e) => {
+            if (e.target.closest("button") || e.target.closest(".network-card-action")) {
+                return;
+            }
+            if (person?.username) {
+                navigate(`/users/${person.username}`);
+            }
+        };
+
         return (
-            <div key={person._id} className="network-user-card hover-lift">
+            <div
+                key={person._id}
+                className="network-user-card hover-lift"
+                onClick={handleCardClick}
+            >
                 <div className="network-card-banner">
                     {person.coverPic ? (
                         <img src={person.coverPic} alt="" className="network-card-banner-img" />
@@ -212,7 +226,7 @@ const MyNetwork_Page = () => {
                 </div>
 
                 <div className="network-card-avatar-wrap">
-                    <Link to={`/users/${person.username}`}>
+                    <Link to={`/users/${person.username}`} onClick={(e) => e.stopPropagation()}>
                         <img
                             src={person.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
                             alt={person.name}
@@ -225,7 +239,7 @@ const MyNetwork_Page = () => {
                 </div>
 
                 <div className="network-card-body">
-                    <Link to={`/users/${person.username}`} className="network-card-name">
+                    <Link to={`/users/${person.username}`} className="network-card-name" onClick={(e) => e.stopPropagation()}>
                         <span>{person.name}</span>
                         <span className="profile-verified-badge" style={{ padding: "2px" }}>
                             <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
@@ -247,7 +261,7 @@ const MyNetwork_Page = () => {
                     )}
                 </div>
 
-                <div className="network-card-action">
+                <div className="network-card-action" onClick={(e) => e.stopPropagation()}>
                     {person.connectionStatus === "accepted" ? (
                         <button disabled className="btn-network-status connected">
                             ✓ Connected
@@ -491,9 +505,16 @@ const MyNetwork_Page = () => {
                                     </div>
                                 ) : (
                                     receivedRequests.map(req => (
-                                        <div key={req._id} className="network-invitation-row">
+                                        <div
+                                            key={req._id}
+                                            className="network-invitation-row"
+                                            onClick={(e) => {
+                                                if (e.target.closest("button") || e.target.closest(".invitation-action-group")) return;
+                                                if (req.sender?.username) navigate(`/users/${req.sender.username}`);
+                                            }}
+                                        >
                                             <div className="invitation-user-info">
-                                                <Link to={`/users/${req.sender?.username}`}>
+                                                <Link to={`/users/${req.sender?.username}`} onClick={(e) => e.stopPropagation()}>
                                                     <img
                                                         src={req.sender?.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
                                                         alt={req.sender?.name}
@@ -504,7 +525,7 @@ const MyNetwork_Page = () => {
                                                     />
                                                 </Link>
                                                 <div className="invitation-details">
-                                                    <Link to={`/users/${req.sender?.username}`} className="invitation-name">
+                                                    <Link to={`/users/${req.sender?.username}`} className="invitation-name" onClick={(e) => e.stopPropagation()}>
                                                         <span>{req.sender?.name}</span>
                                                         <span className="profile-verified-badge" style={{ padding: "2px" }}>
                                                             <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
@@ -519,7 +540,7 @@ const MyNetwork_Page = () => {
                                                 </div>
                                             </div>
 
-                                            <div className="invitation-action-group">
+                                            <div className="invitation-action-group" onClick={(e) => e.stopPropagation()}>
                                                 <button
                                                     type="button"
                                                     onClick={() => handleIgnoreRequest(req.sender?._id)}
@@ -581,9 +602,16 @@ const MyNetwork_Page = () => {
                                     sentRequests.map(req => {
                                         const target = req.recipient || {};
                                         return (
-                                            <div key={req._id} className="network-invitation-row">
+                                            <div
+                                                key={req._id}
+                                                className="network-invitation-row"
+                                                onClick={(e) => {
+                                                    if (e.target.closest("button") || e.target.closest(".invitation-action-group")) return;
+                                                    if (target.username) navigate(`/users/${target.username}`);
+                                                }}
+                                            >
                                                 <div className="invitation-user-info">
-                                                    <Link to={`/users/${target.username}`}>
+                                                    <Link to={`/users/${target.username}`} onClick={(e) => e.stopPropagation()}>
                                                         <img
                                                             src={target.profilePic || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"}
                                                             alt={target.name}
@@ -594,7 +622,7 @@ const MyNetwork_Page = () => {
                                                         />
                                                     </Link>
                                                     <div className="invitation-details">
-                                                        <Link to={`/users/${target.username}`} className="invitation-name">
+                                                        <Link to={`/users/${target.username}`} className="invitation-name" onClick={(e) => e.stopPropagation()}>
                                                             <span>{target.name}</span>
                                                             <span className="profile-verified-badge" style={{ padding: "2px" }}>
                                                                 <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
@@ -609,7 +637,7 @@ const MyNetwork_Page = () => {
                                                     </div>
                                                 </div>
 
-                                                <div className="invitation-action-group">
+                                                <div className="invitation-action-group" onClick={(e) => e.stopPropagation()}>
                                                     <span className="sent-pending-tag">⏳ Pending Response</span>
                                                     <button
                                                         type="button"
