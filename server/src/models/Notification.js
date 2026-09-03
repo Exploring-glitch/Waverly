@@ -22,6 +22,10 @@ const notificationSchema = new mongoose.Schema(
                 "reply_comment",
                 "like_comment",
                 "like_reply",
+                "profile_view",
+                "new_post",
+                "mention_post",
+                "mention_comment",
                 "connection_request",
                 "connection_accept"
             ],

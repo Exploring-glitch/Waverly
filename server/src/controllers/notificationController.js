@@ -2,7 +2,10 @@ import Notification from "../models/Notification.js";
 
 export const getNotifications = async (req, res) => {
     try {
-        const notifications = await Notification.find({ recipient: req.user._id })
+        const notifications = await Notification.find({
+            recipient: req.user._id,
+            type: { $nin: ["connection_request", "connection_accept"] }
+        })
             .sort({ createdAt: -1 })
             .limit(50)
             .populate("sender", "name username profilePic additionalName")
@@ -63,6 +66,7 @@ export const getUnreadCount = async (req, res) => {
         const count = await Notification.countDocuments({
             recipient: req.user._id,
             read: false,
+            type: { $nin: ["connection_request", "connection_accept"] }
         });
 
         res.status(200).json({ unreadCount: count });
@@ -94,7 +98,11 @@ export const markAsRead = async (req, res) => {
 export const markAllAsRead = async (req, res) => {
     try {
         await Notification.updateMany(
-            { recipient: req.user._id, read: false },
+            {
+                recipient: req.user._id,
+                read: false,
+                type: { $nin: ["connection_request", "connection_accept"] }
+            },
             { read: true }
         );
 

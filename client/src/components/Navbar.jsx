@@ -42,18 +42,22 @@ const Navbar = () => {
         }
 
         try {
-            const [receivedReqs, statsData] = await Promise.allSettled([
+            const [receivedReqs, statsData, recsData] = await Promise.allSettled([
                 userApi.getReceivedConnections(),
-                userApi.getConnectionStats()
+                userApi.getConnectionStats(),
+                userApi.getRecommendedUsers()
             ]);
 
             const reqs = receivedReqs.status === "fulfilled" ? (receivedReqs.value || []) : [];
             const stats = statsData.status === "fulfilled" ? statsData.value : null;
+            const recs = recsData.status === "fulfilled" ? (recsData.value || []) : [];
 
             const storedConnectionCount = parseInt(
                 localStorage.getItem("waverly_last_seen_connections_count") || "-1",
                 10
             );
+            const lastNetworkVisitStr = localStorage.getItem("waverly_last_network_visit");
+            const lastNetworkVisit = lastNetworkVisitStr ? new Date(lastNetworkVisitStr).getTime() : 0;
 
             if (location.pathname === "/network") {
                 if (stats && stats.connectionCount !== undefined) {
@@ -67,8 +71,11 @@ const Navbar = () => {
                     storedConnectionCount !== -1 &&
                     stats &&
                     stats.connectionCount > storedConnectionCount;
+                
+                // Show dot for new recommendations if never visited or recommendations available
+                const hasNewRecommendations = !lastNetworkVisit && recs.length > 0;
 
-                setHasNetworkNotification(hasPendingInvitations || Boolean(hasNewAcceptedConnection));
+                setHasNetworkNotification(hasPendingInvitations || Boolean(hasNewAcceptedConnection) || hasNewRecommendations);
             }
         } catch (err) {
             console.error("Failed to check network notifications", err);

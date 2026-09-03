@@ -1,5 +1,6 @@
 import Post from "../models/Post.js";
 import User from "../models/User.js";
+import Connection from "../models/Connection.js";
 import Notification from "../models/Notification.js";
 
 export const createPost = async (req, res) => {
@@ -17,6 +18,52 @@ export const createPost = async (req, res) => {
         });
 
         const populatedPost = await newPost.populate("author", "name username profilePic additionalName");
+
+        // 1. Notify all accepted connections that user created a new post
+        try {
+            const connections = await Connection.find({
+                status: "accepted",
+                $or: [
+                    { sender: req.user._id },
+                    { recipient: req.user._id }
+                ]
+            });
+
+            for (const conn of connections) {
+                const connectedUserId = conn.sender.toString() === req.user._id.toString() ? conn.recipient : conn.sender;
+                await Notification.create({
+                    recipient: connectedUserId,
+                    sender: req.user._id,
+                    type: "new_post",
+                    post: newPost._id,
+                    contentPreview: content ? content.trim().slice(0, 100) : "shared a new post",
+                });
+            }
+        } catch (connNotifErr) {
+            console.error("Failed to notify connections about new post:", connNotifErr);
+        }
+
+        // 2. Notify users mentioned via @username in the post
+        try {
+            const mentions = (content || "").match(/@([a-zA-Z0-9_]+)/g);
+            if (mentions) {
+                const uniqueUsernames = [...new Set(mentions.map(m => m.slice(1).toLowerCase()))];
+                for (const uname of uniqueUsernames) {
+                    const mentionedUser = await User.findOne({ username: { $regex: new RegExp(`^${uname}$`, "i") } });
+                    if (mentionedUser && mentionedUser._id.toString() !== req.user._id.toString()) {
+                        await Notification.create({
+                            recipient: mentionedUser._id,
+                            sender: req.user._id,
+                            type: "mention_post",
+                            post: newPost._id,
+                            contentPreview: content.trim().slice(0, 100),
+                        });
+                    }
+                }
+            }
+        } catch (mentionErr) {
+            console.error("Failed to notify mentions in post:", mentionErr);
+        }
 
         res.status(201).json({
             message: "Post created successfully",
@@ -200,6 +247,34 @@ export const commentPost = async (req, res) => {
             }
         }
 
+        // Notify users mentioned via @username in the comment
+        try {
+            const mentions = (content || "").match(/@([a-zA-Z0-9_]+)/g);
+            if (mentions) {
+                const addedComment = post.comments[post.comments.length - 1];
+                const uniqueUsernames = [...new Set(mentions.map(m => m.slice(1).toLowerCase()))];
+                for (const uname of uniqueUsernames) {
+                    const mentionedUser = await User.findOne({ username: { $regex: new RegExp(`^${uname}$`, "i") } });
+                    if (
+                        mentionedUser &&
+                        mentionedUser._id.toString() !== req.user._id.toString() &&
+                        mentionedUser._id.toString() !== post.author.toString()
+                    ) {
+                        await Notification.create({
+                            recipient: mentionedUser._id,
+                            sender: req.user._id,
+                            type: "mention_comment",
+                            post: post._id,
+                            commentId: addedComment?._id,
+                            contentPreview: content.trim().slice(0, 100),
+                        });
+                    }
+                }
+            }
+        } catch (mentionErr) {
+            console.error("Failed to notify mentions in comment:", mentionErr);
+        }
+
         const populatedPost = await Post.findById(post._id)
             .populate({
                 path: "comments.author",
@@ -311,6 +386,35 @@ export const replyComment = async (req, res) => {
             } catch (notifErr) {
                 console.error("Failed to create reply notification:", notifErr);
             }
+        }
+
+        // Notify users mentioned via @username in the reply
+        try {
+            const mentions = (content || "").match(/@([a-zA-Z0-9_]+)/g);
+            if (mentions) {
+                const addedReply = comment.replies[comment.replies.length - 1];
+                const uniqueUsernames = [...new Set(mentions.map(m => m.slice(1).toLowerCase()))];
+                for (const uname of uniqueUsernames) {
+                    const mentionedUser = await User.findOne({ username: { $regex: new RegExp(`^${uname}$`, "i") } });
+                    if (
+                        mentionedUser &&
+                        mentionedUser._id.toString() !== req.user._id.toString() &&
+                        mentionedUser._id.toString() !== comment.author.toString()
+                    ) {
+                        await Notification.create({
+                            recipient: mentionedUser._id,
+                            sender: req.user._id,
+                            type: "mention_comment",
+                            post: post._id,
+                            commentId: comment._id,
+                            replyId: addedReply?._id,
+                            contentPreview: content.trim().slice(0, 100),
+                        });
+                    }
+                }
+            }
+        } catch (mentionErr) {
+            console.error("Failed to notify mentions in reply:", mentionErr);
         }
 
         // Mark any notification for the current user regarding this comment/post as replied

@@ -94,34 +94,61 @@ const getNotificationMeta = (item) => {
                 badgeBorder: "rgba(244, 63, 94, 0.3)",
                 link: item.post ? `/feed?post=${item.post._id || item.post}` : "/feed",
             };
-        case "connection_request":
+        case "profile_view":
             return {
-                title: `${senderName} sent you a connection request`,
+                title: `${senderName} viewed your profile`,
                 icon: (
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#a855f7" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                        <circle cx="8.5" cy="7" r="4" />
-                        <line x1="20" y1="8" x2="20" y2="14" />
-                        <line x1="23" y1="11" x2="17" y2="11" />
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                        <circle cx="12" cy="12" r="3" />
                     </svg>
                 ),
                 badgeBg: "rgba(168, 85, 247, 0.15)",
                 badgeBorder: "rgba(168, 85, 247, 0.3)",
-                link: "/network",
+                link: item.sender?.username ? `/users/${item.sender.username}` : "/feed",
             };
-        case "connection_accept":
+        case "new_post":
             return {
-                title: `${senderName} accepted your connection request`,
+                title: `${senderName} shared a new post`,
                 icon: (
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                        <circle cx="8.5" cy="7" r="4" />
-                        <polyline points="17 11 19 13 23 9" />
+                        <path d="M12 20h9" />
+                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
                     </svg>
                 ),
                 badgeBg: "rgba(16, 185, 129, 0.15)",
                 badgeBorder: "rgba(16, 185, 129, 0.3)",
-                link: item.sender?.username ? `/users/${item.sender.username}` : "/network",
+                link: item.post ? `/feed?post=${item.post._id || item.post}` : "/feed",
+            };
+        case "mention_post":
+            return {
+                title: `${senderName} mentioned you in a post`,
+                icon: (
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#eab308" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="4" />
+                        <path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94" />
+                    </svg>
+                ),
+                badgeBg: "rgba(234, 179, 8, 0.15)",
+                badgeBorder: "rgba(234, 179, 8, 0.3)",
+                link: item.post ? `/feed?post=${item.post._id || item.post}` : "/feed",
+            };
+        case "mention_comment":
+            return {
+                title: `${senderName} mentioned you in a comment`,
+                icon: (
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#eab308" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="4" />
+                        <path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94" />
+                    </svg>
+                ),
+                badgeBg: "rgba(234, 179, 8, 0.15)",
+                badgeBorder: "rgba(234, 179, 8, 0.3)",
+                link: item.post
+                    ? `/feed?post=${item.post._id || item.post}&comment=${item.commentId || ""}${item.replied ? "&viewReplies=true" : "&reply=true"}`
+                    : "/feed",
+                canReply: true,
+                isReplied: Boolean(item.replied),
             };
         default:
             return {
@@ -200,8 +227,8 @@ const Notifications_Page = () => {
 
     const filteredNotifications = notifications.filter((n) => {
         if (activeTab === "likes") return n.type?.startsWith("like_");
-        if (activeTab === "comments") return n.type === "comment_post" || n.type === "reply_comment";
-        if (activeTab === "network") return n.type?.startsWith("connection_");
+        if (activeTab === "comments") return n.type === "comment_post" || n.type === "reply_comment" || n.type?.startsWith("mention_");
+        if (activeTab === "activities") return n.type === "profile_view" || n.type === "new_post";
         return true;
     });
 
@@ -224,7 +251,7 @@ const Notifications_Page = () => {
                             <h1 className="notifications-page-title">Notifications</h1>
                         </div>
                         <p className="notifications-page-subtitle">
-                            Stay up to date with interactions on your posts and campus network.
+                            Stay up to date with interactions on your posts, mentions, and profile views.
                         </p>
                     </div>
 
@@ -264,14 +291,14 @@ const Notifications_Page = () => {
                         className={`notifications-tab-btn ${activeTab === "comments" ? "active" : ""}`}
                         onClick={() => setActiveTab("comments")}
                     >
-                        Comments & Replies
+                        Comments & Mentions
                     </button>
                     <button
                         type="button"
-                        className={`notifications-tab-btn ${activeTab === "network" ? "active" : ""}`}
-                        onClick={() => setActiveTab("network")}
+                        className={`notifications-tab-btn ${activeTab === "activities" ? "active" : ""}`}
+                        onClick={() => setActiveTab("activities")}
                     >
-                        Network
+                        Views & Posts
                     </button>
                 </div>
 

@@ -131,6 +131,18 @@ export const getUserByUsername = async (req, res) => {
                         viewedAt: new Date(),
                     });
                     await user.save();
+
+                    // Notify user that someone viewed their profile
+                    try {
+                        await Notification.create({
+                            recipient: user._id,
+                            sender: req.user._id,
+                            type: "profile_view",
+                            contentPreview: "viewed your profile",
+                        });
+                    } catch (notifErr) {
+                        console.error("Failed to create profile view notification:", notifErr);
+                    }
                 } else {
                     // Already viewed before -> Update timestamp without increasing count
                     user.profileViewers[existingViewerIndex].viewedAt = new Date();
