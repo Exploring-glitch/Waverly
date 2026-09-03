@@ -247,7 +247,7 @@ export const getUsersByCity = async (req, res) => {
 export const getRecommendedUsers = async (req, res) => {
     try {
         const users = await User.find({ _id: { $ne: req.user._id } })
-            .select("name username profilePic bio collegeName companyName additionalName");
+            .select("name username profilePic coverPic bio collegeName companyName additionalName");
         const usersWithStatus = await addConnectionStatuses(users, req.user._id);
         res.status(200).json(usersWithStatus);
     } catch (err) {
@@ -287,7 +287,7 @@ export const getProfileViewers = async (req, res) => {
     try {
         const user = await User.findById(req.user._id).populate({
             path: "profileViewers.viewer",
-            select: "name username profilePic bio collegeName companyName additionalName",
+            select: "name username profilePic coverPic bio collegeName companyName additionalName",
         });
 
         if (!user) {
@@ -327,7 +327,7 @@ export const getUserConnections = async (req, res) => {
                 { sender: user._id },
                 { recipient: user._id }
             ]
-        }).populate("sender recipient", "name username profilePic bio collegeName companyName additionalName");
+        }).populate("sender recipient", "name username profilePic coverPic bio collegeName companyName additionalName");
 
         const list = connections.map(conn => {
             if (conn.sender._id.toString() === user._id.toString()) {
@@ -447,7 +447,7 @@ export const getReceivedConnections = async (req, res) => {
         const requests = await Connection.find({
             recipient: req.user._id,
             status: "pending"
-        }).populate("sender", "name username profilePic bio collegeName companyName additionalName");
+        }).populate("sender", "name username profilePic coverPic bio collegeName companyName additionalName");
 
         res.status(200).json(requests);
     } catch (err) {
@@ -461,7 +461,7 @@ export const getSentConnections = async (req, res) => {
         const requests = await Connection.find({
             sender: req.user._id,
             status: "pending"
-        }).populate("recipient", "name username profilePic bio collegeName companyName additionalName");
+        }).populate("recipient", "name username profilePic coverPic bio collegeName companyName additionalName");
 
         res.status(200).json(requests);
     } catch (err) {

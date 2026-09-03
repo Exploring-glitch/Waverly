@@ -219,7 +219,14 @@ const MyNetwork_Page = () => {
             >
                 <div className="network-card-banner">
                     {person.coverPic ? (
-                        <img src={person.coverPic} alt="" className="network-card-banner-img" />
+                        <img
+                            src={person.coverPic}
+                            alt=""
+                            className="network-card-banner-img"
+                            onError={(e) => {
+                                e.currentTarget.style.display = "none";
+                            }}
+                        />
                     ) : (
                         <div className="network-card-banner-glow" />
                     )}
