@@ -131,6 +131,7 @@ export const notificationApi = {
     getNotifications: () => request("/api/notifications"),
     getUnreadCount: () => request("/api/notifications/unread-count"),
     markAsRead: (id) => request(`/api/notifications/${id}/read`, { method: "PUT" }),
+    markAsReplied: (id) => request(`/api/notifications/${id}/replied`, { method: "PUT" }),
     markAllAsRead: () => request("/api/notifications/read-all", { method: "PUT" }),
     deleteNotification: (id) => request(`/api/notifications/${id}`, { method: "DELETE" }),
     clearAll: () => request("/api/notifications", { method: "DELETE" }),

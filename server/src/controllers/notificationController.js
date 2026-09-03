@@ -6,11 +6,54 @@ export const getNotifications = async (req, res) => {
             .sort({ createdAt: -1 })
             .limit(50)
             .populate("sender", "name username profilePic additionalName")
-            .populate("post", "content image");
+            .populate({
+                path: "post",
+                select: "content image comments",
+            });
 
-        res.status(200).json(notifications);
+        const currentUserIdStr = req.user._id.toString();
+
+        const formatted = notifications.map((item) => {
+            const notifObj = item.toObject();
+            let isReplied = notifObj.replied || false;
+
+            if (!isReplied && notifObj.commentId && notifObj.post && Array.isArray(notifObj.post.comments)) {
+                const comment = notifObj.post.comments.find(
+                    (c) => c._id?.toString() === notifObj.commentId.toString()
+                );
+                if (comment && Array.isArray(comment.replies)) {
+                    const hasMyReply = comment.replies.some(
+                        (r) => (r.author?._id || r.author)?.toString() === currentUserIdStr
+                    );
+                    if (hasMyReply) {
+                        isReplied = true;
+                    }
+                }
+            }
+
+            return {
+                ...notifObj,
+                replied: isReplied,
+            };
+        });
+
+        res.status(200).json(formatted);
     } catch (err) {
         console.error("Error fetching notifications:", err);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+export const markAsReplied = async (req, res) => {
+    try {
+        const notification = await Notification.findOneAndUpdate(
+            { _id: req.params.id, recipient: req.user._id },
+            { replied: true },
+            { new: true }
+        );
+        res.status(200).json({ message: "Marked as replied", notification });
+    } catch (err) {
+        console.error("Error marking notification as replied:", err);
         res.status(500).json({ message: "Internal server error" });
     }
 };

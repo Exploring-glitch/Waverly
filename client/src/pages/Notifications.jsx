@@ -47,7 +47,11 @@ const getNotificationMeta = (item) => {
                 ),
                 badgeBg: "rgba(56, 189, 248, 0.15)",
                 badgeBorder: "rgba(56, 189, 248, 0.3)",
-                link: item.post ? `/feed?post=${item.post._id || item.post}` : "/feed",
+                link: item.post
+                    ? `/feed?post=${item.post._id || item.post}&comment=${item.commentId || ""}${item.replied ? "&viewReplies=true" : "&reply=true"}`
+                    : "/feed",
+                canReply: true,
+                isReplied: Boolean(item.replied),
             };
         case "reply_comment":
             return {
@@ -60,7 +64,11 @@ const getNotificationMeta = (item) => {
                 ),
                 badgeBg: "rgba(129, 140, 248, 0.15)",
                 badgeBorder: "rgba(129, 140, 248, 0.3)",
-                link: item.post ? `/feed?post=${item.post._id || item.post}` : "/feed",
+                link: item.post
+                    ? `/feed?post=${item.post._id || item.post}&comment=${item.commentId || ""}${item.replied ? "&viewReplies=true" : "&reply=true"}`
+                    : "/feed",
+                canReply: true,
+                isReplied: Boolean(item.replied),
             };
         case "like_comment":
             return {
@@ -340,18 +348,49 @@ const Notifications_Page = () => {
                                         </div>
                                     </div>
 
-                                    {/* Delete action */}
-                                    <button
-                                        type="button"
-                                        className="notif-delete-btn"
-                                        onClick={(e) => handleDeleteNotification(e, item._id)}
-                                        title="Delete notification"
-                                    >
-                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <line x1="18" y1="6" x2="6" y2="18" />
-                                            <line x1="6" y1="6" x2="18" y2="18" />
-                                        </svg>
-                                    </button>
+                                    {/* Action buttons */}
+                                    <div className="notif-card-actions-group">
+                                        {meta.canReply && (
+                                            <button
+                                                type="button"
+                                                className={`notif-reply-pill-btn ${meta.isReplied ? "view-reply" : ""}`}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    if (meta.link) navigate(meta.link);
+                                                }}
+                                                title={meta.isReplied ? "View your reply" : "Reply to comment"}
+                                            >
+                                                {meta.isReplied ? (
+                                                    <>
+                                                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                                            <circle cx="12" cy="12" r="3" />
+                                                        </svg>
+                                                        <span>View reply</span>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                                                            <polyline points="9 14 4 9 9 4" />
+                                                            <path d="M20 20v-7a4 4 0 0 0-4-4H4" />
+                                                        </svg>
+                                                        <span>Reply</span>
+                                                    </>
+                                                )}
+                                            </button>
+                                        )}
+                                        <button
+                                            type="button"
+                                            className="notif-delete-btn"
+                                            onClick={(e) => handleDeleteNotification(e, item._id)}
+                                            title="Delete notification"
+                                        >
+                                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <line x1="18" y1="6" x2="6" y2="18" />
+                                                <line x1="6" y1="6" x2="18" y2="18" />
+                                            </svg>
+                                        </button>
+                                    </div>
                                 </div>
                             );
                         })}

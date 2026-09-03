@@ -193,11 +193,20 @@ const ReplyItem = ({ reply, postId, commentId, currentUserId, onCommentsUpdate, 
     );
 };
 
-const CommentItem = ({ comment, postId, currentUserId, currentUserProfilePic, onCommentsUpdate }) => {
+const CommentItem = ({
+    comment,
+    postId,
+    currentUserId,
+    currentUserProfilePic,
+    onCommentsUpdate,
+    isTargetComment,
+    autoReply,
+    viewReplies
+}) => {
     const [isEditing, setIsEditing] = useState(false);
     const [editText, setEditText] = useState(comment.content || "");
     const [showReplyForm, setShowReplyForm] = useState(false);
-    const [showRepliesList, setShowRepliesList] = useState(false);
+    const [showRepliesList, setShowRepliesList] = useState(Boolean(isTargetComment && viewReplies));
     const [replyText, setReplyText] = useState("");
     const [isSubmittingReply, setIsSubmittingReply] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -208,6 +217,33 @@ const CommentItem = ({ comment, postId, currentUserId, currentUserProfilePic, on
     const likes = comment.likes || [];
     const isCommentLiked = currentUserId && likes.includes(currentUserId);
     const replies = comment.replies || [];
+
+    useEffect(() => {
+        if (isTargetComment) {
+            if (autoReply) {
+                setShowReplyForm(true);
+                setShowRepliesList(true);
+                if (commentAuthor.username) {
+                    setReplyText(`@${commentAuthor.username} `);
+                }
+            } else if (viewReplies) {
+                setShowRepliesList(true);
+                setShowReplyForm(false);
+            }
+            const timer = setTimeout(() => {
+                const commentEl = document.getElementById(`comment-${comment._id}`);
+                if (commentEl) {
+                    commentEl.scrollIntoView({ behavior: "smooth", block: "center" });
+                    commentEl.classList.add("target-comment-highlight");
+                    setTimeout(() => commentEl.classList.remove("target-comment-highlight"), 3500);
+                }
+                if (autoReply) {
+                    replyInputRef.current?.focus();
+                }
+            }, 350);
+            return () => clearTimeout(timer);
+        }
+    }, [isTargetComment, autoReply, viewReplies, commentAuthor.username, comment._id]);
 
     const handleLike = async () => {
         try {
@@ -270,7 +306,7 @@ const CommentItem = ({ comment, postId, currentUserId, currentUserProfilePic, on
     };
 
     return (
-        <div className="feed-comment-item-wrapper">
+        <div className="feed-comment-item-wrapper" id={`comment-${comment._id}`}>
             <div className="feed-comment-item">
                 <Link to={`/users/${commentAuthor.username || ""}`}>
                     <img
@@ -453,11 +489,11 @@ const CommentItem = ({ comment, postId, currentUserId, currentUserProfilePic, on
     );
 };
 
-const PostCard = ({ post, onDelete, onUpdate, onSaveToggle }) => {
+const PostCard = ({ post, onDelete, onUpdate, onSaveToggle, targetCommentId, autoReply, viewReplies }) => {
     const { user } = useAuth();
     const [likes, setLikes] = useState(post.likes || []);
     const [comments, setComments] = useState(post.comments || []);
-    const [showComments, setShowComments] = useState(false);
+    const [showComments, setShowComments] = useState(Boolean(targetCommentId));
     const [newCommentText, setNewCommentText] = useState("");
     const [isSubmittingComment, setIsSubmittingComment] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
@@ -481,6 +517,12 @@ const PostCard = ({ post, onDelete, onUpdate, onSaveToggle }) => {
         (total, c) => total + 1 + (c.replies ? c.replies.length : 0),
         0
     );
+
+    useEffect(() => {
+        if (targetCommentId) {
+            setShowComments(true);
+        }
+    }, [targetCommentId]);
 
     useEffect(() => {
         try {
@@ -853,6 +895,9 @@ const PostCard = ({ post, onDelete, onUpdate, onSaveToggle }) => {
                                     currentUserId={user?._id}
                                     currentUserProfilePic={user?.profilePic}
                                     onCommentsUpdate={handleCommentsUpdate}
+                                    isTargetComment={targetCommentId === comment._id}
+                                    autoReply={targetCommentId === comment._id && autoReply}
+                                    viewReplies={targetCommentId === comment._id && viewReplies}
                                 />
                             ))}
                         </div>

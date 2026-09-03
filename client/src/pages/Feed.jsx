@@ -29,6 +29,9 @@ const Feed_Page = () => {
     const [isFetchingViewers, setIsFetchingViewers] = useState(false);
 
     const targetPostId = searchParams.get("post") || (location.hash ? location.hash.replace("#post-", "") : null);
+    const targetCommentId = searchParams.get("comment");
+    const autoReply = searchParams.get("reply") === "true";
+    const viewReplies = searchParams.get("viewReplies") === "true";
 
     const recommendedJobs = [
         { id: "j1", title: "Software Engineer Intern", company: "Google", location: "Mountain View, CA", type: "Hybrid", logoBg: "#ea4335", initials: "G" },
@@ -401,6 +404,9 @@ const Feed_Page = () => {
                                 <PostCard
                                     key={post._id}
                                     post={post}
+                                    targetCommentId={targetPostId === post._id ? targetCommentId : null}
+                                    autoReply={targetPostId === post._id && autoReply}
+                                    viewReplies={targetPostId === post._id && viewReplies}
                                     onDelete={handlePostDelete}
                                     onUpdate={handlePostUpdate}
                                 />

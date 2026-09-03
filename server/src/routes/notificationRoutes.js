@@ -4,6 +4,7 @@ import {
     getNotifications,
     getUnreadCount,
     markAsRead,
+    markAsReplied,
     markAllAsRead,
     deleteNotification,
     clearAllNotifications,
@@ -15,6 +16,7 @@ notificationRouter.get("/", protect, getNotifications);
 notificationRouter.get("/unread-count", protect, getUnreadCount);
 notificationRouter.put("/read-all", protect, markAllAsRead);
 notificationRouter.put("/:id/read", protect, markAsRead);
+notificationRouter.put("/:id/replied", protect, markAsReplied);
 notificationRouter.delete("/:id", protect, deleteNotification);
 notificationRouter.delete("/", protect, clearAllNotifications);
 

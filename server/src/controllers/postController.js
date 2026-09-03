@@ -313,6 +313,20 @@ export const replyComment = async (req, res) => {
             }
         }
 
+        // Mark any notification for the current user regarding this comment/post as replied
+        try {
+            await Notification.updateMany(
+                {
+                    recipient: req.user._id,
+                    post: post._id,
+                    commentId: comment._id,
+                },
+                { replied: true }
+            );
+        } catch (notifErr) {
+            console.error("Failed to update replied status on notification:", notifErr);
+        }
+
         const populatedPost = await Post.findById(post._id)
             .populate({
                 path: "comments.author",

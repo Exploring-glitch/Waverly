@@ -48,6 +48,10 @@ const notificationSchema = new mongoose.Schema(
             default: false,
             index: true,
         },
+        replied: {
+            type: Boolean,
+            default: false,
+        },
     },
     {
         timestamps: true,
