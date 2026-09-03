@@ -19,13 +19,17 @@ const Navbar = () => {
         if (!user) return;
 
         // Check general notifications count (likes, comments, replies, connections)
-        try {
-            const countData = await notificationApi.getUnreadCount();
-            if (countData && typeof countData.unreadCount === "number") {
-                setUnreadNotifCount(countData.unreadCount);
+        if (location.pathname === "/notifications") {
+            setUnreadNotifCount(0);
+        } else {
+            try {
+                const countData = await notificationApi.getUnreadCount();
+                if (countData && typeof countData.unreadCount === "number") {
+                    setUnreadNotifCount(countData.unreadCount);
+                }
+            } catch (err) {
+                console.error("Failed to fetch unread notification count", err);
             }
-        } catch (err) {
-            console.error("Failed to fetch unread notification count", err);
         }
 
         try {
@@ -104,11 +108,15 @@ const Navbar = () => {
         checkNotifications();
 
         const handleFocus = () => checkNotifications();
+        const handleNotifsRead = () => setUnreadNotifCount(0);
+
         window.addEventListener("focus", handleFocus);
+        window.addEventListener("notifications_read", handleNotifsRead);
         const intervalId = setInterval(checkNotifications, 20000);
 
         return () => {
             window.removeEventListener("focus", handleFocus);
+            window.removeEventListener("notifications_read", handleNotifsRead);
             clearInterval(intervalId);
         };
     }, [user, checkNotifications]);

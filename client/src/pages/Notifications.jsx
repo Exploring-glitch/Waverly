@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { notificationApi } from "../services/api";
-import Button from "../components/Button";
 
 function timeAgo(dateString) {
     if (!dateString) return "";
@@ -145,6 +144,14 @@ const Notifications_Page = () => {
         try {
             const data = await notificationApi.getNotifications();
             setNotifications(data || []);
+
+            // Automatically mark all notifications as read upon opening
+            try {
+                await notificationApi.markAllAsRead();
+                window.dispatchEvent(new Event("notifications_read"));
+            } catch (readErr) {
+                console.error("Failed to auto-mark notifications as read:", readErr);
+            }
         } catch (err) {
             console.error("Failed to load notifications:", err);
         } finally {
@@ -156,15 +163,6 @@ const Notifications_Page = () => {
         fetchNotifications();
     }, [fetchNotifications]);
 
-    const handleMarkAllRead = async () => {
-        try {
-            await notificationApi.markAllAsRead();
-            setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-        } catch (err) {
-            console.error("Failed to mark all as read:", err);
-        }
-    };
-
     const handleClearAll = async () => {
         if (!window.confirm("Are you sure you want to clear all notifications?")) return;
         try {
@@ -175,18 +173,8 @@ const Notifications_Page = () => {
         }
     };
 
-    const handleNotificationClick = async (item) => {
+    const handleNotificationClick = (item) => {
         const meta = getNotificationMeta(item);
-        if (!item.read) {
-            try {
-                await notificationApi.markAsRead(item._id);
-                setNotifications((prev) =>
-                    prev.map((n) => (n._id === item._id ? { ...n, read: true } : n))
-                );
-            } catch (err) {
-                console.error("Failed to mark as read:", err);
-            }
-        }
         if (meta.link) {
             navigate(meta.link);
         }
@@ -202,10 +190,7 @@ const Notifications_Page = () => {
         }
     };
 
-    const unreadCount = notifications.filter((n) => !n.read).length;
-
     const filteredNotifications = notifications.filter((n) => {
-        if (activeTab === "unread") return !n.read;
         if (activeTab === "likes") return n.type?.startsWith("like_");
         if (activeTab === "comments") return n.type === "comment_post" || n.type === "reply_comment";
         if (activeTab === "network") return n.type?.startsWith("connection_");
@@ -229,11 +214,6 @@ const Notifications_Page = () => {
                     <div className="notifications-header-left">
                         <div className="notifications-header-title-group">
                             <h1 className="notifications-page-title">Notifications</h1>
-                            {unreadCount > 0 && (
-                                <span className="notifications-unread-pill">
-                                    {unreadCount} new
-                                </span>
-                            )}
                         </div>
                         <p className="notifications-page-subtitle">
                             Stay up to date with interactions on your posts and campus network.
@@ -241,18 +221,6 @@ const Notifications_Page = () => {
                     </div>
 
                     <div className="notifications-header-actions">
-                        {unreadCount > 0 && (
-                            <Button
-                                variant="secondary"
-                                onClick={handleMarkAllRead}
-                                className="btn-sm"
-                            >
-                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <polyline points="20 6 9 17 4 12" />
-                                </svg>
-                                Mark all read
-                            </Button>
-                        )}
                         {notifications.length > 0 && (
                             <button
                                 type="button"
@@ -275,14 +243,6 @@ const Notifications_Page = () => {
                     >
                         All
                         <span className="tab-count">{notifications.length}</span>
-                    </button>
-                    <button
-                        type="button"
-                        className={`notifications-tab-btn ${activeTab === "unread" ? "active" : ""}`}
-                        onClick={() => setActiveTab("unread")}
-                    >
-                        Unread
-                        {unreadCount > 0 && <span className="tab-count highlight">{unreadCount}</span>}
                     </button>
                     <button
                         type="button"
@@ -316,7 +276,7 @@ const Notifications_Page = () => {
                             return (
                                 <div
                                     key={item._id}
-                                    className={`notification-card-item ${!item.read ? "unread" : ""}`}
+                                    className="notification-card-item"
                                     onClick={() => handleNotificationClick(item)}
                                     role="button"
                                     tabIndex={0}
@@ -377,7 +337,6 @@ const Notifications_Page = () => {
 
                                         <div className="notif-timestamp-row">
                                             <span className="notif-time-ago">{timeAgo(item.createdAt)}</span>
-                                            {!item.read && <span className="notif-unread-dot" />}
                                         </div>
                                     </div>
 
