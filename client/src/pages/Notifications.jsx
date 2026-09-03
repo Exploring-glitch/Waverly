@@ -234,6 +234,9 @@ const Notifications_Page = () => {
     };
 
     const handleNotificationClick = (item) => {
+        setNotifications((prev) =>
+            prev.map((n) => (n._id === item._id ? { ...n, read: true } : n))
+        );
         const meta = getNotificationMeta(item);
         if (meta.link) {
             navigate(meta.link);
@@ -391,6 +394,9 @@ const Notifications_Page = () => {
                                                     </div>
 
                                                     <div className="ig-action-wrap">
+                                                        {!item.read && (
+                                                            <span className="ig-unread-dot" title="New activity" />
+                                                        )}
                                                         {meta.canReply ? (
                                                             <button
                                                                 type="button"
