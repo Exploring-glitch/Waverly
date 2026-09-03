@@ -49,7 +49,13 @@ export const createPost = async (req, res) => {
                 emitToUsers(connectedUserIds, "new_notification", {
                     type: "new_post",
                     postId: newPost._id,
-                    sender: req.user._id,
+                    sender: {
+                        _id: req.user._id,
+                        name: req.user.name,
+                        username: req.user.username,
+                        profilePic: req.user.profilePic,
+                    },
+                    contentPreview: content ? content.trim().slice(0, 100) : "shared a new post",
                 });
             }
         } catch (connNotifErr) {
@@ -74,6 +80,13 @@ export const createPost = async (req, res) => {
                         emitToUser(mentionedUser._id, "new_notification", {
                             notification: notif,
                             type: "mention_post",
+                            sender: {
+                                _id: req.user._id,
+                                name: req.user.name,
+                                username: req.user.username,
+                                profilePic: req.user.profilePic,
+                            },
+                            postId: newPost._id,
                         });
                     }
                 }
@@ -211,6 +224,13 @@ export const likePost = async (req, res) => {
                     emitToUser(post.author, "new_notification", {
                         notification: notif,
                         type: "like_post",
+                        sender: {
+                            _id: req.user._id,
+                            name: req.user.name,
+                            username: req.user.username,
+                            profilePic: req.user.profilePic,
+                        },
+                        postId: post._id,
                     });
                 } catch (notifErr) {
                     console.error("Failed to create like notification:", notifErr);
@@ -266,6 +286,14 @@ export const commentPost = async (req, res) => {
                 emitToUser(post.author, "new_notification", {
                     notification: notif,
                     type: "comment_post",
+                    sender: {
+                        _id: req.user._id,
+                        name: req.user.name,
+                        username: req.user.username,
+                        profilePic: req.user.profilePic,
+                    },
+                    postId: post._id,
+                    commentId: addedComment?._id,
                 });
             } catch (notifErr) {
                 console.error("Failed to create comment notification:", notifErr);
@@ -296,6 +324,14 @@ export const commentPost = async (req, res) => {
                         emitToUser(mentionedUser._id, "new_notification", {
                             notification: notif,
                             type: "mention_comment",
+                            sender: {
+                                _id: req.user._id,
+                                name: req.user.name,
+                                username: req.user.username,
+                                profilePic: req.user.profilePic,
+                            },
+                            postId: post._id,
+                            commentId: addedComment?._id,
                         });
                     }
                 }
@@ -415,9 +451,52 @@ export const replyComment = async (req, res) => {
                 emitToUser(comment.author, "new_notification", {
                     notification: notif,
                     type: "reply_comment",
+                    sender: {
+                        _id: req.user._id,
+                        name: req.user.name,
+                        username: req.user.username,
+                        profilePic: req.user.profilePic,
+                    },
+                    postId: post._id,
+                    commentId: comment._id,
+                    replyId: addedReply?._id,
                 });
             } catch (notifErr) {
                 console.error("Failed to create reply notification:", notifErr);
+            }
+        }
+
+        // Also notify the post author if they are not the replier and not the comment author
+        if (
+            post.author.toString() !== req.user._id.toString() &&
+            post.author.toString() !== comment.author.toString()
+        ) {
+            try {
+                const addedReply = comment.replies[comment.replies.length - 1];
+                const postAuthorNotif = await Notification.create({
+                    recipient: post.author,
+                    sender: req.user._id,
+                    type: "comment_post",
+                    post: post._id,
+                    commentId: comment._id,
+                    replyId: addedReply?._id,
+                    contentPreview: content.trim().substring(0, 80),
+                });
+                emitToUser(post.author, "new_notification", {
+                    notification: postAuthorNotif,
+                    type: "comment_post",
+                    sender: {
+                        _id: req.user._id,
+                        name: req.user.name,
+                        username: req.user.username,
+                        profilePic: req.user.profilePic,
+                    },
+                    postId: post._id,
+                    commentId: comment._id,
+                    replyId: addedReply?._id,
+                });
+            } catch (postAuthorNotifErr) {
+                console.error("Failed to notify post author on reply:", postAuthorNotifErr);
             }
         }
 
@@ -446,6 +525,15 @@ export const replyComment = async (req, res) => {
                         emitToUser(mentionedUser._id, "new_notification", {
                             notification: notif,
                             type: "mention_comment",
+                            sender: {
+                                _id: req.user._id,
+                                name: req.user.name,
+                                username: req.user.username,
+                                profilePic: req.user.profilePic,
+                            },
+                            postId: post._id,
+                            commentId: comment._id,
+                            replyId: addedReply?._id,
                         });
                     }
                 }
@@ -481,6 +569,79 @@ export const replyComment = async (req, res) => {
 
         res.status(201).json({
             message: "Reply added successfully",
+            comments: populatedPost.comments
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+export const likeComment = async (req, res) => {
+    try {
+        const post = await Post.findById(req.params.id);
+        if (!post) {
+            return res.status(404).json({ message: "Post not found" });
+        }
+
+        const comment = post.comments.id(req.params.commentId);
+        if (!comment) {
+            return res.status(404).json({ message: "Comment not found" });
+        }
+
+        if (!comment.likes) {
+            comment.likes = [];
+        }
+
+        const userId = req.user._id;
+        const likeIndex = comment.likes.indexOf(userId);
+
+        if (likeIndex === -1) {
+            comment.likes.push(userId);
+            if (comment.author.toString() !== userId.toString()) {
+                try {
+                    const notif = await Notification.create({
+                        recipient: comment.author,
+                        sender: userId,
+                        type: "like_comment",
+                        post: post._id,
+                        commentId: comment._id,
+                        contentPreview: comment.content ? comment.content.substring(0, 80) : "",
+                    });
+                    emitToUser(comment.author, "new_notification", {
+                        notification: notif,
+                        type: "like_comment",
+                        sender: {
+                            _id: req.user._id,
+                            name: req.user.name,
+                            username: req.user.username,
+                            profilePic: req.user.profilePic,
+                        },
+                        postId: post._id,
+                        commentId: comment._id,
+                    });
+                } catch (notifErr) {
+                    console.error("Failed to create comment like notification:", notifErr);
+                }
+            }
+        } else {
+            comment.likes.splice(likeIndex, 1);
+        }
+
+        await post.save();
+
+        const populatedPost = await Post.findById(post._id)
+            .populate({
+                path: "comments.author",
+                select: "name username profilePic additionalName"
+            })
+            .populate({
+                path: "comments.replies.author",
+                select: "name username profilePic additionalName"
+            });
+
+        res.status(200).json({
+            message: "Comment like status updated successfully",
             comments: populatedPost.comments
         });
     } catch (err) {
@@ -613,6 +774,15 @@ export const likeReply = async (req, res) => {
                     emitToUser(reply.author, "new_notification", {
                         notification: notif,
                         type: "like_reply",
+                        sender: {
+                            _id: req.user._id,
+                            name: req.user.name,
+                            username: req.user.username,
+                            profilePic: req.user.profilePic,
+                        },
+                        postId: post._id,
+                        commentId: comment._id,
+                        replyId: reply._id,
                     });
                 } catch (notifErr) {
                     console.error("Failed to create reply like notification:", notifErr);

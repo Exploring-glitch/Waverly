@@ -205,13 +205,6 @@ const Notifications_Page = () => {
         try {
             const data = await notificationApi.getNotifications();
             setNotifications(data || []);
-
-            try {
-                await notificationApi.markAllAsRead();
-                window.dispatchEvent(new Event("notifications_read"));
-            } catch (readErr) {
-                console.error("Failed to auto-mark notifications as read:", readErr);
-            }
         } catch (err) {
             console.error("Failed to load notifications:", err);
         } finally {
@@ -230,6 +223,16 @@ const Notifications_Page = () => {
         return () => window.removeEventListener("socket_new_notification", handleRealtimeNewNotif);
     }, [fetchNotifications]);
 
+    const handleMarkAllAsRead = async () => {
+        try {
+            await notificationApi.markAllAsRead();
+            setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+            window.dispatchEvent(new Event("notifications_read"));
+        } catch (err) {
+            console.error("Failed to mark all notifications as read:", err);
+        }
+    };
+
     const handleClearAll = async () => {
         if (!window.confirm("Are you sure you want to clear all notifications?")) return;
         try {
@@ -240,10 +243,18 @@ const Notifications_Page = () => {
         }
     };
 
-    const handleNotificationClick = (item) => {
-        setNotifications((prev) =>
-            prev.map((n) => (n._id === item._id ? { ...n, read: true } : n))
-        );
+    const handleNotificationClick = async (item) => {
+        if (!item.read) {
+            setNotifications((prev) =>
+                prev.map((n) => (n._id === item._id ? { ...n, read: true } : n))
+            );
+            try {
+                await notificationApi.markAsRead(item._id);
+                window.dispatchEvent(new Event("notifications_read"));
+            } catch (err) {
+                console.error("Failed to mark notification as read:", err);
+            }
+        }
         const meta = getNotificationMeta(item);
         if (meta.link) {
             navigate(meta.link);
@@ -267,6 +278,8 @@ const Notifications_Page = () => {
         return true;
     });
 
+    const unreadCount = notifications.filter((n) => !n.read).length;
+
     const groupedNotifications = filteredNotifications.reduce((acc, item) => {
         const section = getNotificationSection(item.createdAt);
         if (!acc[section]) acc[section] = [];
@@ -288,17 +301,41 @@ const Notifications_Page = () => {
 
                 <div className="ig-notif-header">
                     <div className="ig-notif-header-title-row">
-                        <h1 className="ig-notif-title">Notifications</h1>
-                        {notifications.length > 0 && (
-                            <button
-                                type="button"
-                                className="ig-notif-clear-btn"
-                                onClick={handleClearAll}
-                                title="Clear all"
-                            >
-                                Clear all
-                            </button>
-                        )}
+                        <div className="ig-notif-title-group">
+                            <h1 className="ig-notif-title">Notifications</h1>
+                            {unreadCount > 0 && (
+                                <span className="ig-unread-header-pill">
+                                    {unreadCount} new
+                                </span>
+                            )}
+                        </div>
+
+                        <div className="ig-notif-header-actions">
+                            {unreadCount > 0 && (
+                                <button
+                                    type="button"
+                                    className="ig-notif-mark-read-btn"
+                                    onClick={handleMarkAllAsRead}
+                                    title="Mark all notifications as read"
+                                >
+                                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                                        <polyline points="20 6 9 17 4 12" />
+                                    </svg>
+                                    <span>Mark all read</span>
+                                </button>
+                            )}
+
+                            {notifications.length > 0 && (
+                                <button
+                                    type="button"
+                                    className="ig-notif-clear-btn"
+                                    onClick={handleClearAll}
+                                    title="Clear all"
+                                >
+                                    Clear all
+                                </button>
+                            )}
+                        </div>
                     </div>
 
                     <div className="ig-notif-filters">

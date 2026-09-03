@@ -17,11 +17,13 @@ import SavedPosts_Page from "./pages/SavedPosts.jsx";
 import LikedPosts_Page from "./pages/LikedPosts.jsx";
 import CommentedPosts_Page from "./pages/CommentedPosts.jsx";
 import Notifications_Page from "./pages/Notifications.jsx";
+import NotificationToast from "./components/NotificationToast";
 
 const App = () => {
     return (
         <AuthProvider>
             <Navbar />
+            <NotificationToast />
             <Routes>
                 <Route path="/" element={<Home_Page />} />
                 <Route path="/login" element={<Login_Page />} />
