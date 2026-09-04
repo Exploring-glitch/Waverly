@@ -440,6 +440,16 @@ const MyNetwork_Page = () => {
 
                         <button
                             type="button"
+                            className="network-filter-tab network-connections-tab-btn"
+                            onClick={handleOpenConnections}
+                            title="View your connections"
+                        >
+                            <span>👥 Connections</span>
+                            <span className="tab-count-badge">{totalConnectionsCount}</span>
+                        </button>
+
+                        <button
+                            type="button"
                             className={`network-filter-tab ${activeTab === "received" ? "active" : ""}`}
                             onClick={() => setActiveTab("received")}
                         >
