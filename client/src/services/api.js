@@ -1,9 +1,11 @@
+const BACKEND_URL = import.meta.env.VITE_API_URL || "";
 const API_BASE = "/api/auth";
 
 async function request(endpoint, options = {}) {
     const token = localStorage.getItem("token");
 
-    const url = endpoint.startsWith("/api") ? endpoint : `${API_BASE}${endpoint}`;
+    const path = endpoint.startsWith("/api") ? endpoint : `${API_BASE}${endpoint}`;
+    const url = `${BACKEND_URL}${path}`
 
     const res = await fetch(url, {
         ...options,
