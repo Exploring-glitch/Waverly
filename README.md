@@ -1,10 +1,10 @@
-# 🌐 Waverly
-
 <div align="center">
 
-![Waverly Banner](https://raw.githubusercontent.com/Exploring-glitch/Waverly/main/client/public/vite.svg)
+  <img src="./client/public/logo.svg" alt="Waverly Logo" width="54" height="54" />
 
-### *A Modern, Real-Time Professional & Alumni Networking Platform*
+  # Waverly
+
+  <p><strong>A Modern, Real-Time Professional & Alumni Networking Platform</strong></p>
 
 [![React](https://img.shields.io/badge/React-19.2-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![Node.js](https://img.shields.io/badge/Node.js-LTS-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
