@@ -5,7 +5,7 @@ async function request(endpoint, options = {}) {
     const token = localStorage.getItem("token");
 
     const path = endpoint.startsWith("/api") ? endpoint : `${API_BASE}${endpoint}`;
-    const url = `${BACKEND_URL}${path}`
+    const url = `${BACKEND_URL}${path}`;
 
     const res = await fetch(url, {
         ...options,
@@ -16,7 +16,15 @@ async function request(endpoint, options = {}) {
         },
     });
 
-    const data = await res.json();
+    // Safely parse JSON or fallback to text/status message
+    const contentType = res.headers.get("content-type");
+    let data;
+    if (contentType && contentType.includes("application/json")) {
+        data = await res.json();
+    } else {
+        const text = await res.text();
+        throw new Error(`Server returned ${res.status} (${res.statusText}): ${text.slice(0, 100)}`);
+    }
 
     if (!res.ok) {
         throw new Error(data.message || "Request failed");
