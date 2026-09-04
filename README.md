@@ -1,8 +1,8 @@
 <div align="center">
 
-  <img src="./client/public/logo.svg" alt="Waverly Logo" width="54" height="54" />
-
-  # Waverly
+  <h1>
+    <img src="./client/public/logo.svg" alt="Waverly Logo" width="38" height="38" valign="middle" /> Waverly
+  </h1>
 
   <p><strong>A Modern, Real-Time Professional & Alumni Networking Platform</strong></p>
 
